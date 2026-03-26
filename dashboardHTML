@@ -327,7 +327,7 @@
     // TODO: Replace with your Google Sheet ID
     // Found in URL: docs.google.com/spreadsheets/d/YOUR_ID/edit
     // ============================================================
-    var SHEET_ID = "YOUR_SHEET_ID_HERE";
+    var SHEET_ID = "12JrRfdHx2u2wsU_KQPHkYDRNk3_jUIEV9zSq4lFe8KE";
 
     // Sheet tab name
     var SHEET_TAB = "Sheet1";
