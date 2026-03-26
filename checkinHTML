@@ -393,7 +393,7 @@
     // TODO: Replace with your Apps Script Web App URL
     // You get this after deploying the Apps Script as a Web App
     // ============================================================
-    var WEBHOOK_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AWDtjMX02NtonO6_ciQ1RTu0oOoPohDWCNAnOawTxdunCtWM4jsYzVQO5gy9TQ6nj8bb8DuPguZyEigUe42m2hpglOCwn5xwnMKOfeKTJ_3sei5HtrMk6R6w59sUTYmfDbJ0q92tt2yx1NBkFIWgp3Q_DECryChiMkfE0mYpP5ogxc-pBoMzfxov_V9Y0IQtv-uCM22jpHshJHEsXS3biheo0aFSV7Do8jLHR0Vzs8r9ucXy_8HeiZFCM_KSaSH4_yEJbDDYTsAPHAyay2J44giThrGmGWnYRw&lib=M05NtccnMjkIFCDPdRBxm70RpYLZXgKY6";
+    var WEBHOOK_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AWDtjMWyk66EA3xcV77M571skB-p-s-I72rFF5XYzAehIRwG2SfQ5Me7op92jfFkPnxtYVon91Ek1sdysPXvCYaF7BRkjeUKthNyPQldwZto79zT6AjAvRzUnAilFXseC2rOlnANj-5InjlgWksfq9NsDKUOK6ZNdwtbMytMfFgSqa_wCEmmiJq5iQIwgQ4Oi9jmufisr1JAJ9FYTiB-eHdtITkHcuuT9rUyokQ_92g2fwMxz0j3KcQs1O4QNDCUEqFVPUIcwJ_Kkdf0_WhCVnlJ3TAiSV9Vyw&lib=M05NtccnMjkIFCDPdRBxm70RpYLZXgKY6";
 
     // Pre-fill last signal with current time
     var now = new Date();
