@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Status Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ============================================================
+       TODO: Replace SHEET_ID in the <script> section below
+       with your actual Google Sheet ID.
+       ============================================================ */
+
+    :root {
+      --bg:         #0a0a0f;
+      --surface:    #111118;
+      --surface2:   #16161f;
+      --border:     #1e1e2e;
+      --accent:     #00ff9d;
+      --accent2:    #7b61ff;
+      --warn:       #ff4f4f;
+      --text:       #e0e0f0;
+      --muted:      #5a5a7a;
+      --mono:       'JetBrains Mono', monospace;
+      --sans:       'Syne', sans-serif;
+
+      /* Status colors */
+      --s-open:       #4fc3f7;
+      --s-active:     #00ff9d;
+      --s-incomplete: #ff8c00;
+      --s-pending:    #7b61ff;
+      --s-alert:      #ffb700;
+      --s-error:      #ff4f4f;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      min-height: 100vh;
+      padding: 2rem 1.5rem;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,255,157,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,157,0.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 2.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .header-left {}
+
+    .header-tag {
+      font-size: 0.62rem;
+      letter-spacing: 0.22em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 0.35rem;
+    }
+
+    h1 {
+      font-family: var(--sans);
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    h1 span { color: var(--accent); }
+
+    .header-meta {
+      text-align: right;
+    }
+
+    .last-refresh {
+      font-size: 0.62rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    .refresh-btn {
+      margin-top: 0.4rem;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      padding: 0.3rem 0.75rem;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+      display: block;
+      margin-left: auto;
+    }
+
+    .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Summary bar ── */
+    .summary {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .summary-chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.85rem;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .chip-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── Agent grid ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .agent-card {
+      background: var(--surface);
+      padding: 1.25rem;
+      position: relative;
+      transition: background 0.15s;
+    }
+
+    .agent-card:hover { background: var(--surface2); }
+
+    /* Status accent bar on left */
+    .agent-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; bottom: 0;
+      width: 3px;
+    }
+
+    .agent-card[data-status="open"]       ::before,
+    .agent-card[data-status="open"]::before       { background: var(--s-open); }
+    .agent-card[data-status="active"]::before     { background: var(--s-active); }
+    .agent-card[data-status="incomplete"]::before { background: var(--s-incomplete); }
+    .agent-card[data-status="pending"]::before    { background: var(--s-pending); }
+    .agent-card[data-status="alert"]::before      { background: var(--s-alert); }
+    .agent-card[data-status="error"]::before      { background: var(--s-error); }
+
+    /* Card top row */
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+      padding-left: 0.5rem;
+    }
+
+    .agent-name {
+      font-family: var(--sans);
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .status-badge {
+      font-size: 0.58rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.55rem;
+      border-radius: 2px;
+      font-weight: 600;
+    }
+
+    .badge-open       { background: rgba(79,195,247,0.12);  color: var(--s-open); }
+    .badge-active     { background: rgba(0,255,157,0.1);    color: var(--s-active); }
+    .badge-incomplete { background: rgba(255,140,0,0.12);   color: var(--s-incomplete); }
+    .badge-pending    { background: rgba(123,97,255,0.12);  color: var(--s-pending); }
+    .badge-alert      { background: rgba(255,183,0,0.12);   color: var(--s-alert); }
+    .badge-error      { background: rgba(255,79,79,0.12);   color: var(--s-error); }
+
+    /* Card body */
+    .card-body { padding-left: 0.5rem; }
+
+    .card-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+      gap: 0.5rem;
+    }
+
+    .card-row .label {
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.6rem;
+      flex-shrink: 0;
+    }
+
+    .card-row .value {
+      color: var(--text);
+      text-align: right;
+      word-break: break-word;
+    }
+
+    .card-row .value.mood {
+      color: var(--accent2);
+      font-style: italic;
+    }
+
+    /* Flag indicator */
+    .flag-indicator {
+      margin-top: 0.75rem;
+      padding: 0.4rem 0.6rem;
+      background: rgba(255,79,79,0.07);
+      border: 1px solid rgba(255,79,79,0.2);
+      font-size: 0.65rem;
+      color: var(--warn);
+      letter-spacing: 0.05em;
+    }
+
+    .flag-indicator .flag-icon { margin-right: 0.4rem; }
+
+    /* Signal time */
+    .signal-time {
+      margin-top: 0.85rem;
+      font-size: 0.58rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      padding-left: 0.5rem;
+      border-top: 1px solid var(--border);
+      padding-top: 0.6rem;
+    }
+
+    /* ── States ── */
+    .state-msg {
+      text-align: center;
+      padding: 4rem 2rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+    }
+
+    .state-msg .big { font-family: var(--sans); font-size: 1.5rem; color: var(--text); margin-bottom: 0.5rem; font-weight: 700; }
+
+    /* Pulse animation for active agents */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .agent-card[data-status="active"] .chip-dot,
+    .pulse { animation: pulse 2s ease-in-out infinite; }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 1.5rem;
+      font-size: 0.58rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <div class="header">
+      <div class="header-left">
+        <div class="header-tag">// mission control</div>
+        <h1>Agent <span>Status</span></h1>
+      </div>
+      <div class="header-meta">
+        <div class="last-refresh" id="lastRefresh">—</div>
+        <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+      </div>
+    </div>
+
+    <div class="summary" id="summary"></div>
+
+    <div class="grid" id="grid">
+      <div class="state-msg" style="background:var(--surface); grid-column: 1/-1;">
+        <div class="big">Loading...</div>
+        <div>Fetching agent signals</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>agent-dashboard v0.1</span>
+      <span id="agentCount">—</span>
+    </div>
+
+  </div>
+
+  <script>
+    // ============================================================
+    // TODO: Replace with your Google Sheet ID
+    // Found in URL: docs.google.com/spreadsheets/d/YOUR_ID/edit
+    // ============================================================
+    var SHEET_ID = "YOUR_SHEET_ID_HERE";
+
+    // Sheet tab name
+    var SHEET_TAB = "Sheet1";
+
+    // Build the public CSV export URL
+    function sheetUrl() {
+      return "https://docs.google.com/spreadsheets/d/" + SHEET_ID +
+             "/gviz/tq?tqx=out:csv&sheet=" + encodeURIComponent(SHEET_TAB);
+    }
+
+    // ── Parse CSV ──────────────────────────────────────────────
+    function parseCSV(text) {
+      var lines = text.trim().split("\n");
+      if (lines.length < 2) return [];
+
+      var headers = lines[0].split(",").map(function(h) {
+        return h.replace(/^"|"$/g, "").trim();
+      });
+
+      return lines.slice(1).map(function(line) {
+        // Handle quoted fields with commas inside
+        var cols = [];
+        var inQuote = false;
+        var current = "";
+        for (var i = 0; i < line.length; i++) {
+          var ch = line[i];
+          if (ch === '"') { inQuote = !inQuote; }
+          else if (ch === ',' && !inQuote) { cols.push(current); current = ""; }
+          else { current += ch; }
+        }
+        cols.push(current);
+
+        var obj = {};
+        headers.forEach(function(h, i) {
+          obj[h] = (cols[i] || "").replace(/^"|"$/g, "").trim();
+        });
+        return obj;
+      });
+    }
+
+    // ── Get latest check-in per agent ─────────────────────────
+    function latestPerAgent(rows) {
+      var map = {};
+      rows.forEach(function(row) {
+        var key = (row["Agent Nickname"] || "").toLowerCase();
+        if (!key) return;
+        // Rows are appended chronologically; last one wins
+        map[key] = row;
+      });
+      return Object.values(map);
+    }
+
+    // ── Status color class ────────────────────────────────────
+    function badgeClass(status) {
+      var s = (status || "").toLowerCase();
+      var classes = { open:"open", active:"active", incomplete:"incomplete",
+                      pending:"pending", alert:"alert", error:"error" };
+      return "badge-" + (classes[s] || "open");
+    }
+
+    function statusColor(status) {
+      var map = {
+        open: "var(--s-open)", active: "var(--s-active)",
+        incomplete: "var(--s-incomplete)", pending: "var(--s-pending)",
+        alert: "var(--s-alert)", error: "var(--s-error)"
+      };
+      return map[(status||"").toLowerCase()] || "var(--muted)";
+    }
+
+    // ── Render summary chips ───────────────────────────────────
+    function renderSummary(agents) {
+      var counts = {};
+      agents.forEach(function(a) {
+        var s = (a["Agent Status"] || "unknown").toLowerCase();
+        counts[s] = (counts[s] || 0) + 1;
+      });
+
+      var html = "";
+      Object.keys(counts).sort().forEach(function(s) {
+        html += '<div class="summary-chip">' +
+          '<div class="chip-dot" style="background:' + statusColor(s) + '"></div>' +
+          counts[s] + "&nbsp;" + s +
+        '</div>';
+      });
+
+      document.getElementById("summary").innerHTML = html;
+    }
+
+    // ── Format timestamp ──────────────────────────────────────
+    function fmtTime(str) {
+      if (!str) return "—";
+      var d = new Date(str);
+      if (isNaN(d)) return str;
+      return d.toLocaleString(undefined, { month:"short", day:"numeric",
+        hour:"2-digit", minute:"2-digit" });
+    }
+
+    // ── Render agent cards ────────────────────────────────────
+    function renderGrid(agents) {
+      if (!agents.length) {
+        document.getElementById("grid").innerHTML =
+          '<div class="state-msg" style="background:var(--surface); grid-column:1/-1;">' +
+          '<div class="big">No Agents</div><div>No check-ins found in sheet</div></div>';
+        return;
+      }
+
+      var html = "";
+      agents.forEach(function(a) {
+        var status   = (a["Agent Status"]   || "open").toLowerCase();
+        var flagged  = (a["Project Flagged"]|| "No").toLowerCase() === "yes";
+        var nickname = a["Agent Nickname"]  || "Unknown";
+        var mood     = a["Agent Mood"]      || "";
+        var profile  = a["Agent Profile"]   || "";
+        var domain   = a["Agent Domain"]    || "";
+        var project  = a["Project Name"]    || "";
+        var pstatus  = a["Project Status"]  || "";
+        var flagReason = a["Flag Reason"]   || "";
+        var signal   = a["Last Signal"]     || a["Timestamp"] || "";
+
+        html += '<div class="agent-card" data-status="' + status + '">';
+
+        // Top row
+        html += '<div class="card-top">';
+        html += '<div class="agent-name">' + nickname + '</div>';
+        html += '<div class="status-badge ' + badgeClass(status) + '">' + status + '</div>';
+        html += '</div>';
+
+        // Body rows
+        html += '<div class="card-body">';
+        if (profile)  html += row("Profile", profile);
+        if (mood)     html += row("Mood", mood, "mood");
+        if (domain)   html += row("Domain", domain);
+        if (project)  html += row("Project", project);
+        if (pstatus)  html += row("P.Status", pstatus);
+        html += '</div>';
+
+        // Flag
+        if (flagged) {
+          html += '<div class="flag-indicator">' +
+            '<span class="flag-icon">⚑</span>FLAGGED' +
+            (flagReason ? ' — ' + flagReason : '') +
+          '</div>';
+        }
+
+        // Signal time
+        html += '<div class="signal-time">last signal: ' + fmtTime(signal) + '</div>';
+
+        html += '</div>';
+      });
+
+      document.getElementById("grid").innerHTML = html;
+    }
+
+    function row(label, value, cls) {
+      return '<div class="card-row"><span class="label">' + label +
+        '</span><span class="value' + (cls ? ' ' + cls : '') + '">' + value + '</span></div>';
+    }
+
+    // ── Main load ─────────────────────────────────────────────
+    async function loadData() {
+      document.getElementById("lastRefresh").textContent = "Refreshing...";
+      try {
+        var res  = await fetch(sheetUrl() + "&cachebust=" + Date.now());
+        var text = await res.text();
+        var rows = parseCSV(text);
+        var agents = latestPerAgent(rows);
+
+        renderSummary(agents);
+        renderGrid(agents);
+
+        document.getElementById("lastRefresh").textContent =
+          "Last refresh: " + new Date().toLocaleTimeString();
+        document.getElementById("agentCount").textContent =
+          agents.length + " agent" + (agents.length !== 1 ? "s" : "") + " tracked";
+
+      } catch (err) {
+        document.getElementById("grid").innerHTML =
+          '<div class="state-msg" style="background:var(--surface); grid-column:1/-1;">' +
+          '<div class="big">Error</div>' +
+          '<div>Could not load sheet. Check SHEET_ID and that the sheet is public.</div>' +
+          '</div>';
+        document.getElementById("lastRefresh").textContent = "Error loading data";
+        console.error(err);
+      }
+    }
+
+    // Load on open, then auto-refresh every 60 seconds
+    loadData();
+    setInterval(loadData, 60000);
+  </script>
+</body>
+</html>
