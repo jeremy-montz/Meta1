@@ -150,11 +150,11 @@
       flex-shrink: 0;
     }
 
-    /* Legend */
+    /* Legend — sits below the matrix */
     .legend {
       display: flex;
       gap: 1rem;
-      margin-bottom: 1.5rem;
+      margin-top: 1.5rem;
       flex-wrap: wrap;
       background: var(--surface);
       border: 1px solid var(--border);
@@ -192,19 +192,6 @@
 
     .section-header:first-of-type { margin-top: 0; }
 
-    /* Subfolder header */
-    .folder-header {
-      font-size: 0.65rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      padding: 0.4rem 0.75rem;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-top: none;
-      border-bottom: 1px solid var(--border);
-    }
-
     /* Table */
     .canon-table {
       width: 100%;
@@ -227,10 +214,9 @@
       text-transform: uppercase;
       color: var(--muted);
       text-align: center;
-      white-space: nowrap;
       border-right: 1px solid var(--border);
       overflow: hidden;
-      text-overflow: ellipsis;
+      vertical-align: top;
     }
 
     .canon-table th.col-file {
@@ -239,6 +225,18 @@
 
     .canon-table th.col-unknown {
       color: var(--warn);
+    }
+
+    /* Status line inside each agent header cell */
+    .th-status {
+      font-size: 0.52rem;
+      font-weight: 400;
+      margin-top: 0.25rem;
+      letter-spacing: 0.04em;
+      text-transform: none;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .canon-table td {
@@ -267,6 +265,18 @@
 
     .canon-table td.col-agent {
       text-align: center;
+    }
+
+    /* Folder separator row inside tbody */
+    .canon-table tr.folder-row td {
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.4rem 0.75rem;
+      border-top: 2px solid var(--border);
+      border-bottom: 1px solid var(--border);
     }
 
     /* Flag cell */
@@ -339,6 +349,13 @@
       <span class="integrity-bar-label">Agent Canon Status —</span>
     </div>
 
+    <div id="canonOutput">
+      <div class="state-msg">
+        <div class="big">Loading...</div>
+        <div>Fetching canon data</div>
+      </div>
+    </div>
+
     <div class="legend">
       <div class="legend-item"><span class="legend-flag" style="color:var(--flag-clean)">●</span> Clean</div>
       <div class="legend-item"><span class="legend-flag" style="color:var(--flag-crossload)">◆</span> Cross-loaded</div>
@@ -348,13 +365,6 @@
       <div class="legend-item"><span class="legend-flag" style="color:var(--flag-stale)">⚠</span> Stale</div>
       <div class="legend-item"><span class="legend-flag" style="color:var(--flag-native)">⬡</span> Claude.ai-native</div>
       <div class="legend-item"><span class="legend-flag" style="color:var(--muted)">·</span> Not loaded</div>
-    </div>
-
-    <div id="canonOutput">
-      <div class="state-msg">
-        <div class="big">Loading...</div>
-        <div>Fetching canon data</div>
-      </div>
     </div>
 
     <div class="footer">
@@ -374,11 +384,11 @@
   </script>
 
   <script>
-    var SHEET_ID  = "12JrRfdHx2u2wsU_KQPHkYDRNk3_jUIEV9zSq4lFe8KE";
+    var SHEET_ID   = "12JrRfdHx2u2wsU_KQPHkYDRNk3_jUIEV9zSq4lFe8KE";
     var TAB_STATUS = "AgentStatus";
     var TAB_FILES  = "FilesReported";
 
-    /* AGENT_ORDER is now derived dynamically from sheet data — see loadData() */
+    /* AGENT_ORDER is derived dynamically from sheet data — see loadData() */
 
     function sheetUrl(tab) {
       return "https://docs.google.com/spreadsheets/d/" + SHEET_ID +
@@ -432,23 +442,22 @@
 
     /* Flag symbol + class */
     function flagInfo(flag) {
-      var f = (flag || "").toLowerCase().replace(/[^a-z\-]/g,"").replace("-loaded","load").replace("claude.ai-native","native").replace("not load","notloaded").replace("cross-load","crossload").replace("on loan","onloan");
       if (!flag) return { sym: "·", cls: "flag-empty" };
       var map = {
-        "clean":       { sym: "●", cls: "flag-clean" },
-        "crossload":   { sym: "◆", cls: "flag-crossload" },
-        "cross-loaded":{ sym: "◆", cls: "flag-crossload" },
-        "on loan":     { sym: "⟳", cls: "flag-onloan" },
-        "onloan":      { sym: "⟳", cls: "flag-onloan" },
-        "orphaned":    { sym: "!", cls: "flag-orphaned" },
-        "phantom":     { sym: "✕", cls: "flag-phantom" },
-        "stale":       { sym: "⚠", cls: "flag-stale" },
+        "clean":            { sym: "●", cls: "flag-clean" },
+        "crossload":        { sym: "◆", cls: "flag-crossload" },
+        "cross-loaded":     { sym: "◆", cls: "flag-crossload" },
+        "on loan":          { sym: "⟳", cls: "flag-onloan" },
+        "onloan":           { sym: "⟳", cls: "flag-onloan" },
+        "orphaned":         { sym: "!", cls: "flag-orphaned" },
+        "phantom":          { sym: "✕", cls: "flag-phantom" },
+        "stale":            { sym: "⚠", cls: "flag-stale" },
         "claude.ai-native": { sym: "⬡", cls: "flag-native" },
-        "native":      { sym: "⬡", cls: "flag-native" },
-        "not loaded":  { sym: "·", cls: "flag-notloaded" },
-        "notloaded":   { sym: "·", cls: "flag-notloaded" }
+        "native":           { sym: "⬡", cls: "flag-native" },
+        "not loaded":       { sym: "·", cls: "flag-notloaded" },
+        "notloaded":        { sym: "·", cls: "flag-notloaded" }
       };
-      var flagLower = (flag || "").toLowerCase().trim();
+      var flagLower = flag.toLowerCase().trim();
       return map[flagLower] || { sym: flag.charAt(0).toUpperCase(), cls: "flag-unknown" };
     }
 
@@ -507,24 +516,23 @@
       bar.innerHTML = html;
     }
 
-    /* Render one table section (Drive or Claude.ai) */
-    function renderSection(title, folderMap, agents) {
+    /* Render one table section (Drive or Claude.ai).
+       Single table with one header; folder separator rows in tbody. */
+    function renderSection(title, folderMap, agents, agentStatusMap) {
       var html = '<div class="section-header">' + title + '</div>';
 
-      /* Build a lookup from agent name (lowercased) -> position in agents array,
-         so folders can be sorted by the owning agent's position (= Agent ID order) */
+      /* Sort folders by agent ID order, then A-Z for unknowns */
       var agentPos = {};
       agents.forEach(function(name, i) { agentPos[name.toLowerCase()] = i; });
 
-      function folderAgentKey(folder) {
-        /* Claude.ai folders are "AgentName Project" */
+      function folderSortKey(folder) {
         var base = folder.replace(/ Project$/, "").toLowerCase();
         var pos = agentPos[base];
         return pos !== undefined ? pos : 9999;
       }
 
       var folders = Object.keys(folderMap).sort(function(a, b) {
-        var diff = folderAgentKey(a) - folderAgentKey(b);
+        var diff = folderSortKey(a) - folderSortKey(b);
         return diff !== 0 ? diff : a.localeCompare(b);
       });
 
@@ -533,25 +541,37 @@
         return html;
       }
 
-      /* Equal column width: 1 file col + N agent cols + 1 unknown col */
-      var colPct = (100 / (agents.length + 2)).toFixed(3) + "%";
+      /* Column widths: file col = 2 units, each agent/unknown col = 1 unit */
+      var totalUnits  = agents.length + 3; /* 2 (file) + N (agents) + 1 (unknown) */
+      var fileColPct  = (200 / totalUnits).toFixed(3) + "%";
+      var agentColPct = (100 / totalUnits).toFixed(3) + "%";
+      var totalCols   = agents.length + 2; /* file + agents + unknown */
 
+      /* Single table, one thead */
+      html += '<table class="canon-table"><thead><tr>';
+      html += '<th class="col-file" style="width:' + fileColPct + '">File</th>';
+      agents.forEach(function(a) {
+        var row = agentStatusMap[a.toLowerCase()] || {};
+        var ci  = row["Canon Integrity"] || "Unresponsive";
+        html += '<th style="width:' + agentColPct + '">' +
+          escHtml(a) +
+          '<div class="th-status" style="color:' + ciColor(ci) + '">' + escHtml(ci) + '</div>' +
+          '</th>';
+      });
+      html += '<th class="col-unknown" style="width:' + agentColPct + '">Unknown</th>';
+      html += '</tr></thead><tbody>';
+
+      /* One folder separator row + file rows per folder */
       folders.forEach(function(folder) {
-        html += '<div class="folder-header">/' + folder + '</div>';
-        html += '<table class="canon-table"><thead><tr>';
-        html += '<th class="col-file" style="width:' + colPct + '">File</th>';
-        agents.forEach(function(a) {
-          html += '<th style="width:' + colPct + '">' + a + '</th>';
-        });
-        html += '<th class="col-unknown" style="width:' + colPct + '">Unknown</th>';
-        html += '</tr></thead><tbody>';
+        html += '<tr class="folder-row"><td colspan="' + totalCols + '">/' + escHtml(folder) + '</td></tr>';
 
         var files = Object.keys(folderMap[folder]).sort();
         files.forEach(function(fileName) {
           var entry = folderMap[folder][fileName];
 
           html += '<tr>';
-          html += '<td class="col-file">' + escHtml(fileName) +
+          html += '<td class="col-file" title="' + escHtml(fileName) + '">' +
+            escHtml(fileName) +
             '<span class="location-tag">[' + entry.location + ']</span></td>';
 
           var anyAgentDeclared = false;
@@ -577,15 +597,14 @@
           html += '</td>';
           html += '</tr>';
         });
-
-        html += '</tbody></table>';
       });
 
+      html += '</tbody></table>';
       return html;
     }
 
     function escHtml(str) {
-      return (str || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      return (str || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
     }
 
     /* Update embedded JSON block for Claude/QA readability */
@@ -600,11 +619,7 @@
           lastSignal:     row["Last Signal"] || ""
         };
       });
-      var payload = {
-        generated:  generated,
-        agents:     agentArr,
-        files:      fileRows
-      };
+      var payload = { generated: generated, agents: agentArr, files: fileRows };
       document.getElementById("canon-data").textContent = JSON.stringify(payload, null, 2);
     }
 
@@ -613,8 +628,8 @@
       try {
         var bust = "&cachebust=" + Date.now();
         var [statusRes, filesRes] = await Promise.all([
-          fetch(sheetUrl(TAB_STATUS)  + bust),
-          fetch(sheetUrl(TAB_FILES)   + bust)
+          fetch(sheetUrl(TAB_STATUS) + bust),
+          fetch(sheetUrl(TAB_FILES)  + bust)
         ]);
 
         var statusText = await statusRes.text();
@@ -643,7 +658,6 @@
           }
         });
 
-        /* Sort agents by their Agent ID from the status sheet */
         agents.sort(function(a, b) {
           var idA = (agentStatusMap[a.toLowerCase()] || {})["Agent ID"] || "";
           var idB = (agentStatusMap[b.toLowerCase()] || {})["Agent ID"] || "";
@@ -655,17 +669,18 @@
         renderIntegrityBar(agentStatusMap, agents);
 
         var output = "";
-        output += renderSection("Drive", matrix.drive, agents);
-        output += renderSection("Claude.ai", matrix.claudeai, agents);
+        output += renderSection("Drive",     matrix.drive,   agents, agentStatusMap);
+        output += renderSection("Claude.ai", matrix.claudeai, agents, agentStatusMap);
         document.getElementById("canonOutput").innerHTML = output;
 
         var totalFiles = fileRows.length;
-        document.getElementById("fileCount").textContent = totalFiles + " file declaration" + (totalFiles !== 1 ? "s" : "") + " in set";
+        document.getElementById("fileCount").textContent =
+          totalFiles + " file declaration" + (totalFiles !== 1 ? "s" : "") + " in set";
 
-        var now = new Date().toISOString();
-        document.getElementById("lastRefresh").textContent = "Last refresh: " + new Date().toLocaleTimeString();
+        document.getElementById("lastRefresh").textContent =
+          "Last refresh: " + new Date().toLocaleTimeString();
 
-        updateEmbeddedData(agentStatusMap, fileRows, now, agents);
+        updateEmbeddedData(agentStatusMap, fileRows, new Date().toISOString(), agents);
 
       } catch (err) {
         document.getElementById("canonOutput").innerHTML =
