@@ -212,6 +212,7 @@
       border: 1px solid var(--border);
       border-top: none;
       margin-bottom: 0;
+      table-layout: fixed;
     }
 
     .canon-table thead tr {
@@ -228,11 +229,12 @@
       text-align: center;
       white-space: nowrap;
       border-right: 1px solid var(--border);
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .canon-table th.col-file {
       text-align: left;
-      min-width: 200px;
     }
 
     .canon-table th.col-unknown {
@@ -245,13 +247,15 @@
       border-bottom: 1px solid var(--border);
       border-right: 1px solid var(--border);
       vertical-align: middle;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .canon-table tr:hover td { background: rgba(255,255,255,0.02); }
 
     .canon-table td.col-file {
       color: var(--text);
-      white-space: nowrap;
     }
 
     .canon-table td.col-file .location-tag {
@@ -450,11 +454,8 @@
 
     /* Build matrix structure from FilesReported rows */
     function buildMatrix(fileRows, agentList) {
-      /* Structure: { drive: { folderName: [ fileEntry ] }, claudeai: { projectName: [ fileEntry ] } } */
-      /* fileEntry: { fileName, location, agentFlags: { AgentName: flagValue }, hasOrphan: bool } */
-
-      var driveFiles  = {};   /* folder -> { fileName -> agentFlags } */
-      var claudeFiles = {};   /* project -> { fileName -> agentFlags } */
+      var driveFiles  = {};
+      var claudeFiles = {};
 
       fileRows.forEach(function(row) {
         var agent    = row["Agent Nickname"] || "Unknown";
@@ -465,13 +466,11 @@
         if (!fileName) return;
 
         if (location === "Claude.ai") {
-          /* Group by agent as "project folder" */
           var proj = agent + " Project";
           if (!claudeFiles[proj]) claudeFiles[proj] = {};
           if (!claudeFiles[proj][fileName]) claudeFiles[proj][fileName] = { agentFlags: {}, location: "Claude.ai" };
           claudeFiles[proj][fileName].agentFlags[agent] = flag;
         } else {
-          /* Infer Drive folder from file name prefix */
           var folder = inferFolder(fileName, agentList);
           if (!driveFiles[folder]) driveFiles[folder] = {};
           if (!driveFiles[folder][fileName]) driveFiles[folder][fileName] = { agentFlags: {}, location: "Drive" };
@@ -512,34 +511,49 @@
     function renderSection(title, folderMap, agents) {
       var html = '<div class="section-header">' + title + '</div>';
 
-      /* Sort folders A-Z */
-      var folders = Object.keys(folderMap).sort();
+      /* Build a lookup from agent name (lowercased) -> position in agents array,
+         so folders can be sorted by the owning agent's position (= Agent ID order) */
+      var agentPos = {};
+      agents.forEach(function(name, i) { agentPos[name.toLowerCase()] = i; });
+
+      function folderAgentKey(folder) {
+        /* Claude.ai folders are "AgentName Project" */
+        var base = folder.replace(/ Project$/, "").toLowerCase();
+        var pos = agentPos[base];
+        return pos !== undefined ? pos : 9999;
+      }
+
+      var folders = Object.keys(folderMap).sort(function(a, b) {
+        var diff = folderAgentKey(a) - folderAgentKey(b);
+        return diff !== 0 ? diff : a.localeCompare(b);
+      });
+
       if (folders.length === 0) {
         html += '<div style="background:var(--surface);border:1px solid var(--border);border-top:none;padding:1rem;font-size:0.68rem;color:var(--muted)">No files in this section.</div>';
         return html;
       }
 
+      /* Equal column width: 1 file col + N agent cols + 1 unknown col */
+      var colPct = (100 / (agents.length + 2)).toFixed(3) + "%";
+
       folders.forEach(function(folder) {
         html += '<div class="folder-header">/' + folder + '</div>';
         html += '<table class="canon-table"><thead><tr>';
-        html += '<th class="col-file">File</th>';
+        html += '<th class="col-file" style="width:' + colPct + '">File</th>';
         agents.forEach(function(a) {
-          html += '<th>' + a + '</th>';
+          html += '<th style="width:' + colPct + '">' + a + '</th>';
         });
-        html += '<th class="col-unknown">Unknown</th>';
+        html += '<th class="col-unknown" style="width:' + colPct + '">Unknown</th>';
         html += '</tr></thead><tbody>';
 
-        /* Sort files A-Z within folder */
         var files = Object.keys(folderMap[folder]).sort();
         files.forEach(function(fileName) {
           var entry = folderMap[folder][fileName];
-          var hasOrphan = Object.keys(entry.agentFlags).length === 0;
 
           html += '<tr>';
           html += '<td class="col-file">' + escHtml(fileName) +
             '<span class="location-tag">[' + entry.location + ']</span></td>';
 
-          /* Agent columns */
           var anyAgentDeclared = false;
           agents.forEach(function(agent) {
             var flag = entry.agentFlags[agent] || "";
@@ -554,7 +568,6 @@
             html += '</td>';
           });
 
-          /* Unknown column — fires when no agent declares the file */
           html += '<td class="col-agent">';
           if (!anyAgentDeclared) {
             html += '<span class="flag-cell flag-orphaned">! Orphaned</span>';
@@ -612,8 +625,7 @@
 
         var agentStatusMap = latestAgentStatus(statusRows);
 
-        /* Build agent list dynamically: status sheet order first, then any
-           extra agents that appear only in file rows */
+        /* Build agent list dynamically, then sort by Agent ID */
         var agents = [];
         var agentSet = {};
         statusRows.forEach(function(r) {
@@ -629,6 +641,13 @@
             agentSet[name.toLowerCase()] = true;
             agents.push(name);
           }
+        });
+
+        /* Sort agents by their Agent ID from the status sheet */
+        agents.sort(function(a, b) {
+          var idA = (agentStatusMap[a.toLowerCase()] || {})["Agent ID"] || "";
+          var idB = (agentStatusMap[b.toLowerCase()] || {})["Agent ID"] || "";
+          return idA.localeCompare(idB, undefined, { numeric: true });
         });
 
         var matrix = buildMatrix(fileRows, agents);
