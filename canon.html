@@ -374,7 +374,7 @@
     var TAB_STATUS = "AgentStatus";
     var TAB_FILES  = "FilesReported";
 
-    var AGENT_ORDER = ["Meta1","House","Freedom","Evolve","Assessor","Phil"];
+    /* AGENT_ORDER is now derived dynamically from sheet data — see loadData() */
 
     function sheetUrl(tab) {
       return "https://docs.google.com/spreadsheets/d/" + SHEET_ID +
@@ -449,7 +449,7 @@
     }
 
     /* Build matrix structure from FilesReported rows */
-    function buildMatrix(fileRows) {
+    function buildMatrix(fileRows, agentList) {
       /* Structure: { drive: { folderName: [ fileEntry ] }, claudeai: { projectName: [ fileEntry ] } } */
       /* fileEntry: { fileName, location, agentFlags: { AgentName: flagValue }, hasOrphan: bool } */
 
@@ -472,7 +472,7 @@
           claudeFiles[proj][fileName].agentFlags[agent] = flag;
         } else {
           /* Infer Drive folder from file name prefix */
-          var folder = inferFolder(fileName);
+          var folder = inferFolder(fileName, agentList);
           if (!driveFiles[folder]) driveFiles[folder] = {};
           if (!driveFiles[folder][fileName]) driveFiles[folder][fileName] = { agentFlags: {}, location: "Drive" };
           driveFiles[folder][fileName].agentFlags[agent] = flag;
@@ -482,22 +482,21 @@
       return { drive: driveFiles, claudeai: claudeFiles };
     }
 
-    /* Infer Drive folder from filename prefix */
-    function inferFolder(fileName) {
-      var prefixes = ["Meta1","House","Freedom","Evolve","Assessor","Phil","Jeremy"];
-      for (var i = 0; i < prefixes.length; i++) {
-        if (fileName.toLowerCase().startsWith(prefixes[i].toLowerCase())) {
-          return prefixes[i];
+    /* Infer Drive folder from filename prefix, using the live agent list */
+    function inferFolder(fileName, agentList) {
+      for (var i = 0; i < agentList.length; i++) {
+        if (fileName.toLowerCase().startsWith(agentList[i].toLowerCase())) {
+          return agentList[i];
         }
       }
       return "Other";
     }
 
     /* Render the agent integrity chips */
-    function renderIntegrityBar(agentStatusMap) {
+    function renderIntegrityBar(agentStatusMap, agents) {
       var bar = document.getElementById("integrityBar");
       var html = '<span class="integrity-bar-label">Agent Canon Status —</span>';
-      AGENT_ORDER.forEach(function(name) {
+      agents.forEach(function(name) {
         var row = agentStatusMap[name.toLowerCase()];
         var ci  = row ? (row["Canon Integrity"] || "Unresponsive") : "Unresponsive";
         html += '<div class="agent-chip">' +
@@ -577,8 +576,8 @@
     }
 
     /* Update embedded JSON block for Claude/QA readability */
-    function updateEmbeddedData(agentStatusMap, fileRows, generated) {
-      var agentArr = AGENT_ORDER.map(function(name) {
+    function updateEmbeddedData(agentStatusMap, fileRows, generated, agents) {
+      var agentArr = agents.map(function(name) {
         var row = agentStatusMap[name.toLowerCase()] || {};
         return {
           nickname:       name,
@@ -612,13 +611,33 @@
         var fileRows   = parseCSV(filesText);
 
         var agentStatusMap = latestAgentStatus(statusRows);
-        var matrix = buildMatrix(fileRows);
 
-        renderIntegrityBar(agentStatusMap);
+        /* Build agent list dynamically: status sheet order first, then any
+           extra agents that appear only in file rows */
+        var agents = [];
+        var agentSet = {};
+        statusRows.forEach(function(r) {
+          var name = (r["Agent Nickname"] || "").trim();
+          if (name && !agentSet[name.toLowerCase()]) {
+            agentSet[name.toLowerCase()] = true;
+            agents.push(name);
+          }
+        });
+        fileRows.forEach(function(r) {
+          var name = (r["Agent Nickname"] || "").trim();
+          if (name && !agentSet[name.toLowerCase()]) {
+            agentSet[name.toLowerCase()] = true;
+            agents.push(name);
+          }
+        });
+
+        var matrix = buildMatrix(fileRows, agents);
+
+        renderIntegrityBar(agentStatusMap, agents);
 
         var output = "";
-        output += renderSection("Drive", matrix.drive, AGENT_ORDER);
-        output += renderSection("Claude.ai", matrix.claudeai, AGENT_ORDER);
+        output += renderSection("Drive", matrix.drive, agents);
+        output += renderSection("Claude.ai", matrix.claudeai, agents);
         document.getElementById("canonOutput").innerHTML = output;
 
         var totalFiles = fileRows.length;
@@ -627,7 +646,7 @@
         var now = new Date().toISOString();
         document.getElementById("lastRefresh").textContent = "Last refresh: " + new Date().toLocaleTimeString();
 
-        updateEmbeddedData(agentStatusMap, fileRows, now);
+        updateEmbeddedData(agentStatusMap, fileRows, now, agents);
 
       } catch (err) {
         document.getElementById("canonOutput").innerHTML =
