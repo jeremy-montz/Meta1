@@ -21,22 +21,21 @@
       --mono:       'JetBrains Mono', monospace;
       --sans:       'Syne', sans-serif;
 
-      /* Canon Integrity chip colors — agent level, three values only */
-      --ci-clean:        #00ff9d;
-      --ci-alert:        #ffb700;
-      --ci-error:        #ff4f4f;
-      --ci-unresponsive: #5a5a7a;
+      /* Canon integrity colors — three values only: Clean / Alert / Error */
+      --ci-clean:   #00ff9d;
+      --ci-alert:   #ffb700;
+      --ci-error:   #ff4f4f;
+      --ci-na:      #5a5a7a;
 
       /* File flag colors */
-      --flag-clean:     #00ff9d;
-      --flag-onloan:    #7b61ff;
-      --flag-orphaned:  #ff8c00;
-      --flag-phantom:   #ff4f4f;
-      --flag-alert:     #ffb700;
-      --flag-stale:     #ffb700;
-      --flag-native:    #c084fc;
-      --flag-error:     #ff4f4f;
-      --flag-unknown:   #ff8c00;
+      --flag-clean:    #00ff9d;
+      --flag-onloan:   #7b61ff;
+      --flag-orphaned: #ff8c00;
+      --flag-phantom:  #ff4f4f;
+      --flag-stale:    #ffb700;
+      --flag-alert:    #ffb700;
+      --flag-error:    #ff4f4f;
+      --flag-native:   #c084fc;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -63,7 +62,7 @@
 
     .page { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; }
 
-    /* Header */
+    /* ── Header ── */
     .header {
       display: flex;
       align-items: flex-end;
@@ -105,74 +104,53 @@
       border: 1px solid var(--border);
       color: var(--muted);
       font-family: var(--mono);
-      font-size: 0.62rem;
-      letter-spacing: 0.1em;
+      font-size: 0.65rem;
       padding: 0.3rem 0.75rem;
       cursor: pointer;
-      transition: border-color 0.15s, color 0.15s;
-      display: block;
-      margin-left: auto;
+      letter-spacing: 0.08em;
+      transition: border-color 0.2s, color 0.2s;
     }
 
     .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-    /* Agent integrity bar */
+    /* ── Integrity bar ── */
     .integrity-bar {
       display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
-      flex-wrap: wrap;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 0.6rem 0.75rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
     }
 
     .integrity-bar-label {
-      font-size: 0.6rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
       color: var(--muted);
+      text-transform: uppercase;
       margin-right: 0.25rem;
     }
 
     .agent-chip {
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.35rem;
+      padding: 0.2rem 0.55rem;
       background: var(--surface);
       border: 1px solid var(--border);
-      padding: 0.3rem 0.65rem;
-      font-size: 0.65rem;
-      letter-spacing: 0.06em;
+      border-radius: 2px;
     }
 
-    .agent-chip .ci-dot {
-      width: 7px; height: 7px;
+    .ci-dot {
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       flex-shrink: 0;
     }
 
-    /* Legend */
-    .legend {
-      display: flex;
-      gap: 1rem;
-      margin-top: 1.5rem;
-      flex-wrap: wrap;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      padding: 0.75rem 1rem;
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      font-size: 0.6rem;
-      letter-spacing: 0.06em;
-      color: var(--muted);
-    }
-
-    .legend-flag { font-size: 0.65rem; font-weight: 600; }
-
-    /* Section header */
+    /* ── Section header ── */
     .section-header {
       font-family: var(--sans);
       font-size: 0.75rem;
@@ -187,9 +165,7 @@
       margin-top: 1.5rem;
     }
 
-    .section-header:first-of-type { margin-top: 0; }
-
-    /* Table */
+    /* ── Table ── */
     .canon-table {
       width: 100%;
       border-collapse: collapse;
@@ -218,6 +194,12 @@
     .canon-table th.col-file { text-align: left; }
     .canon-table th.col-unknown { color: var(--warn); }
 
+    /* Jeremy column header — slightly distinct */
+    .canon-table th.col-jeremy {
+      color: var(--info);
+      border-left: 2px solid var(--info);
+    }
+
     .th-status {
       font-size: 0.52rem;
       font-weight: 400;
@@ -241,6 +223,7 @@
     }
 
     .canon-table tr:hover td { background: rgba(255,255,255,0.02); }
+
     .canon-table td.col-file { color: var(--text); }
 
     .canon-table td.col-file .location-tag {
@@ -251,6 +234,12 @@
     }
 
     .canon-table td.col-agent { text-align: center; }
+
+    /* Jeremy column cells */
+    .canon-table td.col-jeremy {
+      text-align: center;
+      border-left: 2px solid rgba(79,195,247,0.2);
+    }
 
     /* Folder separator row */
     .canon-table tr.folder-row td {
@@ -264,7 +253,7 @@
       border-bottom: 1px solid var(--border);
     }
 
-    /* Flag cell */
+    /* ── Flag cells ── */
     .flag-cell {
       display: inline-block;
       font-size: 0.58rem;
@@ -279,14 +268,31 @@
     .flag-onloan   { color: var(--flag-onloan);   background: rgba(123,97,255,0.1); }
     .flag-orphaned { color: var(--flag-orphaned); background: rgba(255,140,0,0.1); }
     .flag-phantom  { color: var(--flag-phantom);  background: rgba(255,79,79,0.1); }
-    .flag-alert    { color: var(--flag-alert);    background: rgba(255,183,0,0.1); }
     .flag-stale    { color: var(--flag-stale);    background: rgba(255,183,0,0.1); }
-    .flag-native   { color: var(--flag-native);   background: rgba(192,132,252,0.1); }
+    .flag-alert    { color: var(--flag-alert);    background: rgba(255,183,0,0.1); }
     .flag-error    { color: var(--flag-error);    background: rgba(255,79,79,0.1); }
+    .flag-native   { color: var(--flag-native);   background: rgba(192,132,252,0.1); }
     .flag-unknown  { color: var(--warn);          background: rgba(255,140,0,0.1); }
     .flag-empty    { color: var(--border);        font-size: 0.5rem; }
 
-    /* State messages */
+    /* ── Legend ── */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+      padding: 0.6rem 0.75rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-size: 0.6rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    .legend-item { display: flex; align-items: center; gap: 0.3rem; }
+    .legend-flag { font-size: 0.7rem; }
+
+    /* ── State messages ── */
     .state-msg {
       text-align: center;
       padding: 3rem 2rem;
@@ -305,7 +311,7 @@
       font-weight: 700;
     }
 
-    /* Footer */
+    /* ── Footer ── */
     .footer {
       margin-top: 1.5rem;
       font-size: 0.58rem;
@@ -346,21 +352,21 @@
       <div class="legend-item"><span class="legend-flag" style="color:var(--flag-onloan)">⟳</span> On loan</div>
       <div class="legend-item"><span class="legend-flag" style="color:var(--flag-orphaned)">!</span> Orphaned</div>
       <div class="legend-item"><span class="legend-flag" style="color:var(--flag-phantom)">✕</span> Phantom</div>
-      <div class="legend-item"><span class="legend-flag" style="color:var(--flag-alert)">▲</span> Alert</div>
       <div class="legend-item"><span class="legend-flag" style="color:var(--flag-stale)">⚠</span> Stale</div>
+      <div class="legend-item"><span class="legend-flag" style="color:var(--flag-alert)">▲</span> Alert</div>
+      <div class="legend-item"><span class="legend-flag" style="color:var(--flag-error)">✖</span> Error</div>
       <div class="legend-item"><span class="legend-flag" style="color:var(--flag-native)">⬡</span> Claude.ai-native</div>
-      <div class="legend-item"><span class="legend-flag" style="color:var(--flag-error)">✕</span> Error</div>
-      <div class="legend-item"><span class="legend-flag" style="color:var(--muted)">·</span> Not declared</div>
+      <div class="legend-item"><span class="legend-flag" style="color:var(--border)">·</span> Not loaded</div>
     </div>
 
     <div class="footer">
-      <span>canon v0.4</span>
+      <span>canon v0.5</span>
       <span id="fileCount">—</span>
     </div>
 
   </div>
 
-  <!-- Embedded JSON data block for Claude/QA readability -->
+  <!-- Embedded JSON block for Claude/QA readability -->
   <script type="application/json" id="canon-data">
   {
     "generated": null,
@@ -370,17 +376,31 @@
   </script>
 
   <script>
-    var SHEET_ID   = "12JrRfdHx2u2wsU_KQPHkYDRNk3_jUIEV9zSq4lFe8KE";
-    var TAB_STATUS = "AgentStatus";
-    var TAB_FILES  = "FilesReported";
+    var SHEET_ID        = "12JrRfdHx2u2wsU_KQPHkYDRNk3_jUIEV9zSq4lFe8KE";
+    var TAB_STATUS      = "AgentStatus";
+    var TAB_FILES       = "FilesReported";
+    var TAB_CHECKIN     = "HumanCheckin";
 
-    /* Agent list and order derived from AgentStatus sheet — no hardcoding */
+    // ── Canonical roster — AGT-000 first, then AGT-001 through AGT-007 in order.
+    // Jeremy (AGT-000) is hardcoded — never appears in AgentStatus CSV.
+    // All others derive live data from AgentStatus. Order here = column order.
+    var CANONICAL_ROSTER = [
+      { nickname: "Jeremy",   id: "AGT-000", order: 1 },
+      { nickname: "Meta1",    id: "AGT-001", order: 2 },
+      { nickname: "House",    id: "AGT-002", order: 3 },
+      { nickname: "Freedom",  id: "AGT-003", order: 4 },
+      { nickname: "Evolve",   id: "AGT-004", order: 5 },
+      { nickname: "Assessor", id: "AGT-005", order: 6 },
+      { nickname: "Phil",     id: "AGT-006", order: 7 },
+      { nickname: "Bond",     id: "AGT-007", order: 8 }
+    ];
 
     function sheetUrl(tab) {
       return "https://docs.google.com/spreadsheets/d/" + SHEET_ID +
              "/gviz/tq?tqx=out:csv&sheet=" + encodeURIComponent(tab);
     }
 
+    // ── CSV parser — handles quoted fields with commas
     function parseCSV(text) {
       var lines = text.trim().split("\n");
       if (lines.length < 2) return [];
@@ -404,7 +424,7 @@
       });
     }
 
-    /* Latest row per agent from AgentStatus */
+    // ── Latest row per agent nickname from AgentStatus
     function latestAgentStatus(rows) {
       var map = {};
       rows.forEach(function(r) {
@@ -414,83 +434,74 @@
       return map;
     }
 
-    /* CI color — three values only: Clean, Alert, Error. Unresponsive for missing. */
-    function ciColor(ci) {
-      var m = {
-        "clean":        "var(--ci-clean)",
-        "alert":        "var(--ci-alert)",
-        "error":        "var(--ci-error)",
-        "unresponsive": "var(--ci-unresponsive)"
-      };
-      return m[(ci || "").toLowerCase()] || "var(--ci-unresponsive)";
+    // ── Latest single row from HumanCheckin (Jeremy's write surface)
+    // Rows are appended chronologically; last row wins.
+    function latestHumanCheckin(rows) {
+      if (!rows.length) return null;
+      return rows[rows.length - 1];
     }
 
-    /* Flag symbol + class — canonical flag set per Meta1 04 v1.2 */
+    // ── CI color — three values only: Clean / Alert / Error / N/A
+    function ciColor(ci) {
+      var m = {
+        "clean": "var(--ci-clean)",
+        "alert": "var(--ci-alert)",
+        "error": "var(--ci-error)"
+      };
+      return m[(ci || "").toLowerCase()] || "var(--ci-na)";
+    }
+
+    // ── Flag info — symbol + CSS class
+    // Bug fixes: removed crossload/not-loaded (legacy artifacts); added alert/error
     function flagInfo(flag) {
       if (!flag) return { sym: "·", cls: "flag-empty" };
       var map = {
-        "clean":            { sym: "●", cls: "flag-clean" },
-        "on loan":          { sym: "⟳", cls: "flag-onloan" },
-        "onloan":           { sym: "⟳", cls: "flag-onloan" },
-        "orphaned":         { sym: "!", cls: "flag-orphaned" },
-        "phantom":          { sym: "✕", cls: "flag-phantom" },
-        "alert":            { sym: "▲", cls: "flag-alert" },
-        "stale":            { sym: "⚠", cls: "flag-stale" },
+        "clean":        { sym: "●", cls: "flag-clean" },
+        "on loan":      { sym: "⟳", cls: "flag-onloan" },
+        "onloan":       { sym: "⟳", cls: "flag-onloan" },
+        "orphaned":     { sym: "!", cls: "flag-orphaned" },
+        "phantom":      { sym: "✕", cls: "flag-phantom" },
+        "stale":        { sym: "⚠", cls: "flag-stale" },
+        "alert":        { sym: "▲", cls: "flag-alert" },
+        "error":        { sym: "✖", cls: "flag-error" },
         "claude.ai-native": { sym: "⬡", cls: "flag-native" },
-        "native":           { sym: "⬡", cls: "flag-native" },
-        "error":            { sym: "✕", cls: "flag-error" }
+        "native":       { sym: "⬡", cls: "flag-native" }
       };
       var flagLower = flag.toLowerCase().trim();
       return map[flagLower] || { sym: flag.charAt(0).toUpperCase(), cls: "flag-unknown" };
     }
 
-    /*
-     * inferFolder() — flag logic only, NOT placement authority.
-     * Maps filename prefix to owning agent name.
-     * Returns null if no match (triggers Unknown column).
-     * Drive Folder column from FilesReported is the placement authority.
-     */
-    function inferFolder(fileName, agentList) {
-      for (var i = 0; i < agentList.length; i++) {
-        if (fileName.toLowerCase().startsWith(agentList[i].toLowerCase())) {
-          return agentList[i];
-        }
-      }
-      return null;
-    }
-
-    /*
-     * buildMatrix — placement authority is Drive Folder column from FilesReported.
-     * inferFolder() is not used for placement here.
-     * Claude.ai section uses case-insensitive location match.
-     */
-    function buildMatrix(fileRows, agentList) {
+    // ── Build matrix from FilesReported rows.
+    // Bug fix #1: Drive folder from the row's Drive Folder column (or inferred from filename)
+    //             is the authority for section/folder placement — NOT inferFolder().
+    //             inferFolder() is only called to inform flag logic.
+    // Bug fix #3: Claude.ai location match is case-insensitive and trim-tolerant.
+    function buildMatrix(fileRows, agentNicknames) {
       var driveFiles  = {};
       var claudeFiles = {};
 
       fileRows.forEach(function(row) {
-        var agent       = row["Agent Nickname"] || "Unknown";
-        var fileName    = row["File Name"] || "";
-        var location    = (row["Location"] || "").trim();
+        var agent    = (row["Agent Nickname"] || "Unknown").trim();
+        var fileName = (row["File Name"] || "").trim();
+        // Drive Folder column is authoritative for folder placement.
+        // Fall back to inferFolder() only if the column is absent/blank.
         var driveFolder = (row["Drive Folder"] || "").trim();
-        var flag        = row["Flag"] || "";
+        var location = (row["Location"] || "Drive").trim();
+        var flag     = (row["Flag"] || "").trim();
 
         if (!fileName) return;
 
-        var locationLower = location.toLowerCase();
-
-        if (locationLower === "claude.ai") {
-          /* Claude.ai section: use agent name as folder key */
+        // Bug fix #3: case-insensitive Claude.ai match
+        if (location.toLowerCase() === "claude.ai") {
           var proj = agent + " Project";
           if (!claudeFiles[proj]) claudeFiles[proj] = {};
           if (!claudeFiles[proj][fileName]) claudeFiles[proj][fileName] = { agentFlags: {}, location: "Claude.ai" };
           claudeFiles[proj][fileName].agentFlags[agent] = flag;
-
         } else {
-          /* Drive section: placement authority is Drive Folder column */
-          var folder = driveFolder || "Unknown";
+          // Drive placement: use Drive Folder column if present, else infer from filename
+          var folder = driveFolder || inferFolder(fileName, agentNicknames) || "Other";
           if (!driveFiles[folder]) driveFiles[folder] = {};
-          if (!driveFiles[folder][fileName]) driveFiles[folder][fileName] = { agentFlags: {}, location: location || "Drive" };
+          if (!driveFiles[folder][fileName]) driveFiles[folder][fileName] = { agentFlags: {}, location: "Drive" };
           driveFiles[folder][fileName].agentFlags[agent] = flag;
         }
       });
@@ -498,33 +509,65 @@
       return { drive: driveFiles, claudeai: claudeFiles };
     }
 
-    /* Render the agent integrity chips */
-    function renderIntegrityBar(agentStatusMap, agents) {
-      var bar = document.getElementById("integrityBar");
+    // ── inferFolder — only for flag logic fallback, NOT for section routing
+    function inferFolder(fileName, agentNicknames) {
+      var lower = fileName.toLowerCase();
+      for (var i = 0; i < agentNicknames.length; i++) {
+        if (lower.startsWith(agentNicknames[i].toLowerCase())) {
+          return agentNicknames[i];
+        }
+      }
+      return null;
+    }
+
+    // ── Render the integrity bar chips
+    // Jeremy gets N/A — hardcoded. No CI chip in bar for Jeremy (matches dashboard behavior).
+    // Bug fix #2: ciColor() now only maps Clean/Alert/Error — no file-flag vocabulary.
+    function renderIntegrityBar(agentStatusMap, jeremyRow) {
+      var bar  = document.getElementById("integrityBar");
       var html = '<span class="integrity-bar-label">Agent Canon Status —</span>';
-      agents.forEach(function(name) {
-        var row = agentStatusMap[name.toLowerCase()];
-        var ci  = row ? (row["Canon Integrity"] || "Unresponsive") : "Unresponsive";
+
+      CANONICAL_ROSTER.forEach(function(agent) {
+        var isJeremy = agent.id === "AGT-000";
+        var ci, label;
+
+        if (isJeremy) {
+          ci    = "var(--ci-na)";
+          label = "N/A";
+        } else {
+          var row = agentStatusMap[agent.nickname.toLowerCase()] || {};
+          var ciVal = (row["Canon Integrity"] || "Unresponsive");
+          ci    = ciColor(ciVal);
+          label = ciVal;
+        }
+
         html += '<div class="agent-chip">' +
-          '<div class="ci-dot" style="background:' + ciColor(ci) + '"></div>' +
-          '<span>' + name + '</span>' +
-          '<span style="color:' + ciColor(ci) + ';font-size:0.58rem;letter-spacing:0.06em">' + ci + '</span>' +
+          '<div class="ci-dot" style="background:' + ci + '"></div>' +
+          '<span>' + escHtml(agent.nickname) + '</span>' +
+          '<span style="color:' + ci + ';font-size:0.58rem;letter-spacing:0.06em">' + escHtml(label) + '</span>' +
           '</div>';
       });
+
       bar.innerHTML = html;
     }
 
-    /* Render one table section (Drive or Claude.ai) */
-    function renderSection(title, folderMap, agents, agentStatusMap) {
-      var html = '<div class="section-header">' + title + '</div>';
+    // ── Render one section (Drive or Claude.ai)
+    // Bug fix #4: columns derived from CANONICAL_ROSTER, not FilesReported nicknames.
+    //             Jeremy always gets the first column.
+    // Jeremy's column: shows On loan entries only (no folder suppression render).
+    // Jeremy's column header: CI = N/A (hardcoded).
+    function renderSection(title, folderMap, agentStatusMap, jeremyRow) {
+      var html = '<div class="section-header">' + escHtml(title) + '</div>';
 
-      /* Sort folders by Agent Order, then A-Z for unknowns */
+      // Sort folders: match by canonical roster position, unknowns last
       var agentPos = {};
-      agents.forEach(function(name, i) { agentPos[name.toLowerCase()] = i; });
+      CANONICAL_ROSTER.forEach(function(a, i) {
+        agentPos[a.nickname.toLowerCase()] = i;
+      });
 
       function folderSortKey(folder) {
         var base = folder.replace(/ Project$/, "").toLowerCase();
-        var pos = agentPos[base];
+        var pos  = agentPos[base];
         return pos !== undefined ? pos : 9999;
       }
 
@@ -538,21 +581,39 @@
         return html;
       }
 
-      var totalUnits  = agents.length + 3;
+      // Column widths: file = 2 units, each agent/unknown = 1 unit
+      // Columns: Jeremy + (roster agents minus Jeremy) + Unknown
+      var agentCols   = CANONICAL_ROSTER.length; // includes Jeremy
+      var totalUnits  = agentCols + 3;            // 2 (file) + N (roster) + 1 (unknown)
       var fileColPct  = (200 / totalUnits).toFixed(3) + "%";
       var agentColPct = (100 / totalUnits).toFixed(3) + "%";
-      var totalCols   = agents.length + 2;
+      var totalCols   = agentCols + 2;            // file + roster + unknown
 
       html += '<table class="canon-table"><thead><tr>';
       html += '<th class="col-file" style="width:' + fileColPct + '">File</th>';
-      agents.forEach(function(a) {
-        var row = agentStatusMap[a.toLowerCase()] || {};
-        var ci  = row["Canon Integrity"] || "Unresponsive";
-        html += '<th style="width:' + agentColPct + '">' +
-          escHtml(a) +
-          '<div class="th-status" style="color:' + ciColor(ci) + '">' + escHtml(ci) + '</div>' +
-          '</th>';
+
+      CANONICAL_ROSTER.forEach(function(agent) {
+        var isJeremy = agent.id === "AGT-000";
+        var ciLabel, ciClr;
+
+        if (isJeremy) {
+          ciLabel = "N/A";
+          ciClr   = "var(--ci-na)";
+          html += '<th class="col-jeremy" style="width:' + agentColPct + '">' +
+            escHtml(agent.nickname) +
+            '<div class="th-status" style="color:' + ciClr + '">' + escHtml(ciLabel) + '</div>' +
+            '</th>';
+        } else {
+          var row   = agentStatusMap[agent.nickname.toLowerCase()] || {};
+          ciLabel   = row["Canon Integrity"] || "Unresponsive";
+          ciClr     = ciColor(ciLabel);
+          html += '<th style="width:' + agentColPct + '">' +
+            escHtml(agent.nickname) +
+            '<div class="th-status" style="color:' + ciClr + '">' + escHtml(ciLabel) + '</div>' +
+            '</th>';
+        }
       });
+
       html += '<th class="col-unknown" style="width:' + agentColPct + '">Unknown</th>';
       html += '</tr></thead><tbody>';
 
@@ -563,17 +624,32 @@
         files.forEach(function(fileName) {
           var entry = folderMap[folder][fileName];
 
+          // Determine if this file is in Jeremy's folder.
+          // If so, suppress the row unless an agent declared it (On loan).
+          var isJeremyFolder = folder.toLowerCase() === "jeremy";
+          var hasAgentDeclaration = false;
+          CANONICAL_ROSTER.forEach(function(agent) {
+            if (agent.id !== "AGT-000" && entry.agentFlags[agent.nickname]) {
+              hasAgentDeclaration = true;
+            }
+          });
+          if (isJeremyFolder && !hasAgentDeclaration) return; // suppress
+
           html += '<tr>';
           html += '<td class="col-file" title="' + escHtml(fileName) + '">' +
             escHtml(fileName) +
             '<span class="location-tag">[' + escHtml(entry.location) + ']</span></td>';
 
-          var anyAgentDeclared = false;
-          agents.forEach(function(agent) {
-            var flag = entry.agentFlags[agent] || "";
-            html += '<td class="col-agent">';
+          var anyDeclared = false;
+
+          CANONICAL_ROSTER.forEach(function(agent) {
+            var isJeremy = agent.id === "AGT-000";
+            var tdClass  = isJeremy ? "col-agent col-jeremy" : "col-agent";
+            var flag     = entry.agentFlags[agent.nickname] || "";
+
+            html += '<td class="' + tdClass + '">';
             if (flag) {
-              anyAgentDeclared = true;
+              anyDeclared = true;
               var fi = flagInfo(flag);
               html += '<span class="flag-cell ' + fi.cls + '">' + fi.sym + ' ' + escHtml(flag) + '</span>';
             } else {
@@ -582,13 +658,15 @@
             html += '</td>';
           });
 
+          // Unknown column: fires if no roster agent declared this file
           html += '<td class="col-agent">';
-          if (!anyAgentDeclared) {
+          if (!anyDeclared) {
             html += '<span class="flag-cell flag-orphaned">! Orphaned</span>';
           } else {
             html += '<span class="flag-cell flag-empty">·</span>';
           }
           html += '</td>';
+
           html += '</tr>';
         });
       });
@@ -601,73 +679,63 @@
       return (str || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
     }
 
-    /* Update embedded JSON block for Claude/QA readability */
-    function updateEmbeddedData(agentStatusMap, fileRows, generated, agents) {
-      var agentArr = agents.map(function(name) {
-        var row = agentStatusMap[name.toLowerCase()] || {};
+    // ── Update embedded JSON block for Claude/QA readability
+    function updateEmbeddedData(agentStatusMap, jeremyRow, fileRows, generated) {
+      var agentArr = CANONICAL_ROSTER.map(function(agent) {
+        if (agent.id === "AGT-000") {
+          return {
+            nickname:       agent.nickname,
+            agentId:        agent.id,
+            status:         jeremyRow ? (jeremyRow["Agent Status"] || "") : "",
+            canonIntegrity: "N/A",
+            lastSignal:     jeremyRow ? (jeremyRow["Last Signal"] || jeremyRow["Timestamp"] || "") : ""
+          };
+        }
+        var row = agentStatusMap[agent.nickname.toLowerCase()] || {};
         return {
-          nickname:       name,
-          agentId:        row["Agent ID"] || "",
+          nickname:       agent.nickname,
+          agentId:        agent.id,
           status:         row["Agent Status"] || "",
           canonIntegrity: row["Canon Integrity"] || "Unresponsive",
           lastSignal:     row["Last Signal"] || ""
         };
       });
+
       var payload = { generated: generated, agents: agentArr, files: fileRows };
       document.getElementById("canon-data").textContent = JSON.stringify(payload, null, 2);
     }
 
+    // ── Main load — three parallel fetches
+    // Bug fix #8: HumanCheckin added as third fetch for Jeremy's data
     async function loadData() {
       document.getElementById("lastRefresh").textContent = "Refreshing...";
       try {
         var bust = "&cachebust=" + Date.now();
-        var [statusRes, filesRes] = await Promise.all([
-          fetch(sheetUrl(TAB_STATUS) + bust),
-          fetch(sheetUrl(TAB_FILES)  + bust)
+        var [statusRes, filesRes, checkinRes] = await Promise.all([
+          fetch(sheetUrl(TAB_STATUS)  + bust),
+          fetch(sheetUrl(TAB_FILES)   + bust),
+          fetch(sheetUrl(TAB_CHECKIN) + bust)
         ]);
 
-        var statusText = await statusRes.text();
-        var filesText  = await filesRes.text();
-
-        var statusRows = parseCSV(statusText);
-        var fileRows   = parseCSV(filesText);
+        var statusRows  = parseCSV(await statusRes.text());
+        var fileRows    = parseCSV(await filesRes.text());
+        var checkinRows = parseCSV(await checkinRes.text());
 
         var agentStatusMap = latestAgentStatus(statusRows);
+        var jeremyRow      = latestHumanCheckin(checkinRows);
 
-        /*
-         * Agent list derives from AgentStatus only — not FilesReported.
-         * All agents always present regardless of whether they reported files.
-         * Sorted by Agent Order field (integer); falls back to Agent ID if missing.
-         */
-        var agents = [];
-        var agentSet = {};
-        statusRows.forEach(function(r) {
-          var name = (r["Agent Nickname"] || "").trim();
-          if (name && !agentSet[name.toLowerCase()]) {
-            agentSet[name.toLowerCase()] = true;
-            agents.push(name);
-          }
-        });
+        // Agent nicknames for fallback folder inference (excludes Jeremy)
+        var agentNicknames = CANONICAL_ROSTER
+          .filter(function(a) { return a.id !== "AGT-000"; })
+          .map(function(a) { return a.nickname; });
 
-        agents.sort(function(a, b) {
-          var rowA = agentStatusMap[a.toLowerCase()] || {};
-          var rowB = agentStatusMap[b.toLowerCase()] || {};
-          var orderA = parseInt(rowA["Agent Order"] || "9999", 10);
-          var orderB = parseInt(rowB["Agent Order"] || "9999", 10);
-          if (orderA !== orderB) return orderA - orderB;
-          /* Fallback: sort by Agent ID */
-          var idA = rowA["Agent ID"] || "";
-          var idB = rowB["Agent ID"] || "";
-          return idA.localeCompare(idB, undefined, { numeric: true });
-        });
+        var matrix = buildMatrix(fileRows, agentNicknames);
 
-        var matrix = buildMatrix(fileRows, agents);
-
-        renderIntegrityBar(agentStatusMap, agents);
+        renderIntegrityBar(agentStatusMap, jeremyRow);
 
         var output = "";
-        output += renderSection("Drive",     matrix.drive,    agents, agentStatusMap);
-        output += renderSection("Claude.ai", matrix.claudeai, agents, agentStatusMap);
+        output += renderSection("Drive",     matrix.drive,    agentStatusMap, jeremyRow);
+        output += renderSection("Claude.ai", matrix.claudeai, agentStatusMap, jeremyRow);
         document.getElementById("canonOutput").innerHTML = output;
 
         var totalFiles = fileRows.length;
@@ -677,7 +745,7 @@
         document.getElementById("lastRefresh").textContent =
           "Last refresh: " + new Date().toLocaleTimeString();
 
-        updateEmbeddedData(agentStatusMap, fileRows, new Date().toISOString(), agents);
+        updateEmbeddedData(agentStatusMap, jeremyRow, fileRows, new Date().toISOString());
 
       } catch (err) {
         document.getElementById("canonOutput").innerHTML =
