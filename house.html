@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Renovation Timeline — Davis St</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:       #0a0a0f;
+      --surface:  #111118;
+      --surface2: #16161f;
+      --border:   #1e1e2e;
+      --accent:   #00ff9d;
+      --accent2:  #7b61ff;
+      --warn:     #ff8c00;
+      --error:    #ff4f4f;
+      --info:     #4fc3f7;
+      --text:     #e0e0f0;
+      --muted:    #5a5a7a;
+      --mono:     'JetBrains Mono', monospace;
+      --sans:     'Syne', sans-serif;
+
+      --c-contractor: #3266ad;
+      --c-contractor-t: #4fc3f7;
+      --c-diy:    #1D9E75;
+      --c-diy-t:  #00ff9d;
+      --c-wait:   #3a3a4a;
+      --c-wait-t: #5a5a7a;
+      --c-unk-border: #ff8c00;
+      --c-unk-t:  #ff8c00;
+      --c-mil:    #ff4f4f;
+      --c-stretch:#ff8c00;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      min-height: 100vh;
+      padding: 2rem 1.5rem;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,255,157,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,157,0.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; }
+
+    .header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .header-tag {
+      font-size: 0.62rem;
+      letter-spacing: 0.22em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 0.35rem;
+    }
+
+    h1 {
+      font-family: var(--sans);
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    h1 span { color: var(--accent); }
+
+    .header-meta {
+      text-align: right;
+      font-size: 0.62rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      line-height: 1.8;
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 0.65rem 1rem;
+      margin-bottom: 1.5rem;
+      align-items: center;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    .leg-swatch {
+      width: 18px; height: 8px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .leg-dashed {
+      width: 18px; height: 8px;
+      border-radius: 2px;
+      border: 1.5px dashed var(--c-unk-border);
+      background: transparent;
+      flex-shrink: 0;
+    }
+
+    .leg-mil {
+      width: 2px; height: 14px;
+      flex-shrink: 0;
+    }
+
+    /* Section header */
+    .section-header {
+      font-family: var(--sans);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      padding: 0.5rem 0.75rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      margin-top: 1.25rem;
+      margin-bottom: 0;
+    }
+
+    /* Chart container */
+    .chart-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: none;
+      padding: 0.75rem 1rem 1rem;
+      overflow-x: auto;
+    }
+
+    .chart-inner {
+      min-width: 800px;
+    }
+
+    /* Week header row */
+    .week-header-row {
+      display: grid;
+      margin-bottom: 6px;
+    }
+
+    .week-label {
+      font-size: 0.55rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-align: center;
+      border-left: 1px solid var(--border);
+      padding: 2px 0;
+    }
+
+    /* Bar rows */
+    .bar-row {
+      display: grid;
+      align-items: center;
+      margin-bottom: 5px;
+      gap: 0;
+    }
+
+    .row-label {
+      font-size: 0.6rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      text-align: right;
+      padding-right: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .bar-track {
+      position: relative;
+      height: 22px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+    }
+
+    .bar {
+      position: absolute;
+      top: 0; bottom: 0;
+      display: flex;
+      align-items: center;
+      padding: 0 5px;
+      font-size: 0.55rem;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      overflow: hidden;
+      font-family: var(--mono);
+    }
+
+    .bar-contractor { background: rgba(50,102,173,0.5); color: var(--c-contractor-t); border-left: 2px solid var(--c-contractor); }
+    .bar-diy        { background: rgba(29,158,117,0.35); color: var(--c-diy-t); border-left: 2px solid var(--c-diy); }
+    .bar-wait       { background: var(--c-wait); color: var(--c-wait-t); border-left: 2px solid #3a3a5a; }
+    .bar-unknown    { background: transparent; border: 1.5px dashed var(--c-unk-border); color: var(--c-unk-t); }
+
+    .mil-line {
+      position: absolute;
+      top: -18px;
+      bottom: 0;
+      width: 1px;
+      z-index: 10;
+    }
+
+    .mil-label {
+      position: absolute;
+      top: -17px;
+      font-size: 0.5rem;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+      white-space: nowrap;
+      transform: translateX(-50%);
+      font-family: var(--mono);
+    }
+
+    /* Notes */
+    .notes {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: none;
+      padding: 0.65rem 1rem;
+      font-size: 0.58rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      line-height: 1.8;
+    }
+
+    .notes strong { color: var(--accent); font-weight: 600; }
+
+    /* Footer */
+    .footer {
+      margin-top: 1.5rem;
+      font-size: 0.58rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div>
+      <div class="header-tag">// house — renovation timeline</div>
+      <h1>Davis <span>St</span></h1>
+    </div>
+    <div class="header-meta">
+      <div>4356 NE Davis St — Portland OR 97213</div>
+      <div>Generated: 2026-04-06</div>
+      <div>Target: owner move-in Jul · renter Aug</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="leg-swatch" style="background:rgba(50,102,173,0.5);border-left:2px solid #3266ad"></div>Contractor</div>
+    <div class="legend-item"><div class="leg-swatch" style="background:rgba(29,158,117,0.35);border-left:2px solid #1D9E75"></div>DIY</div>
+    <div class="legend-item"><div class="leg-swatch" style="background:#3a3a4a;border-left:2px solid #3a3a5a"></div>Waiting / inspection</div>
+    <div class="legend-item"><div class="leg-dashed"></div>Unknown / TBD</div>
+    <div class="legend-item"><div class="leg-mil" style="background:#ff4f4f"></div>Milestone</div>
+    <div class="legend-item"><div class="leg-mil" style="background:#ff8c00"></div>Stretch target</div>
+  </div>
+
+  <div id="timeline"></div>
+
+  <div class="notes">
+    <strong>Key assumptions:</strong>
+    Shift Electric rough-in inspection ~Apr 17 &nbsp;·&nbsp;
+    Cliff Alex upstairs complete Apr 26–May 3 &nbsp;·&nbsp;
+    Ceiling scope TBD pending floor access &nbsp;·&nbsp;
+    Drywall contractor booked through May &nbsp;·&nbsp;
+    Floor install: DIY vs hire TBD &nbsp;·&nbsp;
+    Bathroom and kitchenette sequential, not concurrent &nbsp;·&nbsp;
+    <strong>DIY window Jun–Jul is intentionally ambitious — Aug renter move-in is the realistic target</strong>
+  </div>
+
+  <div class="footer">
+    <span>house-timeline v1.0 · 2026-04-06</span>
+    <span>House (AGT-002)</span>
+  </div>
+
+</div>
+
+<script>
+const WEEKS = [
+  'Apr 6','Apr 13','Apr 20','Apr 27',
+  'May 4','May 11','May 18','May 25',
+  'Jun 1','Jun 8','Jun 15','Jun 22','Jun 29',
+  'Jul 6','Jul 13','Jul 20','Jul 27',
+  'Aug 3'
+];
+const N = WEEKS.length;
+const LABEL_W = 148;
+
+function pct(s,e){ return { left:(s/N*100)+'%', width:((e-s)/N*100)+'%' }; }
+
+const sections = [
+  { title: 'CONTRACTORS', rows: [
+    { label: 'Shift Electric', bars:[
+        {s:0,e:1.5,cls:'bar-contractor',text:'rough-in work'},
+        {s:1.5,e:2,cls:'bar-wait',text:'rough-in inspection ~Apr 17'},
+      ], mils:[
+        {s:2,color:'#ff4f4f',label:'rough-in insp.'},
+        {s:9,color:'#ff4f4f',label:'final insp. (post-drywall)'},
+      ]},
+    { label: 'Cliff Alex — upstairs', bars:[
+        {s:0,e:0.5,cls:'bar-wait',text:'floor access'},
+        {s:0.5,e:2.5,cls:'bar-contractor',text:'re-pipe + shower rough-in'},
+      ], unknown:[{s:2.5,e:3.5,text:'ceiling open TBD'}]},
+    { label: 'Framing (basement)', bars:[{s:2,e:3,cls:'bar-contractor',text:'final wall — post electric'}]},
+    { label: 'Insulation blow-in', bars:[{s:2.5,e:3.5,cls:'bar-contractor',text:'attic — follows Shift'}]},
+    { label: 'Drywall — all scopes', bars:[{s:3,e:7,cls:'bar-contractor',text:'basement + upstairs repairs + dining/kitchen patches'}]},
+  ]},
+  { title: 'DIY — BASEMENT', rows: [
+    { label: 'Floor prep', bars:[{s:2,e:6,cls:'bar-diy',text:'leveling + subfloor prep — allow extra time'}]},
+    { label: 'Flooring install', unknown:[{s:6,e:9,text:'DIY or hire out — TBD'}]},
+    { label: 'Rock wool insulation', bars:[{s:3,e:5,cls:'bar-diy',text:'walls — post electric'}]},
+    { label: 'Bathroom', bars:[{s:7,e:13,cls:'bar-diy',text:'rough finish → tile → fixtures'}]},
+    { label: 'Kitchenette', bars:[{s:7,e:13,cls:'bar-diy',text:'cabinets, tile, appliances'}]},
+    { label: 'Bedrooms + closets', bars:[{s:11,e:13.5,cls:'bar-diy',text:'paint, trim, closet build'}]},
+  ]},
+  { title: 'DIY — UPSTAIRS / WHOLE HOUSE', rows: [
+    { label: 'Stairs assessment', bars:[{s:0,e:1,cls:'bar-diy',text:'pull carpet — assess substrate'}]},
+    { label: 'Upstairs drywall repair', unknown:[{s:2.5,e:3.5,text:'follows Cliff — ceiling scope TBD'}]},
+    { label: 'Upstairs bath finish', bars:[{s:7,e:13,cls:'bar-diy',text:'tile, surround, fixtures'}]},
+    { label: 'Stair refinish/recarpet', unknown:[{s:5,e:9,text:'depends substrate'}]},
+    { label: 'Remaining paint', bars:[{s:12,e:13,cls:'bar-diy',text:''}]},
+  ]},
+  { title: 'MOVE + PREP', rows: [
+    { label: 'Jeremy moves in', bars:[{s:12,e:13,cls:'bar-wait',text:'~Jul 1 target'}], mils:[{s:12,color:'#ff4f4f',label:'move-in'}]},
+    { label: 'Deep clean + punch list', bars:[{s:13,e:14,cls:'bar-wait',text:''}]},
+    { label: 'List main house', bars:[{s:13,e:14.5,cls:'bar-wait',text:'photography, listing'}]},
+    { label: 'Renter move-in', bars:[], mils:[
+        {s:14,color:'#ff8c00',label:'Jul — stretch'},
+        {s:17,color:'#ff4f4f',label:'Aug — target'},
+    ]},
+  ]},
+];
+
+const tl = document.getElementById('timeline');
+
+sections.forEach(sec => {
+  const sh = document.createElement('div');
+  sh.className = 'section-header';
+  sh.textContent = sec.title;
+  tl.appendChild(sh);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'chart-wrap';
+  const inner = document.createElement('div');
+  inner.className = 'chart-inner';
+  inner.style.cssText = `display:grid;grid-template-columns:${LABEL_W}px 1fr;gap:0`;
+
+  // Week headers
+  const whBlank = document.createElement('div');
+  whBlank.style.cssText = 'padding-right:8px';
+  const whRow = document.createElement('div');
+  whRow.style.cssText = 'display:flex;margin-bottom:6px;padding-top:18px';
+  WEEKS.forEach(w => {
+    const d = document.createElement('div');
+    d.className = 'week-label';
+    d.style.cssText = 'flex:1';
+    d.textContent = w;
+    whRow.appendChild(d);
+  });
+
+  const headerGrid = document.createElement('div');
+  headerGrid.style.cssText = `display:grid;grid-template-columns:${LABEL_W}px 1fr;`;
+  headerGrid.appendChild(whBlank);
+  headerGrid.appendChild(whRow);
+  inner.appendChild(headerGrid);
+
+  sec.rows.forEach(row => {
+    const rowGrid = document.createElement('div');
+    rowGrid.style.cssText = `display:grid;grid-template-columns:${LABEL_W}px 1fr;align-items:center;margin-bottom:5px`;
+
+    const lbl = document.createElement('div');
+    lbl.className = 'row-label';
+    lbl.textContent = row.label;
+
+    const track = document.createElement('div');
+    track.className = 'bar-track';
+
+    (row.bars||[]).forEach(b => {
+      const bar = document.createElement('div');
+      const p = pct(b.s, b.e);
+      bar.className = 'bar ' + b.cls;
+      bar.style.cssText = `left:${p.left};width:${p.width}`;
+      bar.textContent = b.text || '';
+      track.appendChild(bar);
+    });
+
+    (row.unknown||[]).forEach(u => {
+      const bar = document.createElement('div');
+      const p = pct(u.s, u.e);
+      bar.className = 'bar bar-unknown';
+      bar.style.cssText = `left:${p.left};width:${p.width}`;
+      bar.textContent = u.text || '';
+      track.appendChild(bar);
+    });
+
+    (row.mils||[]).forEach(m => {
+      const line = document.createElement('div');
+      line.className = 'mil-line';
+      line.style.cssText = `left:${(m.s/N*100)+'%'};background:${m.color}`;
+      track.appendChild(line);
+      const lbl2 = document.createElement('div');
+      lbl2.className = 'mil-label';
+      lbl2.style.cssText = `left:${(m.s/N*100)+'%'};color:${m.color}`;
+      lbl2.textContent = m.label;
+      track.appendChild(lbl2);
+    });
+
+    rowGrid.appendChild(lbl);
+    rowGrid.appendChild(track);
+    inner.appendChild(rowGrid);
+  });
+
+  wrap.appendChild(inner);
+  tl.appendChild(wrap);
+});
+</script>
+</body>
+</html>
