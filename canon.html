@@ -21,21 +21,22 @@
       --mono:       'JetBrains Mono', monospace;
       --sans:       'Syne', sans-serif;
 
-      /* Canon integrity colors — three values only: Clean / Alert / Error */
+      /* Canon integrity colors — three values only: Clean / Alert / Error / N/A */
       --ci-clean:   #00ff9d;
       --ci-alert:   #ffb700;
       --ci-error:   #ff4f4f;
       --ci-na:      #5a5a7a;
 
       /* File flag colors */
-      --flag-clean:    #00ff9d;
-      --flag-onloan:   #7b61ff;
-      --flag-orphaned: #ff8c00;
-      --flag-phantom:  #ff4f4f;
-      --flag-stale:    #ffb700;
-      --flag-alert:    #ffb700;
-      --flag-error:    #ff4f4f;
-      --flag-native:   #c084fc;
+      --flag-req-declared: #00ff9d;
+      --flag-req-mia:      #ff4f4f;
+      --flag-clean:        #00ff9d;
+      --flag-onloan:       #7b61ff;
+      --flag-orphaned:     #ff8c00;
+      --flag-phantom:      #ff4f4f;
+      --flag-stale:        #ffb700;
+      --flag-alert:        #ffb700;
+      --flag-error:        #ff4f4f;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -194,7 +195,7 @@
     .canon-table th.col-file { text-align: left; }
     .canon-table th.col-unknown { color: var(--warn); }
 
-    /* Jeremy column header — slightly distinct */
+    /* Jeremy column header — distinct */
     .canon-table th.col-jeremy {
       color: var(--info);
       border-left: 2px solid var(--info);
@@ -264,6 +265,22 @@
       white-space: nowrap;
     }
 
+    /* Required-Declared: bold border to distinguish from plain Clean */
+    .flag-req-declared {
+      color: var(--flag-req-declared);
+      background: rgba(0,255,157,0.08);
+      border: 1px solid rgba(0,255,157,0.4);
+      font-weight: 700;
+    }
+
+    /* Required-MIA: bold border to distinguish from plain Error */
+    .flag-req-mia {
+      color: var(--flag-req-mia);
+      background: rgba(255,79,79,0.12);
+      border: 1px solid rgba(255,79,79,0.5);
+      font-weight: 700;
+    }
+
     .flag-clean    { color: var(--flag-clean);    background: rgba(0,255,157,0.08); }
     .flag-onloan   { color: var(--flag-onloan);   background: rgba(123,97,255,0.1); }
     .flag-orphaned { color: var(--flag-orphaned); background: rgba(255,140,0,0.1); }
@@ -271,7 +288,6 @@
     .flag-stale    { color: var(--flag-stale);    background: rgba(255,183,0,0.1); }
     .flag-alert    { color: var(--flag-alert);    background: rgba(255,183,0,0.1); }
     .flag-error    { color: var(--flag-error);    background: rgba(255,79,79,0.1); }
-    .flag-native   { color: var(--flag-native);   background: rgba(192,132,252,0.1); }
     .flag-unknown  { color: var(--warn);          background: rgba(255,140,0,0.1); }
     .flag-empty    { color: var(--border);        font-size: 0.5rem; }
 
@@ -348,6 +364,14 @@
     </div>
 
     <div class="legend">
+      <div class="legend-item">
+        <span class="flag-cell flag-req-declared" style="font-size:0.6rem;padding:0.1rem 0.3rem">R</span>
+        Required-Declared
+      </div>
+      <div class="legend-item">
+        <span class="flag-cell flag-req-mia" style="font-size:0.6rem;padding:0.1rem 0.3rem">R!</span>
+        Required-MIA
+      </div>
       <div class="legend-item"><span class="legend-flag" style="color:var(--flag-clean)">●</span> Clean</div>
       <div class="legend-item"><span class="legend-flag" style="color:var(--flag-onloan)">⟳</span> On loan</div>
       <div class="legend-item"><span class="legend-flag" style="color:var(--flag-orphaned)">!</span> Orphaned</div>
@@ -355,12 +379,11 @@
       <div class="legend-item"><span class="legend-flag" style="color:var(--flag-stale)">⚠</span> Stale</div>
       <div class="legend-item"><span class="legend-flag" style="color:var(--flag-alert)">▲</span> Alert</div>
       <div class="legend-item"><span class="legend-flag" style="color:var(--flag-error)">✖</span> Error</div>
-      <div class="legend-item"><span class="legend-flag" style="color:var(--flag-native)">⬡</span> Claude.ai-native</div>
       <div class="legend-item"><span class="legend-flag" style="color:var(--border)">·</span> Not loaded</div>
     </div>
 
     <div class="footer">
-      <span>canon v0.5</span>
+      <span>canon v0.6</span>
       <span id="fileCount">—</span>
     </div>
 
@@ -376,24 +399,16 @@
   </script>
 
   <script>
-    var SHEET_ID        = "12JrRfdHx2u2wsU_KQPHkYDRNk3_jUIEV9zSq4lFe8KE";
-    var TAB_STATUS      = "AgentStatus";
-    var TAB_FILES       = "FilesReported";
-    var TAB_CHECKIN     = "HumanCheckin";
+    var SHEET_ID    = "12JrRfdHx2u2wsU_KQPHkYDRNk3_jUIEV9zSq4lFe8KE";
+    var TAB_STATUS  = "AgentStatus";
+    var TAB_FILES   = "FilesReported";
+    var TAB_CHECKIN = "HumanCheckin";
 
-    // ── Canonical roster — AGT-000 first, then AGT-001 through AGT-007 in order.
-    // Jeremy (AGT-000) is hardcoded — never appears in AgentStatus CSV.
-    // All others derive live data from AgentStatus. Order here = column order.
-    var CANONICAL_ROSTER = [
-      { nickname: "Jeremy",   id: "AGT-000", order: 1 },
-      { nickname: "Meta1",    id: "AGT-001", order: 2 },
-      { nickname: "House",    id: "AGT-002", order: 3 },
-      { nickname: "Freedom",  id: "AGT-003", order: 4 },
-      { nickname: "Evolve",   id: "AGT-004", order: 5 },
-      { nickname: "Assessor", id: "AGT-005", order: 6 },
-      { nickname: "Phil",     id: "AGT-006", order: 7 },
-      { nickname: "Bond",     id: "AGT-007", order: 8 }
-    ];
+    // ── Jeremy is hardcoded — never appears in AgentStatus.
+    // All other agents are derived entirely from the AgentStatus sheet.
+    // Column order is driven by Agent Order field from the sheet.
+    // The HTML carries no hardcoded roster beyond Jeremy.
+    var JEREMY = { nickname: "Jeremy", id: "AGT-000", order: 1 };
 
     function sheetUrl(tab) {
       return "https://docs.google.com/spreadsheets/d/" + SHEET_ID +
@@ -434,14 +449,41 @@
       return map;
     }
 
-    // ── Latest single row from HumanCheckin (Jeremy's write surface)
-    // Rows are appended chronologically; last row wins.
+    // ── Latest single row from HumanCheckin (append-only; last row wins)
     function latestHumanCheckin(rows) {
       if (!rows.length) return null;
       return rows[rows.length - 1];
     }
 
-    // ── CI color — three values only: Clean / Alert / Error / N/A
+    // ── Build ordered agent list from AgentStatus rows.
+    // Sort: Jeremy hardcoded first (order 1), then agents with Agent Order ascending,
+    // then agents missing Agent Order sorted by Agent ID as tiebreaker.
+    function buildAgentList(statusRows) {
+      var seen = {};
+      var withOrder = [];
+      var withoutOrder = [];
+
+      statusRows.forEach(function(r) {
+        var name = (r["Agent Nickname"] || "").trim();
+        var id   = (r["Agent ID"] || "").trim();
+        var ord  = parseInt(r["Agent Order"], 10);
+        if (!name || seen[name.toLowerCase()]) return;
+        seen[name.toLowerCase()] = true;
+        if (!isNaN(ord)) {
+          withOrder.push({ nickname: name, id: id, order: ord });
+        } else {
+          withoutOrder.push({ nickname: name, id: id, order: null });
+        }
+      });
+
+      withOrder.sort(function(a, b) { return a.order - b.order; });
+      withoutOrder.sort(function(a, b) { return a.id.localeCompare(b.id, undefined, { numeric: true }); });
+
+      // Jeremy is always first; never in AgentStatus
+      return [JEREMY].concat(withOrder).concat(withoutOrder);
+    }
+
+    // ── CI color — Clean / Alert / Error / N/A
     function ciColor(ci) {
       var m = {
         "clean": "var(--ci-clean)",
@@ -452,95 +494,112 @@
     }
 
     // ── Flag info — symbol + CSS class
-    // Bug fixes: removed crossload/not-loaded (legacy artifacts); added alert/error
+    // The HTML renders what Meta1 wrote. No flag computation here.
     function flagInfo(flag) {
       if (!flag) return { sym: "·", cls: "flag-empty" };
       var map = {
-        "clean":        { sym: "●", cls: "flag-clean" },
-        "on loan":      { sym: "⟳", cls: "flag-onloan" },
-        "onloan":       { sym: "⟳", cls: "flag-onloan" },
-        "orphaned":     { sym: "!", cls: "flag-orphaned" },
-        "phantom":      { sym: "✕", cls: "flag-phantom" },
-        "stale":        { sym: "⚠", cls: "flag-stale" },
-        "alert":        { sym: "▲", cls: "flag-alert" },
-        "error":        { sym: "✖", cls: "flag-error" },
-        "claude.ai-native": { sym: "⬡", cls: "flag-native" },
-        "native":       { sym: "⬡", cls: "flag-native" }
+        "required-declared": { sym: "R ✓",  cls: "flag-req-declared" },
+        "required-mia":      { sym: "R !",  cls: "flag-req-mia" },
+        "clean":             { sym: "●",    cls: "flag-clean" },
+        "on loan":           { sym: "⟳",    cls: "flag-onloan" },
+        "onloan":            { sym: "⟳",    cls: "flag-onloan" },
+        "orphaned":          { sym: "!",    cls: "flag-orphaned" },
+        "phantom":           { sym: "✕",    cls: "flag-phantom" },
+        "stale":             { sym: "⚠",    cls: "flag-stale" },
+        "alert":             { sym: "▲",    cls: "flag-alert" },
+        "error":             { sym: "✖",    cls: "flag-error" }
       };
-      var flagLower = flag.toLowerCase().trim();
-      return map[flagLower] || { sym: flag.charAt(0).toUpperCase(), cls: "flag-unknown" };
+      var key = flag.toLowerCase().trim();
+      return map[key] || { sym: flag.charAt(0).toUpperCase(), cls: "flag-unknown" };
     }
 
-    // ── Build matrix from FilesReported rows.
-    // Bug fix #1: Drive folder from the row's Drive Folder column (or inferred from filename)
-    //             is the authority for section/folder placement — NOT inferFolder().
-    //             inferFolder() is only called to inform flag logic.
-    // Bug fix #3: Claude.ai location match is case-insensitive and trim-tolerant.
-    function buildMatrix(fileRows, agentNicknames) {
-      var driveFiles  = {};
-      var claudeFiles = {};
-
-      fileRows.forEach(function(row) {
-        var agent    = (row["Agent Nickname"] || "Unknown").trim();
-        var fileName = (row["File Name"] || "").trim();
-        // Drive Folder column is authoritative for folder placement.
-        // Fall back to inferFolder() only if the column is absent/blank.
-        var driveFolder = (row["Drive Folder"] || "").trim();
-        var location = (row["Location"] || "Drive").trim();
-        var flag     = (row["Flag"] || "").trim();
-
-        if (!fileName) return;
-
-        // Bug fix #3: case-insensitive Claude.ai match
-        if (location.toLowerCase() === "claude.ai") {
-          var proj = agent + " Project";
-          if (!claudeFiles[proj]) claudeFiles[proj] = {};
-          if (!claudeFiles[proj][fileName]) claudeFiles[proj][fileName] = { agentFlags: {}, location: "Claude.ai" };
-          claudeFiles[proj][fileName].agentFlags[agent] = flag;
-        } else {
-          // Drive placement: use Drive Folder column if present, else infer from filename
-          var folder = driveFolder || inferFolder(fileName, agentNicknames) || "Other";
-          if (!driveFiles[folder]) driveFiles[folder] = {};
-          if (!driveFiles[folder][fileName]) driveFiles[folder][fileName] = { agentFlags: {}, location: "Drive" };
-          driveFiles[folder][fileName].agentFlags[agent] = flag;
-        }
-      });
-
-      return { drive: driveFiles, claudeai: claudeFiles };
-    }
-
-    // ── inferFolder — only for flag logic fallback, NOT for section routing
+    // ── inferFolder — flag logic ONLY.
+    // Never used for placement. Never called as a fallback when Drive Folder is blank.
+    // Input: filename + agent nickname list. Output: owning agent name or null.
+    // v2.6: parses agent name segment after tier prefix (e.g. "1-00 Meta1 Profile" → "Meta1")
     function inferFolder(fileName, agentNicknames) {
-      var lower = fileName.toLowerCase();
+      var lower = fileName.toLowerCase().trim();
+      // Strip tier prefix if present (e.g. "1-", "2-", "3-", "4-")
+      var stripped = lower.replace(/^\d+-\s*/, "");
       for (var i = 0; i < agentNicknames.length; i++) {
-        if (lower.startsWith(agentNicknames[i].toLowerCase())) {
+        if (stripped.startsWith(agentNicknames[i].toLowerCase())) {
           return agentNicknames[i];
         }
       }
       return null;
     }
 
+    // ── Build matrix from FilesReported rows.
+    //
+    // PLACEMENT RULE (authoritative — see Meta1 04 Canon Integrity Rules):
+    //   Drive Folder column from FilesReported is the sole placement authority.
+    //   Location column determines section (Drive / Claude.ai / GitHub).
+    //   inferFolder() is NEVER called for placement. It is available for flag logic only.
+    //   A blank Drive Folder + Location=Drive → Unknown section.
+    //   A blank Drive Folder + Location=Claude.ai → Claude.ai section by declaring agent.
+    //
+    // The HTML derives no structure from filenames. Meta1 did that work at reconciliation.
+    function buildMatrix(fileRows, agentNicknames) {
+      var driveFiles   = {};  // { folderName: { fileName: { agentFlags, location } } }
+      var claudeFiles  = {};  // { "Agent Project": { fileName: { agentFlags, location } } }
+      var unknownFiles = {};  // { fileName: { agentFlags, location } } — Drive files with no folder
+
+      fileRows.forEach(function(row) {
+        var agent      = (row["Agent Nickname"] || "Unknown").trim();
+        var fileName   = (row["File Name"] || "").trim();
+        var driveFolder = (row["Drive Folder"] || "").trim();
+        var location   = (row["Location"] || "Drive").trim().toLowerCase();
+        var flag       = (row["Flag"] || "").trim();
+
+        if (!fileName) return;
+
+        if (location === "claude.ai") {
+          // Claude.ai section: group by declaring agent
+          var proj = agent + " Project";
+          if (!claudeFiles[proj]) claudeFiles[proj] = {};
+          if (!claudeFiles[proj][fileName]) claudeFiles[proj][fileName] = { agentFlags: {}, location: "Claude.ai" };
+          claudeFiles[proj][fileName].agentFlags[agent] = flag;
+
+        } else if (location === "github") {
+          // GitHub section: TBD — placeholder, not yet rendered
+          // Files will be collected here for future section support
+
+        } else {
+          // Drive section
+          if (driveFolder) {
+            // Authoritative path: Drive Folder from inventory
+            if (!driveFiles[driveFolder]) driveFiles[driveFolder] = {};
+            if (!driveFiles[driveFolder][fileName]) driveFiles[driveFolder][fileName] = { agentFlags: {}, location: "Drive" };
+            driveFiles[driveFolder][fileName].agentFlags[agent] = flag;
+          } else {
+            // Blank Drive Folder + Location=Drive → Unknown
+            // This is a data quality signal, not a routing instruction.
+            // inferFolder() is NOT called here.
+            if (!unknownFiles[fileName]) unknownFiles[fileName] = { agentFlags: {}, location: "Drive" };
+            unknownFiles[fileName].agentFlags[agent] = flag;
+          }
+        }
+      });
+
+      return { drive: driveFiles, claudeai: claudeFiles, unknown: unknownFiles };
+    }
+
     // ── Render the integrity bar chips
-    // Jeremy gets N/A — hardcoded. No CI chip in bar for Jeremy (matches dashboard behavior).
-    // Bug fix #2: ciColor() now only maps Clean/Alert/Error — no file-flag vocabulary.
-    function renderIntegrityBar(agentStatusMap, jeremyRow) {
+    function renderIntegrityBar(agents, agentStatusMap) {
       var bar  = document.getElementById("integrityBar");
       var html = '<span class="integrity-bar-label">Agent Canon Status —</span>';
 
-      CANONICAL_ROSTER.forEach(function(agent) {
-        var isJeremy = agent.id === "AGT-000";
+      agents.forEach(function(agent) {
         var ci, label;
-
-        if (isJeremy) {
+        if (agent.id === "AGT-000") {
           ci    = "var(--ci-na)";
           label = "N/A";
         } else {
-          var row = agentStatusMap[agent.nickname.toLowerCase()] || {};
+          var row  = agentStatusMap[agent.nickname.toLowerCase()] || {};
           var ciVal = (row["Canon Integrity"] || "Unresponsive");
           ci    = ciColor(ciVal);
           label = ciVal;
         }
-
         html += '<div class="agent-chip">' +
           '<div class="ci-dot" style="background:' + ci + '"></div>' +
           '<span>' + escHtml(agent.nickname) + '</span>' +
@@ -552,18 +611,14 @@
     }
 
     // ── Render one section (Drive or Claude.ai)
-    // Bug fix #4: columns derived from CANONICAL_ROSTER, not FilesReported nicknames.
-    //             Jeremy always gets the first column.
-    // Jeremy's column: shows On loan entries only (no folder suppression render).
-    // Jeremy's column header: CI = N/A (hardcoded).
-    function renderSection(title, folderMap, agentStatusMap, jeremyRow) {
+    // agents: ordered array from buildAgentList()
+    // showUnknown: whether to append Unknown column
+    function renderSection(title, folderMap, agents, agentStatusMap, unknownFiles) {
       var html = '<div class="section-header">' + escHtml(title) + '</div>';
 
-      // Sort folders: match by canonical roster position, unknowns last
+      // Sort folders by agent order position, unknowns last A-Z
       var agentPos = {};
-      CANONICAL_ROSTER.forEach(function(a, i) {
-        agentPos[a.nickname.toLowerCase()] = i;
-      });
+      agents.forEach(function(a, i) { agentPos[a.nickname.toLowerCase()] = i; });
 
       function folderSortKey(folder) {
         var base = folder.replace(/ Project$/, "").toLowerCase();
@@ -576,26 +631,27 @@
         return diff !== 0 ? diff : a.localeCompare(b);
       });
 
-      if (folders.length === 0) {
+      // Determine if Unknown column is needed for this section
+      var hasUnknown = unknownFiles && Object.keys(unknownFiles).length > 0;
+
+      if (folders.length === 0 && !hasUnknown) {
         html += '<div style="background:var(--surface);border:1px solid var(--border);border-top:none;padding:1rem;font-size:0.68rem;color:var(--muted)">No files in this section.</div>';
         return html;
       }
 
-      // Column widths: file = 2 units, each agent/unknown = 1 unit
-      // Columns: Jeremy + (roster agents minus Jeremy) + Unknown
-      var agentCols   = CANONICAL_ROSTER.length; // includes Jeremy
-      var totalUnits  = agentCols + 3;            // 2 (file) + N (roster) + 1 (unknown)
+      // Column widths: file = 2 units, each agent = 1 unit, unknown = 1 unit (if present)
+      var unknownCols = hasUnknown ? 1 : 0;
+      var totalUnits  = 2 + agents.length + unknownCols;
       var fileColPct  = (200 / totalUnits).toFixed(3) + "%";
       var agentColPct = (100 / totalUnits).toFixed(3) + "%";
-      var totalCols   = agentCols + 2;            // file + roster + unknown
+      var totalCols   = 1 + agents.length + unknownCols; // file col + agent cols + unknown col
 
       html += '<table class="canon-table"><thead><tr>';
       html += '<th class="col-file" style="width:' + fileColPct + '">File</th>';
 
-      CANONICAL_ROSTER.forEach(function(agent) {
+      agents.forEach(function(agent) {
         var isJeremy = agent.id === "AGT-000";
         var ciLabel, ciClr;
-
         if (isJeremy) {
           ciLabel = "N/A";
           ciClr   = "var(--ci-na)";
@@ -604,9 +660,9 @@
             '<div class="th-status" style="color:' + ciClr + '">' + escHtml(ciLabel) + '</div>' +
             '</th>';
         } else {
-          var row   = agentStatusMap[agent.nickname.toLowerCase()] || {};
-          ciLabel   = row["Canon Integrity"] || "Unresponsive";
-          ciClr     = ciColor(ciLabel);
+          var row = agentStatusMap[agent.nickname.toLowerCase()] || {};
+          ciLabel = row["Canon Integrity"] || "Unresponsive";
+          ciClr   = ciColor(ciLabel);
           html += '<th style="width:' + agentColPct + '">' +
             escHtml(agent.nickname) +
             '<div class="th-status" style="color:' + ciClr + '">' + escHtml(ciLabel) + '</div>' +
@@ -614,9 +670,13 @@
         }
       });
 
-      html += '<th class="col-unknown" style="width:' + agentColPct + '">Unknown</th>';
+      if (hasUnknown) {
+        html += '<th class="col-unknown" style="width:' + agentColPct + '">Unknown</th>';
+      }
+
       html += '</tr></thead><tbody>';
 
+      // Render folder rows
       folders.forEach(function(folder) {
         html += '<tr class="folder-row"><td colspan="' + totalCols + '">/' + escHtml(folder) + '</td></tr>';
 
@@ -624,54 +684,72 @@
         files.forEach(function(fileName) {
           var entry = folderMap[folder][fileName];
 
-          // Determine if this file is in Jeremy's folder.
-          // If so, suppress the row unless an agent declared it (On loan).
+          // Jeremy folder suppression: skip rows with no agent declarations
+          // (Jeremy's folder files without On loan declarations are suppressed at buildMatrix time
+          // since Meta1 already excluded them from FilesReported — this is a safety net)
           var isJeremyFolder = folder.toLowerCase() === "jeremy";
-          var hasAgentDeclaration = false;
-          CANONICAL_ROSTER.forEach(function(agent) {
-            if (agent.id !== "AGT-000" && entry.agentFlags[agent.nickname]) {
-              hasAgentDeclaration = true;
-            }
-          });
-          if (isJeremyFolder && !hasAgentDeclaration) return; // suppress
-
-          html += '<tr>';
-          html += '<td class="col-file" title="' + escHtml(fileName) + '">' +
-            escHtml(fileName) +
-            '<span class="location-tag">[' + escHtml(entry.location) + ']</span></td>';
-
-          var anyDeclared = false;
-
-          CANONICAL_ROSTER.forEach(function(agent) {
-            var isJeremy = agent.id === "AGT-000";
-            var tdClass  = isJeremy ? "col-agent col-jeremy" : "col-agent";
-            var flag     = entry.agentFlags[agent.nickname] || "";
-
-            html += '<td class="' + tdClass + '">';
-            if (flag) {
-              anyDeclared = true;
-              var fi = flagInfo(flag);
-              html += '<span class="flag-cell ' + fi.cls + '">' + fi.sym + ' ' + escHtml(flag) + '</span>';
-            } else {
-              html += '<span class="flag-cell flag-empty">·</span>';
-            }
-            html += '</td>';
-          });
-
-          // Unknown column: fires if no roster agent declared this file
-          html += '<td class="col-agent">';
-          if (!anyDeclared) {
-            html += '<span class="flag-cell flag-orphaned">! Orphaned</span>';
-          } else {
-            html += '<span class="flag-cell flag-empty">·</span>';
+          if (isJeremyFolder) {
+            var hasDeclaration = false;
+            agents.forEach(function(a) {
+              if (a.id !== "AGT-000" && entry.agentFlags[a.nickname]) hasDeclaration = true;
+            });
+            if (!hasDeclaration) return;
           }
-          html += '</td>';
 
-          html += '</tr>';
+          html += renderFileRow(fileName, entry, agents, hasUnknown, false);
         });
       });
 
+      // Unknown column files (Drive files with blank Drive Folder)
+      if (hasUnknown) {
+        html += '<tr class="folder-row"><td colspan="' + totalCols + '">/Unknown</td></tr>';
+        var unknownFileNames = Object.keys(unknownFiles).sort();
+        unknownFileNames.forEach(function(fileName) {
+          var entry = unknownFiles[fileName];
+          html += renderFileRow(fileName, entry, agents, true, true);
+        });
+      }
+
       html += '</tbody></table>';
+      return html;
+    }
+
+    // ── Render a single file row
+    // isUnknownRow: true when the file itself has no Drive Folder (goes in Unknown section)
+    function renderFileRow(fileName, entry, agents, hasUnknownCol, isUnknownRow) {
+      var html = '<tr>';
+      html += '<td class="col-file" title="' + escHtml(fileName) + '">' +
+        escHtml(fileName) +
+        '<span class="location-tag">[' + escHtml(entry.location) + ']</span></td>';
+
+      agents.forEach(function(agent) {
+        var isJeremy = agent.id === "AGT-000";
+        var tdClass  = isJeremy ? "col-agent col-jeremy" : "col-agent";
+        var flag     = entry.agentFlags[agent.nickname] || "";
+
+        html += '<td class="' + tdClass + '">';
+        if (flag) {
+          var fi = flagInfo(flag);
+          html += '<span class="flag-cell ' + fi.cls + '">' + fi.sym + ' ' + escHtml(flag) + '</span>';
+        } else {
+          html += '<span class="flag-cell flag-empty">·</span>';
+        }
+        html += '</td>';
+      });
+
+      // Unknown column cell — only rendered when hasUnknownCol is true
+      if (hasUnknownCol) {
+        html += '<td class="col-agent">';
+        if (isUnknownRow) {
+          // The file itself has no Drive Folder — mark Unknown
+          html += '<span class="flag-cell flag-orphaned">! Unknown</span>';
+        } else {
+          html += '<span class="flag-cell flag-empty">·</span>';
+        }
+        html += '</td>';
+      }
+
+      html += '</tr>';
       return html;
     }
 
@@ -680,12 +758,13 @@
     }
 
     // ── Update embedded JSON block for Claude/QA readability
-    function updateEmbeddedData(agentStatusMap, jeremyRow, fileRows, generated) {
-      var agentArr = CANONICAL_ROSTER.map(function(agent) {
+    function updateEmbeddedData(agents, agentStatusMap, jeremyRow, fileRows, generated) {
+      var agentArr = agents.map(function(agent) {
         if (agent.id === "AGT-000") {
           return {
             nickname:       agent.nickname,
             agentId:        agent.id,
+            order:          1,
             status:         jeremyRow ? (jeremyRow["Agent Status"] || "") : "",
             canonIntegrity: "N/A",
             lastSignal:     jeremyRow ? (jeremyRow["Last Signal"] || jeremyRow["Timestamp"] || "") : ""
@@ -695,6 +774,7 @@
         return {
           nickname:       agent.nickname,
           agentId:        agent.id,
+          order:          agent.order,
           status:         row["Agent Status"] || "",
           canonIntegrity: row["Canon Integrity"] || "Unresponsive",
           lastSignal:     row["Last Signal"] || ""
@@ -706,7 +786,6 @@
     }
 
     // ── Main load — three parallel fetches
-    // Bug fix #8: HumanCheckin added as third fetch for Jeremy's data
     async function loadData() {
       document.getElementById("lastRefresh").textContent = "Refreshing...";
       try {
@@ -724,18 +803,21 @@
         var agentStatusMap = latestAgentStatus(statusRows);
         var jeremyRow      = latestHumanCheckin(checkinRows);
 
-        // Agent nicknames for fallback folder inference (excludes Jeremy)
-        var agentNicknames = CANONICAL_ROSTER
+        // Build ordered agent list from sheet data — no hardcoded roster
+        var agents = buildAgentList(statusRows);
+
+        // Agent nicknames for inferFolder (flag logic only — never placement)
+        var agentNicknames = agents
           .filter(function(a) { return a.id !== "AGT-000"; })
           .map(function(a) { return a.nickname; });
 
         var matrix = buildMatrix(fileRows, agentNicknames);
 
-        renderIntegrityBar(agentStatusMap, jeremyRow);
+        renderIntegrityBar(agents, agentStatusMap);
 
         var output = "";
-        output += renderSection("Drive",     matrix.drive,    agentStatusMap, jeremyRow);
-        output += renderSection("Claude.ai", matrix.claudeai, agentStatusMap, jeremyRow);
+        output += renderSection("Drive",     matrix.drive,    agents, agentStatusMap, matrix.unknown);
+        output += renderSection("Claude.ai", matrix.claudeai, agents, agentStatusMap, null);
         document.getElementById("canonOutput").innerHTML = output;
 
         var totalFiles = fileRows.length;
@@ -745,7 +827,7 @@
         document.getElementById("lastRefresh").textContent =
           "Last refresh: " + new Date().toLocaleTimeString();
 
-        updateEmbeddedData(agentStatusMap, jeremyRow, fileRows, new Date().toISOString());
+        updateEmbeddedData(agents, agentStatusMap, jeremyRow, fileRows, new Date().toISOString());
 
       } catch (err) {
         document.getElementById("canonOutput").innerHTML =
