@@ -393,16 +393,26 @@
   </div>
 
   <div class="footer">
-    <span>agent-dashboard v0.3</span>
+    <span>agent-dashboard v1.0</span>
     <span id="agentCount">—</span>
   </div>
 
   <script>
-    var SHEET_ID      = "12JrRfdHx2u2wsU_KQPHkYDRNk3_jUIEV9zSq4lFe8KE";
-    var TAB_STATUS    = "AgentStatus";
-    var TAB_CHECKIN   = "HumanCheckin";
-    var JEREMY_ID     = "AGT-000";
-    var JEREMY_ORDER  = 1;
+    var SHEET_ID = "12JrRfdHx2u2wsU_KQPHkYDRNk3_jUIEV9zSq4lFe8KE";
+
+    // ── Agent roster — one tab per node, uniform schema ───────
+    // Each tab is append-only; dashboard reads the last row.
+    // To add a node: add an entry here and create the tab in the sheet.
+    var AGENT_TABS = [
+      { tab: "JeremyCheckin",   nickname: "Jeremy",   order: 1 },
+      { tab: "Meta1Checkin",    nickname: "Meta1",    order: 2 },
+      { tab: "BondCheckin",     nickname: "Bond",     order: 3 },
+      { tab: "EvolveCheckin",   nickname: "Evolve",   order: 4 },
+      { tab: "AssessorCheckin", nickname: "Assessor", order: 5 },
+      { tab: "HouseCheckin",    nickname: "House",    order: 6 },
+      { tab: "FreedomCheckin",  nickname: "Freedom",  order: 7 },
+      { tab: "PhilCheckin",     nickname: "Phil",     order: 8 },
+    ];
 
     // ── CSV fetch ─────────────────────────────────────────────
     function csvUrl(tab) {
@@ -436,24 +446,11 @@
       return cols;
     }
 
-    // ── Latest row per agent (keyed by Agent ID, fallback nickname) ──
-    function latestPerAgent(rows, keyField) {
-      var map = {};
-      rows.forEach(function(row) {
-        var key = (row[keyField] || row["Agent Nickname"] || "").toLowerCase();
-        if (!key) return;
-        map[key] = row; // last row wins
-      });
-      return Object.values(map);
-    }
-
-    // ── Sort by Agent Order ascending; blanks/missing sort to end ──
+    // ── Sort by order ascending ───────────────────────────────
     function sortByOrder(agents) {
       return agents.slice().sort(function(a, b) {
-        var ao = parseInt(a["Agent Order"] || "", 10);
-        var bo = parseInt(b["Agent Order"] || "", 10);
-        var av = isNaN(ao) ? 9999 : ao;
-        var bv = isNaN(bo) ? 9999 : bo;
+        var av = a._order != null ? a._order : 9999;
+        var bv = b._order != null ? b._order : 9999;
         return av - bv;
       });
     }
@@ -477,17 +474,16 @@
     }
 
     // ── Canon Integrity helpers ───────────────────────────────
-    function ciClass(ci, agentId) {
-      if ((agentId || "").toUpperCase() === JEREMY_ID) return "ci-na";
+    function ciClass(ci) {
       var v = (ci || "").toLowerCase();
       if (v === "clean")  return "ci-clean";
       if (v === "alert")  return "ci-alert";
       if (v === "error")  return "ci-error";
-      return "ci-blank"; // missing or unrecognised
+      if (v === "n/a")    return "ci-na";
+      return "ci-blank";
     }
 
-    function ciLabel(ci, agentId) {
-      if ((agentId || "").toUpperCase() === JEREMY_ID) return "N/A";
+    function ciLabel(ci) {
       var v = (ci || "").trim();
       return v || "—";
     }
@@ -523,7 +519,6 @@
       var missing = [];
       if (!agent["Agent ID"])    missing.push("Agent ID");
       if (!agent["Agent Order"]) missing.push("Agent Order");
-      // CI blank is surfaced in the CI badge itself; only flag if completely absent from schema
       if (missing.length === 0) return "";
       return '<div class="render-alert">' +
         '<span class="render-alert-label">// render</span>' +
@@ -546,11 +541,9 @@
       var lastSig   = agent["Last Signal"]    || agent["Timestamp"] || "";
       var ci        = agent["Canon Integrity"]|| "";
 
-      var isJeremy  = agentId.toUpperCase() === JEREMY_ID;
-
       // CI badge
-      var ciCls   = ciClass(ci, agentId);
-      var ciText  = ciLabel(ci, agentId);
+      var ciCls   = ciClass(ci);
+      var ciText  = ciLabel(ci);
 
       // Flag banner
       var flagHTML = "";
@@ -570,7 +563,7 @@
         ? '<div class="signal-footer">last signal: ' + escHtml(sigFormatted) + '</div>'
         : '<div class="signal-footer" style="color:var(--s-error)">last signal: —</div>';
 
-      // Data rows — show — for missing displayed fields
+      // Data rows
       function dataRow(label, value, cls) {
         var val = (value || "").trim();
         var valClass = cls || "";
@@ -582,37 +575,23 @@
       }
 
       return '<div class="agent-card" data-status="' + escHtml(status) + '" data-id="' + escHtml(agentId) + '">' +
-
-        // Card top: name + status badge
         '<div class="card-top">' +
           '<div class="agent-name">' + escHtml(nickname) + '</div>' +
           '<div class="badge ' + badgeClass(status) + '">' + escHtml(status.toUpperCase()) + '</div>' +
         '</div>' +
-
         '<div class="card-body">' +
-
-          // Canon Integrity — first field
           '<div class="ci-row">' +
             '<span class="ci-label">Canon Integrity</span>' +
             '<span class="ci-badge ' + ciCls + '">' + escHtml(ciText) + '</span>' +
           '</div>' +
-
-          // Data rows
           dataRow("Profile",  profile) +
           dataRow("Mood",     mood, "mood") +
           dataRow("Domain",   domain) +
           dataRow("Project",  project) +
           dataRow("P.Status", pstatus) +
-
-          // Flag banner
           flagHTML +
-
-          // Render alert
           raHTML +
-
-          // Signal footer
           sigHTML +
-
         '</div>' +
       '</div>';
     }
@@ -625,45 +604,54 @@
         .replace(/"/g,"&quot;");
     }
 
-    // ── Main load ─────────────────────────────────────────────
+    // ── Fetch one tab — returns last row or null ──────────────
+    function fetchTab(entry) {
+      var bust = "&cachebust=" + Date.now();
+      return fetch(csvUrl(entry.tab) + bust)
+        .then(function(r) { return r.text(); })
+        .then(function(text) {
+          var rows = parseCSV(text);
+          if (rows.length === 0) return null;
+          var last = rows[rows.length - 1];
+          // Ensure nickname and order are present even if the
+          // sheet row is missing them — fall back to roster config
+          if (!last["Agent Nickname"]) last["Agent Nickname"] = entry.nickname;
+          if (!last["Agent Order"])    last["Agent Order"] = String(entry.order);
+          last._order = entry.order;
+          return last;
+        })
+        .catch(function() {
+          // Tab missing or network error — return a shell card
+          return {
+            "Agent Nickname": entry.nickname,
+            "Agent Order": String(entry.order),
+            "Agent Status": "open",
+            "_order": entry.order,
+            "_nodata": true
+          };
+        });
+    }
+
+    // ── Main load — parallel fetch across all tabs ────────────
     function loadData() {
       document.getElementById("lastRefresh").textContent = "Refreshing...";
       document.getElementById("dashOutput").innerHTML =
         '<div class="state-msg"><div class="big">Loading...</div><div>Fetching agent data</div></div>';
 
-      var p1 = fetch(csvUrl(TAB_STATUS)).then(function(r) { return r.text(); });
-      var p2 = fetch(csvUrl(TAB_CHECKIN)).then(function(r) { return r.text(); });
+      var fetches = AGENT_TABS.map(fetchTab);
 
-      Promise.all([p1, p2]).then(function(results) {
-        var agentRows   = parseCSV(results[0]);
-        var checkinRows = parseCSV(results[1]);
-
-        // Latest per agent from AgentStatus (keyed by Agent ID)
-        var agents = latestPerAgent(agentRows, "Agent ID");
-
-        // Latest Jeremy row from HumanCheckin
-        var jeremyRows = checkinRows.filter(function(r) {
-          return (r["Agent ID"] || "").toUpperCase() === JEREMY_ID;
-        });
-        if (jeremyRows.length > 0) {
-          var latestJeremy = jeremyRows[jeremyRows.length - 1];
-          // Inject stable fields Jeremy doesn't submit
-          latestJeremy["Agent ID"]    = JEREMY_ID;
-          latestJeremy["Agent Order"] = String(JEREMY_ORDER);
-          agents.push(latestJeremy);
-        }
+      Promise.all(fetches).then(function(results) {
+        var agents = results.filter(function(r) { return r !== null; });
 
         if (agents.length === 0) {
           document.getElementById("dashOutput").innerHTML =
-            '<div class="state-msg"><div class="big">No Data</div><div>No agent rows found in sheet</div></div>';
+            '<div class="state-msg"><div class="big">No Data</div><div>No agent data found in any tab</div></div>';
           document.getElementById("lastRefresh").textContent = "No data";
           return;
         }
 
-        // Sort by Agent Order
         agents = sortByOrder(agents);
 
-        // Render
         renderSummary(agents);
         var html = '<div class="grid">';
         agents.forEach(function(a) { html += renderCard(a); });
@@ -683,6 +671,7 @@
     }
 
     loadData();
+
   </script>
 </body>
 </html>
