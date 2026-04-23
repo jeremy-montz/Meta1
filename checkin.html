@@ -433,14 +433,14 @@
     </div>
 
     <div class="footer">
-      <span>human-checkin v0.3 &nbsp;·&nbsp; writes to HumanCheckin tab</span>
+      <span>human-checkin v0.4 &nbsp;·&nbsp; writes to JeremyCheckin tab</span>
       <span>AGT-000</span>
     </div>
 
   </div>
 
   <script>
-    // GAS Web App webhook — targets HumanCheckin tab
+    // GAS Web App webhook — targets JeremyCheckin tab
     var WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwVLw_G250C_QX4q3Z3UptyGOhwPMSzUBkFVzfF2UVI8eFZ89_JyeWA6NjMucqPDVeR/exec";
 
     // Hardcoded operator identity — never submitted by user
@@ -479,7 +479,7 @@
       msg.className = "";
       msg.textContent = "";
 
-      // Payload matches HumanCheckin tab schema exactly
+      // Payload matches JeremyCheckin tab schema exactly
       // Agent ID and Agent Order are hardcoded — never user-submitted
       var payload = {
         agentNickname:  nickname,
@@ -493,7 +493,7 @@
         projectFlagged: document.getElementById("projectFlagged").checked ? "Yes" : "No",
         flagReason:     document.getElementById("flagReason").value.trim(),
         lastSignal:     document.getElementById("lastSignal").value,
-        sheetTab:       "HumanCheckin"   // GAS uses this to route to correct tab
+        sheetTab:       "JeremyCheckin"   // GAS uses this to route to correct tab
       };
 
       try {
@@ -507,7 +507,7 @@
 
         // no-cors returns opaque response — treat as success
         msg.className = "success";
-        msg.textContent = "✓ Check-in transmitted to HumanCheckin.";
+        msg.textContent = "✓ Check-in transmitted to JeremyCheckin.";
 
         // Reset volatile fields; preserve identity and profile
         document.getElementById("agentStatus").value = "";
