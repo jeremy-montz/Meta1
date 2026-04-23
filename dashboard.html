@@ -615,7 +615,7 @@
           var last = rows[rows.length - 1];
           // Ensure nickname and order are present even if the
           // sheet row is missing them — fall back to roster config
-          if (!last["Agent Nickname"]) last["Agent Nickname"] = entry.nickname;
+          last["Agent Nickname"] = entry.nickname;
           if (!last["Agent Order"])    last["Agent Order"] = String(entry.order);
           last._order = entry.order;
           return last;
