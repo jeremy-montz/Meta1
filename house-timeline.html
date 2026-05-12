@@ -434,13 +434,15 @@
 
 <script>
 // ════════════════════════════════════════════════════════════
-// DATA — hardcoded from Davis Google Sheet (2026-05-12)
-// Will be replaced with Apps Script fetch when design is final
+// DATA — fetched from Davis Google Sheet via Apps Script web app
+// Static fallback below is used if fetch fails
 // ════════════════════════════════════════════════════════════
 
-// ── LOCATIONS: names must match Google Sheet Locations tab col B exactly ──
-// These are the human-editable values that will be replaced by API fetch
-const LOCATIONS = [
+// ── PASTE YOUR DEPLOYED GAS URL HERE ──
+const GAS_URL = 'https://script.google.com/macros/s/AKfycby0z9wLdBVFxQ3YL7W6EgurHBNTJAzHYDVsUy_gKTTGGA7hO9kvVUJeGsohmqKoU7nNYA/exec'; // e.g. 'https://script.google.com/macros/s/AKfyc.../exec'
+
+// ── Static fallback data (from Sheet snapshot 2026-05-12) ──
+let LOCATIONS = [
   { id:'EXT-ROOF',  name:'Roof / Chimney',          floor:'Exterior',  sort:1 },
   { id:'EXT-ATTIC', name:'Attic',                    floor:'Exterior',  sort:2 },
   { id:'UP-PRIMARY',name:'Primary Bedroom (NW)',     floor:'Upstairs',  sort:10 },
@@ -470,7 +472,7 @@ const LOCATIONS = [
   { id:'GR-YARD',   name:'Yard / Foundation',        floor:'Grounds',   sort:42 },
 ];
 
-const TASKS = [
+let TASKS = [
   { id:'T-RF-01', task:'Roof repairs', locs:['EXT-ROOF'], type:'Contractor', status:'Done', pct:100, start:'2025-11-07', end:'2025-11-07', contractor:'Dr Roof', estimate:1455, actual:1455, blocked_by:[], notes:'' },
   { id:'T-RF-02', task:'Chimney tuck pointing', locs:['EXT-ROOF'], type:'Contractor', status:'Done', pct:100, start:'2025-11-26', end:'2025-11-26', contractor:'A Better Chimney', estimate:2000, actual:2000, blocked_by:[], notes:'Bids: $3,500 Alliance; $5,300 Pacific' },
   { id:'T-RF-03', task:'Remove old HVAC flue', locs:['EXT-ROOF'], type:'Contractor', status:'Done', pct:100, start:'2026-02-18', end:'2026-02-18', contractor:'Dr Roof', estimate:350, actual:350, blocked_by:[], notes:'' },
@@ -1000,11 +1002,40 @@ document.addEventListener('keydown', e => {
 });
 
 // ════════════════════════════════════════════════════════════
+// DATA FETCH — loads live data from GAS, falls back to static
+// ════════════════════════════════════════════════════════════
+
+async function loadData() {
+  if (!GAS_URL) {
+    console.log('No GAS_URL configured — using static fallback data');
+    return;
+  }
+  try {
+    const res = await fetch(GAS_URL);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data.status !== 'ok') throw new Error(data.message || 'GAS error');
+
+    if (data.locations && data.locations.length > 0) {
+      LOCATIONS = data.locations;
+    }
+    if (data.tasks && data.tasks.length > 0) {
+      TASKS = data.tasks;
+    }
+    console.log(`Loaded ${LOCATIONS.length} locations, ${TASKS.length} tasks from Sheet (${data.generated})`);
+  } catch (err) {
+    console.warn('GAS fetch failed — using static fallback:', err.message);
+  }
+}
+
+// ════════════════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════════════════
 
 document.getElementById('footerDate').textContent = TODAY.toISOString().slice(0, 10);
-render();
+
+// Load live data then render (static fallback renders immediately if no GAS_URL)
+loadData().then(() => render());
 </script>
 </body>
 </html>
