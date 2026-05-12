@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Renovation Budget — Davis St</title>
+  <link rel="stylesheet" href="https://jeremymontz.github.io/Meta1/design-system/fonts.css">
+  <link rel="stylesheet" href="https://jeremymontz.github.io/Meta1/design-system/colors_and_type.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-mono);
+      min-height: 100vh;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 900px 700px at 20% 10%, color-mix(in oklch, var(--accent-deep) 14%, transparent), transparent 60%),
+        radial-gradient(ellipse 700px 600px at 80% 80%, color-mix(in oklch, var(--accent) 10%, transparent), transparent 60%),
+        linear-gradient(var(--grid-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, var(--grid-size) var(--grid-size), var(--grid-size) var(--grid-size);
+      pointer-events: none; z-index: 0;
+    }
+    .page { position: relative; z-index: 1; padding: 1.5rem; max-width: 1100px; margin: 0 auto; }
+
+    /* Header */
+    .header {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;
+    }
+    .header-tag {
+      font-size: var(--fs-micro); letter-spacing: var(--ls-widest);
+      color: var(--accent); text-transform: uppercase; margin-bottom: 0.35rem;
+    }
+    .header h1 {
+      font-family: var(--font-display); font-size: var(--fs-2xl);
+      font-weight: 700; letter-spacing: var(--ls-tight); line-height: 1;
+      font-variation-settings: "opsz" 96;
+    }
+    .header h1 span { color: var(--accent); font-style: italic; }
+    .header-meta {
+      text-align: right; font-size: var(--fs-xs); color: var(--fg-subtle);
+      letter-spacing: var(--ls-wide); line-height: 1.8;
+    }
+
+    /* Nav */
+    .page-nav {
+      display: flex; gap: var(--sp-2); margin-bottom: var(--sp-6);
+    }
+    .page-nav a {
+      font-size: var(--fs-xs); letter-spacing: var(--ls-wide); text-transform: uppercase;
+      color: var(--fg-subtle); text-decoration: none;
+      padding: var(--sp-1) var(--sp-3);
+      border: 1px solid var(--line-soft); border-radius: var(--r-1);
+      transition: all var(--dur) var(--ease-out);
+    }
+    .page-nav a:hover { color: var(--fg); border-color: var(--line-loud); }
+    .page-nav a.active { color: var(--accent); border-color: var(--accent); background: var(--accent-low); }
+
+    /* Budget layout */
+    .budget-container {
+      display: flex; gap: var(--sp-6); position: relative;
+      min-height: 500px;
+    }
+
+    /* House outline SVG — shared background */
+    .house-bg {
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 300px; height: 500px; pointer-events: none; z-index: 0;
+      opacity: 0.15;
+    }
+
+    /* Budget columns */
+    .budget-col {
+      flex: 1; position: relative; z-index: 1;
+    }
+    .budget-col-header {
+      text-align: center; margin-bottom: var(--sp-5);
+    }
+    .budget-col-title {
+      font-family: var(--font-display); font-size: var(--fs-xl);
+      font-weight: 700; font-variation-settings: "opsz" 48;
+      margin-bottom: var(--sp-1);
+    }
+    .budget-col-subtitle {
+      font-size: var(--fs-xs); color: var(--fg-faint); letter-spacing: var(--ls-wide);
+    }
+
+    /* Budget cards */
+    .budget-card {
+      background: var(--bg-elev-2); border: 1px solid var(--line);
+      border-radius: var(--r-2); padding: var(--sp-5);
+      margin-bottom: var(--sp-4);
+      box-shadow: var(--shadow-1);
+    }
+    .budget-card-label {
+      font-size: var(--fs-xs); letter-spacing: var(--ls-wider); text-transform: uppercase;
+      color: var(--fg-faint); margin-bottom: var(--sp-2);
+    }
+    .budget-card-value {
+      font-family: var(--font-display); font-size: var(--fs-2xl);
+      font-weight: 700; font-variation-settings: "opsz" 72;
+      line-height: 1;
+    }
+    .budget-card-detail {
+      font-size: var(--fs-xs); color: var(--fg-subtle);
+      margin-top: var(--sp-2); letter-spacing: var(--ls-normal);
+    }
+
+    /* Progress bar */
+    .budget-progress {
+      width: 100%; height: 8px; background: var(--bg-elev-1);
+      border-radius: var(--r-pill); overflow: hidden; margin-top: var(--sp-3);
+    }
+    .budget-progress-fill {
+      height: 100%; border-radius: var(--r-pill);
+      transition: width 0.5s var(--ease-out);
+    }
+
+    /* Color coding */
+    .val-spent  { color: var(--info); }
+    .val-remain { color: var(--candle); }
+    .val-total  { color: var(--fg); }
+    .fill-spent { background: var(--info); }
+    .fill-remain { background: var(--candle); }
+
+    /* Divider */
+    .budget-divider {
+      width: 1px; background: var(--line); align-self: stretch;
+      margin: 0 var(--sp-2); position: relative; z-index: 1;
+    }
+
+    /* Grand total section */
+    .grand-total {
+      margin-top: var(--sp-6);
+      background: var(--bg-elev-2); border: 1px solid var(--line);
+      border-radius: var(--r-2); padding: var(--sp-6);
+      text-align: center;
+      box-shadow: var(--shadow-2);
+    }
+    .grand-total-label {
+      font-size: var(--fs-sm); letter-spacing: var(--ls-wider); text-transform: uppercase;
+      color: var(--fg-faint); margin-bottom: var(--sp-3);
+    }
+    .grand-total-row {
+      display: flex; justify-content: center; gap: var(--sp-8);
+      flex-wrap: wrap;
+    }
+    .grand-total-item { text-align: center; }
+    .grand-total-value {
+      font-family: var(--font-display); font-size: var(--fs-3xl);
+      font-weight: 700; font-variation-settings: "opsz" 96;
+      line-height: 1;
+    }
+    .grand-total-sub {
+      font-size: var(--fs-xs); color: var(--fg-faint);
+      letter-spacing: var(--ls-wide); margin-top: var(--sp-2);
+    }
+
+    /* Budget bar chart */
+    .budget-bar-section {
+      margin-top: var(--sp-6);
+      background: var(--bg-elev-2); border: 1px solid var(--line);
+      border-radius: var(--r-2); padding: var(--sp-5);
+    }
+    .budget-bar-title {
+      font-size: var(--fs-xs); letter-spacing: var(--ls-wider);
+      text-transform: uppercase; color: var(--fg-faint);
+      margin-bottom: var(--sp-4);
+    }
+    .stacked-bar {
+      display: flex; height: 32px; border-radius: var(--r-1);
+      overflow: hidden; margin-bottom: var(--sp-2);
+    }
+    .stacked-bar .seg-spent {
+      background: var(--info); display: flex; align-items: center;
+      justify-content: center; font-size: var(--fs-xs); color: var(--bg);
+      font-weight: 600; min-width: 0;
+    }
+    .stacked-bar .seg-remain {
+      background: color-mix(in oklch, var(--candle) 30%, transparent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: var(--fs-xs); color: var(--candle);
+      min-width: 0;
+    }
+    .stacked-bar .seg-headroom {
+      background: var(--bg-elev-1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: var(--fs-xs); color: var(--fg-faint);
+      min-width: 0;
+    }
+    .bar-legend {
+      display: flex; gap: var(--sp-4); font-size: var(--fs-xs);
+      color: var(--fg-subtle);
+    }
+    .bar-legend-dot {
+      display: inline-block; width: 10px; height: 10px;
+      border-radius: var(--r-pill); margin-right: 4px; vertical-align: middle;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: var(--sp-6);
+      font-size: var(--fs-xs); color: var(--fg-faint);
+      letter-spacing: var(--ls-wide);
+      display: flex; justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div>
+      <div class="header-tag">// house — renovation budget</div>
+      <h1>Davis <span>St</span></h1>
+    </div>
+    <!-- address, dates, target removed — this is the page title only -->
+  </div>
+
+  <nav class="page-nav">
+    <a href="house-timeline.html">Timeline</a>
+    <a href="house-budget.html" class="active">Budget</a>
+  </nav>
+
+  <!-- Two apartments side by side -->
+  <div class="budget-container">
+
+    <!-- House outline background -->
+    <svg class="house-bg" viewBox="0 0 300 500" xmlns="http://www.w3.org/2000/svg">
+      <!-- Roof -->
+      <path d="M30 180 L150 40 L270 180" fill="none" stroke="var(--accent)" stroke-width="2"/>
+      <!-- Upper walls -->
+      <rect x="30" y="180" width="240" height="130" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+      <!-- Floor line -->
+      <line x1="30" y1="310" x2="270" y2="310" stroke="var(--fg-subtle)" stroke-width="1"/>
+      <!-- Ground level -->
+      <line x1="10" y1="310" x2="290" y2="310" stroke="var(--ok)" stroke-width="2.5"/>
+      <!-- Basement walls -->
+      <rect x="30" y="310" width="240" height="140" fill="none" stroke="var(--ok)" stroke-width="1.5" stroke-dasharray="6,4"/>
+      <!-- Foundation -->
+      <line x1="30" y1="450" x2="270" y2="450" stroke="var(--fg-faint)" stroke-width="1.5"/>
+      <!-- Labels -->
+      <text x="150" y="260" text-anchor="middle" fill="var(--accent)" font-family="var(--font-mono)" font-size="11" letter-spacing="0.1em" opacity="0.7">WHOLE HOUSE</text>
+      <text x="150" y="395" text-anchor="middle" fill="var(--ok)" font-family="var(--font-mono)" font-size="11" letter-spacing="0.1em" opacity="0.7">BASEMENT</text>
+    </svg>
+
+    <!-- Whole House column -->
+    <div class="budget-col">
+      <div class="budget-col-header">
+        <div class="budget-col-title" style="color:var(--accent)">Whole House</div>
+        <div class="budget-col-subtitle">Main floor + Upstairs + Exterior</div>
+      </div>
+
+      <div class="budget-card">
+        <div class="budget-card-label">Spent</div>
+        <div class="budget-card-value val-spent" id="wh-spent">$24,529</div>
+        <div class="budget-card-detail">10 contractor + DIY tasks completed or in progress</div>
+      </div>
+
+      <div class="budget-card">
+        <div class="budget-card-label">Remaining Estimate</div>
+        <div class="budget-card-value val-remain" id="wh-remain">$12,403</div>
+        <div class="budget-card-detail">Paint, drywall repair, bath tile, fixtures, insulation</div>
+      </div>
+
+      <div class="budget-card">
+        <div class="budget-card-label">Projected Total</div>
+        <div class="budget-card-value val-total" id="wh-total">$36,932</div>
+        <div class="budget-progress">
+          <div class="budget-progress-fill fill-spent" id="wh-bar" style="width:66%"></div>
+        </div>
+        <div class="budget-card-detail">66% of projected already spent</div>
+      </div>
+    </div>
+
+    <div class="budget-divider"></div>
+
+    <!-- Basement column -->
+    <div class="budget-col">
+      <div class="budget-col-header">
+        <div class="budget-col-title" style="color:var(--ok)">Basement</div>
+        <div class="budget-col-subtitle">Owner-occupied 2BR/1BA unit</div>
+      </div>
+
+      <div class="budget-card">
+        <div class="budget-card-label">Spent</div>
+        <div class="budget-card-value val-spent" id="bm-spent">$37,329</div>
+        <div class="budget-card-detail">Egress, ductwork, plumbing, electrical, flooring, radon</div>
+      </div>
+
+      <div class="budget-card">
+        <div class="budget-card-label">Remaining Estimate</div>
+        <div class="budget-card-value val-remain" id="bm-remain">$23,331</div>
+        <div class="budget-card-detail">Drywall, insulation, bath, kitchenette, bedrooms, finish</div>
+      </div>
+
+      <div class="budget-card">
+        <div class="budget-card-label">Projected Total</div>
+        <div class="budget-card-value val-total" id="bm-total">$60,660</div>
+        <div class="budget-progress">
+          <div class="budget-progress-fill fill-spent" id="bm-bar" style="width:62%"></div>
+        </div>
+        <div class="budget-card-detail">62% of projected already spent</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Grand totals -->
+  <div class="grand-total">
+    <div class="grand-total-label">Combined — Both Apartments</div>
+    <div class="grand-total-row">
+      <div class="grand-total-item">
+        <div class="grand-total-value val-spent">$61,858</div>
+        <div class="grand-total-sub">Total spent</div>
+      </div>
+      <div class="grand-total-item">
+        <div class="grand-total-value val-remain">$35,734</div>
+        <div class="grand-total-sub">Remaining estimate</div>
+      </div>
+      <div class="grand-total-item">
+        <div class="grand-total-value val-total">$97,592</div>
+        <div class="grand-total-sub">Projected total</div>
+      </div>
+    </div>
+    <div style="margin-top:var(--sp-4)">
+      <div class="budget-progress" style="max-width:500px;margin:0 auto;height:10px">
+        <div class="budget-progress-fill fill-spent" style="width:63%"></div>
+      </div>
+      <div style="font-size:var(--fs-xs);color:var(--fg-subtle);margin-top:var(--sp-2)">
+        $2,408 headroom against $100K budget target
+      </div>
+    </div>
+  </div>
+
+  <!-- Stacked bar comparison -->
+  <div class="budget-bar-section">
+    <div class="budget-bar-title">Budget Allocation</div>
+
+    <div style="font-size:var(--fs-xs);color:var(--fg-subtle);margin-bottom:var(--sp-2)">Whole House</div>
+    <div class="stacked-bar">
+      <div class="seg-spent" style="width:25.1%">$24.5K</div>
+      <div class="seg-remain" style="width:12.7%">$12.4K</div>
+      <div class="seg-headroom" style="flex:1"></div>
+    </div>
+
+    <div style="font-size:var(--fs-xs);color:var(--fg-subtle);margin-bottom:var(--sp-2);margin-top:var(--sp-3)">Basement</div>
+    <div class="stacked-bar">
+      <div class="seg-spent" style="width:38.2%">$37.3K</div>
+      <div class="seg-remain" style="width:23.9%">$23.3K</div>
+      <div class="seg-headroom" style="flex:1"></div>
+    </div>
+
+    <div style="margin-top:var(--sp-3)" class="bar-legend">
+      <span><span class="bar-legend-dot" style="background:var(--info)"></span>Spent</span>
+      <span><span class="bar-legend-dot" style="background:color-mix(in oklch, var(--candle) 30%, transparent)"></span>Remaining</span>
+      <span><span class="bar-legend-dot" style="background:var(--bg-elev-1)"></span>Headroom</span>
+    </div>
+    <div style="font-size:var(--fs-micro);color:var(--fg-faint);margin-top:var(--sp-2)">
+      Bars scaled against $100K budget target
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>house-budget v2.0 · <span id="footerDate"></span></span>
+    <span>House — Pura Vida</span>
+  </div>
+
+</div>
+<script>
+  const today = new Date().toISOString().slice(0,10);
+  // genDate element removed from header
+  document.getElementById('footerDate').textContent = today;
+</script>
+</body>
+</html>

@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Renovation Timeline — Davis St</title>
+  <link rel="stylesheet" href="https://jeremymontz.github.io/Meta1/design-system/fonts.css">
+  <link rel="stylesheet" href="https://jeremymontz.github.io/Meta1/design-system/colors_and_type.css">
+  <style>
+    /* ── Page shell ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-mono);
+      height: 100vh;
+      overflow: hidden; /* no page-level scrollbar — gantt handles its own scroll */
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 900px 700px at 20% 10%, color-mix(in oklch, var(--accent-deep) 14%, transparent), transparent 60%),
+        radial-gradient(ellipse 700px 600px at 80% 80%, color-mix(in oklch, var(--accent) 10%, transparent), transparent 60%),
+        linear-gradient(var(--grid-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, var(--grid-size) var(--grid-size), var(--grid-size) var(--grid-size);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .page {
+      position: relative; z-index: 1; padding: 1.5rem;
+      height: 100%; display: flex; flex-direction: column;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;
+      max-width: 1600px; margin-left: auto; margin-right: auto;
+    }
+    .header-tag {
+      font-size: var(--fs-micro); letter-spacing: var(--ls-widest);
+      color: var(--accent); text-transform: uppercase; margin-bottom: 0.35rem;
+    }
+    .header h1 {
+      font-family: var(--font-display); font-size: var(--fs-2xl);
+      font-weight: 700; letter-spacing: var(--ls-tight); line-height: 1;
+      font-variation-settings: "opsz" 96;
+    }
+    .header h1 span { color: var(--accent); font-style: italic; }
+    .header-meta {
+      text-align: right; font-size: var(--fs-xs); color: var(--fg-subtle);
+      letter-spacing: var(--ls-wide); line-height: 1.8;
+    }
+
+    /* ── Nav ── */
+    .page-nav {
+      display: flex; gap: var(--sp-2); margin-bottom: var(--sp-4);
+      max-width: 1600px; margin-left: auto; margin-right: auto;
+    }
+    .page-nav a {
+      font-size: var(--fs-xs); letter-spacing: var(--ls-wide); text-transform: uppercase;
+      color: var(--fg-subtle); text-decoration: none;
+      padding: var(--sp-1) var(--sp-3);
+      border: 1px solid var(--line-soft); border-radius: var(--r-1);
+      transition: all var(--dur) var(--ease-out);
+    }
+    .page-nav a:hover { color: var(--fg); border-color: var(--line-loud); }
+    .page-nav a.active { color: var(--accent); border-color: var(--accent); background: var(--accent-low); }
+
+    /* ── Controls / Filters ── */
+    .controls {
+      display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: center;
+      background: var(--bg-elev-1); border: 1px solid var(--line);
+      padding: var(--sp-2) var(--sp-4); margin-bottom: 0;
+      max-width: 1600px; margin-left: auto; margin-right: auto;
+      flex-shrink: 0;
+    }
+    .control-group { display: flex; align-items: center; gap: var(--sp-2); }
+    .control-label {
+      font-size: var(--fs-micro); letter-spacing: var(--ls-wider); text-transform: uppercase;
+      color: var(--fg-faint); white-space: nowrap;
+    }
+    .filter-btn {
+      font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--ls-wide);
+      color: var(--fg-subtle); background: var(--bg-elev-2); border: 1px solid var(--line-soft);
+      padding: 2px 10px; border-radius: var(--r-1); cursor: pointer;
+      transition: all var(--dur) var(--ease-out);
+    }
+    .filter-btn:hover { color: var(--fg); border-color: var(--line-loud); }
+    .filter-btn.active { color: var(--accent); border-color: var(--accent); background: var(--accent-low); }
+    .control-sep { width: 1px; height: 20px; background: var(--line); }
+
+    /* ── Legend ── */
+    .legend {
+      display: flex; gap: var(--sp-4); flex-wrap: wrap; align-items: center;
+      background: var(--bg-elev-1); border: 1px solid var(--line); border-top: none;
+      padding: var(--sp-2) var(--sp-4);
+      max-width: 1600px; margin-left: auto; margin-right: auto;
+      flex-shrink: 0;
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: var(--fs-xs); color: var(--fg-subtle); }
+    .leg-swatch { width: 20px; height: 10px; border-radius: var(--r-1); flex-shrink: 0; }
+    .leg-line { width: 2px; height: 14px; flex-shrink: 0; }
+
+    /* ── Gantt container — fills remaining viewport height ── */
+    .gantt-wrap {
+      max-width: 1600px; margin: 0 auto;
+      border: 1px solid var(--line); border-top: none;
+      background: var(--bg-elev-1);
+      flex: 1; min-height: 0; /* flex child: grow to fill, allow shrink */
+    }
+
+    /* Single scroll container — handles BOTH vertical + horizontal scroll */
+    .gantt-scroll-sync {
+      height: 100%;
+      overflow: auto;         /* one vertical + one horizontal scrollbar */
+      display: flex;
+      align-items: flex-start;
+    }
+
+    /* Left panel — sticky: stays pinned at left edge during horizontal scroll */
+    .gantt-left {
+      width: 200px; min-width: 200px; flex-shrink: 0;
+      position: sticky; left: 0;
+      z-index: 10;
+      background: var(--bg-elev-1);
+      border-right: 1px solid var(--line);
+    }
+    .gantt-left-inner { position: relative; }
+
+    /* Right panel — no overflow; scroll-sync parent handles everything */
+    .gantt-right {
+      flex: 0 0 auto; /* take content width, don't shrink */
+      position: relative;
+    }
+    .gantt-right-inner { position: relative; }
+
+    /* ── Floor group headers ── */
+    .floor-header {
+      height: 28px; display: flex; align-items: center;
+      font-family: var(--font-display); font-size: var(--fs-xs);
+      font-weight: 500; letter-spacing: var(--ls-wider); text-transform: uppercase;
+      font-variation-settings: "opsz" 48;
+      padding-left: var(--sp-3);
+      border-top: 1px solid var(--line);
+    }
+    .floor-header-right {
+      height: 28px; border-top: 1px solid var(--line);
+    }
+
+    /* Floor zone background bands */
+    .zone-exterior  { background: color-mix(in oklch, var(--ether) 4%, var(--bg-elev-1)); }
+    .zone-upstairs  { background: color-mix(in oklch, var(--accent) 3%, var(--bg-elev-1)); }
+    .zone-stairs    { background: color-mix(in oklch, var(--fg-faint) 3%, var(--bg-elev-1)); }
+    .zone-main      { background: color-mix(in oklch, var(--candle) 3%, var(--bg-elev-1)); }
+    .zone-basement  { background: color-mix(in oklch, var(--ok) 3%, var(--bg-elev-1)); }
+    .zone-grounds   { background: color-mix(in oklch, var(--candle) 2%, var(--bg-elev-1)); }
+
+    .floor-header.zone-exterior  { color: var(--ether); }
+    .floor-header.zone-upstairs  { color: var(--accent); }
+    .floor-header.zone-stairs    { color: var(--fg-subtle); }
+    .floor-header.zone-main      { color: var(--candle); }
+    .floor-header.zone-basement  { color: var(--ok); }
+    .floor-header.zone-grounds   { color: var(--candle); }
+
+    /* ── Location rows ── */
+    .loc-row {
+      height: 28px; display: flex; align-items: center;
+      border-bottom: 1px solid color-mix(in oklch, var(--line) 40%, transparent);
+    }
+    .loc-label {
+      font-size: var(--fs-xs); color: var(--fg-subtle);
+      padding-left: var(--sp-4); padding-right: var(--sp-2);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      width: 100%;
+    }
+
+    /* ── Timeline header (dates) ── */
+    .timeline-header {
+      display: flex; height: 28px; align-items: flex-end;
+      border-bottom: 1px solid var(--line);
+      position: sticky; top: 0; z-index: 10;
+      background: var(--bg-elev-1);
+    }
+    .week-marker {
+      position: absolute; top: 0; bottom: 0;
+      border-left: 1px solid color-mix(in oklch, var(--line) 50%, transparent);
+      font-size: var(--fs-micro); color: var(--fg-faint);
+      letter-spacing: var(--ls-wide);
+      padding: 2px 4px;
+    }
+    .month-marker {
+      position: absolute; top: 0;
+      font-size: var(--fs-xs); color: var(--fg-subtle);
+      letter-spacing: var(--ls-wider); text-transform: uppercase;
+      font-weight: 600; padding: 2px 4px;
+    }
+
+    /* ── Timeline track row ── */
+    .track-row {
+      height: 28px; position: relative;
+      border-bottom: 1px solid color-mix(in oklch, var(--line) 20%, transparent);
+    }
+    .track-row-floor {
+      height: 28px; position: relative;
+      border-top: 1px solid var(--line);
+    }
+
+    /* ── Today line ── */
+    .today-line {
+      position: absolute; top: 0; bottom: 0; width: 2px;
+      background: var(--err); z-index: 5; opacity: 0.7;
+      pointer-events: none;
+    }
+    .today-label {
+      position: absolute; top: 2px; font-size: var(--fs-micro);
+      color: var(--err); letter-spacing: var(--ls-wide);
+      transform: translateX(-50%); white-space: nowrap;
+      font-weight: 600; z-index: 6; pointer-events: none;
+    }
+
+    /* ── Gantt bars ── */
+    .gantt-bar {
+      position: absolute; top: 3px; height: 22px;
+      border-radius: var(--r-1); cursor: pointer;
+      display: flex; align-items: center;
+      padding: 0 6px; overflow: visible;
+      font-size: var(--fs-micro); letter-spacing: var(--ls-normal);
+      white-space: nowrap;
+      transition: filter var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+      z-index: 2;
+    }
+    .gantt-bar:hover { filter: brightness(1.3); transform: scaleY(1.15); z-index: 3; }
+    .gantt-bar .bar-fill {
+      position: absolute; top: 0; left: 0; bottom: 0;
+      border-radius: var(--r-1) 0 0 var(--r-1);
+      pointer-events: none;
+    }
+    .gantt-bar .bar-text {
+      position: relative; z-index: 1;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    }
+
+    /* Bar type colors */
+    .bar-contractor      { background: rgba(50,102,173,0.2); border-left: 2px solid #3266ad; color: #8dc8f7; }
+    .bar-contractor .bar-fill { background: rgba(50,102,173,0.55); }
+    .bar-diy             { background: rgba(167,255,125,0.08); border-left: 2px solid rgba(167,255,125,0.5); color: var(--ok); }
+    .bar-diy .bar-fill   { background: rgba(167,255,125,0.25); }
+    .bar-waiting         { background: rgba(100,100,130,0.2); border-left: 2px solid rgba(100,100,130,0.5); color: var(--fg-faint); }
+    .bar-waiting .bar-fill { background: rgba(100,100,130,0.4); }
+    .bar-decision        { background: transparent; border: 1.5px dashed var(--candle); color: var(--candle); }
+    .bar-decision .bar-fill { background: rgba(245,197,106,0.15); }
+    /* Milestones rendered as vertical lines, not bars — see renderMilestones() */
+
+    /* Done bars get a subtle checkmark feel */
+    .bar-done { opacity: 0.5; }
+
+    /* ── Milestone vertical lines (span all rows, like today line) ── */
+    .milestone-line {
+      position: absolute; top: 0; bottom: 0; width: 2px;
+      background: var(--accent); z-index: 4; opacity: 0.6;
+      pointer-events: none; cursor: pointer;
+    }
+    .milestone-label {
+      position: absolute; top: 4px; font-size: var(--fs-micro);
+      color: var(--accent); letter-spacing: var(--ls-wide);
+      white-space: nowrap; font-weight: 600; z-index: 6;
+      pointer-events: auto; cursor: pointer;
+      background: color-mix(in oklch, var(--accent) 12%, var(--bg));
+      padding: 1px 6px; border-radius: var(--r-1);
+      transform: translateX(4px);
+    }
+    .milestone-label:hover { background: var(--accent-low); }
+
+    /* ── Expand/collapse floor groups ── */
+    .floor-header { cursor: pointer; user-select: none; }
+    .floor-header:hover { filter: brightness(1.2); }
+    .floor-toggle {
+      font-size: var(--fs-xs); margin-right: var(--sp-2);
+      transition: transform var(--dur) var(--ease-out);
+      display: inline-block;
+    }
+    .floor-toggle.collapsed { transform: rotate(-90deg); }
+    .loc-row.collapsed-row, .track-row.collapsed-row { display: none; }
+
+    /* ── Week grid lines in timeline ── */
+    .grid-line {
+      position: absolute; top: 0; bottom: 0; width: 1px;
+      background: color-mix(in oklch, var(--line) 30%, transparent);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6); z-index: 100;
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-card {
+      background: var(--bg-elev-2); border: 1px solid var(--line);
+      border-radius: var(--r-2); padding: var(--sp-6);
+      max-width: 520px; width: 90%; max-height: 80vh; overflow-y: auto;
+      box-shadow: var(--shadow-3);
+    }
+    .modal-card h3 {
+      font-family: var(--font-sans); font-size: var(--fs-lg);
+      margin-bottom: var(--sp-4); color: var(--fg);
+    }
+    .modal-row {
+      display: flex; gap: var(--sp-3); margin-bottom: var(--sp-2);
+      font-size: var(--fs-sm); line-height: 1.6;
+    }
+    .modal-label { color: var(--fg-faint); min-width: 90px; flex-shrink: 0; }
+    .modal-value { color: var(--fg-muted); }
+    .modal-close {
+      position: absolute; top: var(--sp-3); right: var(--sp-3);
+      background: none; border: none; color: var(--fg-subtle);
+      font-size: var(--fs-lg); cursor: pointer; padding: var(--sp-1);
+    }
+    .modal-close:hover { color: var(--fg); }
+    .modal-status {
+      display: inline-block; padding: 1px 8px; border-radius: var(--r-pill);
+      font-size: var(--fs-xs); letter-spacing: var(--ls-wide); font-weight: 600;
+    }
+    .modal-status.done       { background: color-mix(in oklch, var(--ok) 15%, transparent); color: var(--ok); }
+    .modal-status.in-progress { background: color-mix(in oklch, var(--info) 15%, transparent); color: var(--info); }
+    .modal-status.pending    { background: color-mix(in oklch, var(--candle) 15%, transparent); color: var(--candle); }
+
+    /* Progress bar in modal */
+    .progress-track {
+      width: 100%; height: 6px; background: var(--bg-elev-1);
+      border-radius: var(--r-pill); overflow: hidden; margin-top: 2px;
+    }
+    .progress-fill { height: 100%; border-radius: var(--r-pill); transition: width 0.3s; }
+
+    /* ── Footer ── */
+    .footer {
+      max-width: 1600px; margin: var(--sp-2) auto 0;
+      font-size: var(--fs-xs); color: var(--fg-faint);
+      letter-spacing: var(--ls-wide);
+      display: flex; justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    /* ── Dependency arrows ── */
+    .dep-svg {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 4;
+    }
+    .dep-arrow { fill: none; stroke: var(--candle); stroke-width: 1.5; opacity: 0.5; }
+    .dep-arrow-head { fill: var(--candle); opacity: 0.5; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div>
+      <div class="header-tag">// house — renovation timeline</div>
+      <h1>Davis <span>St</span></h1>
+    </div>
+    <!-- address, dates, target removed — this is the page title only -->
+  </div>
+
+  <nav class="page-nav">
+    <a href="house-timeline.html" class="active">Timeline</a>
+    <a href="house-budget.html">Budget</a>
+  </nav>
+
+  <div class="controls" id="controls">
+    <div class="control-group">
+      <span class="control-label">Type</span>
+      <button class="filter-btn active" data-filter="type" data-value="all">All</button>
+      <button class="filter-btn" data-filter="type" data-value="Contractor">Contractor</button>
+      <button class="filter-btn" data-filter="type" data-value="DIY">DIY</button>
+    </div>
+    <div class="control-sep"></div>
+    <div class="control-group">
+      <span class="control-label">Status</span>
+      <button class="filter-btn active" data-filter="status" data-value="all">All</button>
+      <button class="filter-btn" data-filter="status" data-value="active">Active</button>
+      <button class="filter-btn" data-filter="status" data-value="planned">Planned</button>
+      <button class="filter-btn" data-filter="status" data-value="done">Done</button>
+    </div>
+    <div class="control-sep"></div>
+    <div class="control-group">
+      <button class="filter-btn active" id="toggleMilestones" data-on="true">Milestones</button>
+    </div>
+    <div class="control-sep"></div>
+    <div class="control-group">
+      <button class="filter-btn" id="toggleDeps" data-on="false">Dependencies</button>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="leg-swatch" style="background:rgba(50,102,173,0.5);border-left:2px solid #3266ad"></div>Contractor</div>
+    <div class="legend-item"><div class="leg-swatch" style="background:rgba(167,255,125,0.15);border-left:2px solid rgba(167,255,125,0.5)"></div>DIY</div>
+    <div class="legend-item"><div class="leg-swatch" style="background:rgba(100,100,130,0.2);border-left:2px solid rgba(100,100,130,0.5)"></div>Waiting</div>
+    <div class="legend-item"><div class="leg-swatch" style="border:1.5px dashed #f5c56a;background:transparent"></div>Decision</div>
+    <div class="legend-item"><div class="leg-line" style="background:var(--accent)"></div>Milestone</div>
+    <div class="legend-item"><div class="leg-line" style="background:var(--err);width:2px;height:14px"></div><span style="color:var(--err)">Today</span></div>
+  </div>
+
+  <!-- Main Gantt area -->
+  <div class="gantt-wrap">
+    <div class="gantt-scroll-sync" id="ganttScroll">
+      <div class="gantt-left" id="ganttLeft">
+        <div class="gantt-left-inner" id="ganttLeftInner"></div>
+      </div>
+      <div class="gantt-right" id="ganttRight">
+        <div class="gantt-right-inner" id="ganttRightInner"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>house-timeline v2.0 · <span id="footerDate"></span></span>
+    <span>House — Pura Vida</span>
+  </div>
+
+</div>
+
+<!-- Task detail modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-card" style="position:relative" id="modalCard">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// DATA — hardcoded from Davis Google Sheet (2026-05-12)
+// Will be replaced with Apps Script fetch when design is final
+// ════════════════════════════════════════════════════════════
+
+// ── LOCATIONS: names must match Google Sheet Locations tab col B exactly ──
+// These are the human-editable values that will be replaced by API fetch
+const LOCATIONS = [
+  { id:'EXT-ROOF',  name:'Roof / Chimney',          floor:'Exterior',  sort:1 },
+  { id:'EXT-ATTIC', name:'Attic',                    floor:'Exterior',  sort:2 },
+  { id:'UP-PRIMARY',name:'Primary Bedroom (NW)',     floor:'Upstairs',  sort:10 },
+  { id:'UP-OFFICE', name:'Office (NE)',              floor:'Upstairs',  sort:11 },
+  { id:'UP-GUEST',  name:'Guest Bedroom (SE)',       floor:'Upstairs',  sort:12 },
+  { id:'UP-BONUS',  name:'Bonus Room (SW)',          floor:'Upstairs',  sort:13 },
+  { id:'UP-BATH',   name:'Upstairs Bathroom',        floor:'Upstairs',  sort:14 },
+  { id:'UP-HALL',   name:'Upstairs Hallway',         floor:'Upstairs',  sort:15 },
+  { id:'STAIR-UP',  name:'Stairs (upper → main)',    floor:'Stairs',    sort:16 },
+  { id:'MN-ENTRY',  name:'Entryway',                 floor:'Main',      sort:20 },
+  { id:'MN-LIVING', name:'Living Room',              floor:'Main',      sort:21 },
+  { id:'MN-DINING', name:'Dining Room',              floor:'Main',      sort:22 },
+  { id:'MN-KITCHEN',name:'Kitchen',                  floor:'Main',      sort:23 },
+  { id:'MN-HALL',   name:'Main Floor Hallway',       floor:'Main',      sort:24 },
+  { id:'MN-BATH',   name:'Main Floor Bathroom',      floor:'Main',      sort:25 },
+  { id:'MN-LAUNDRY',name:'Laundry Closet',           floor:'Main',      sort:26 },
+  { id:'STAIR-DN',  name:'Stairs (main → basement)', floor:'Stairs-Dn', sort:27 },
+  { id:'BM-ENTRY',  name:'Basement Entry / Living',  floor:'Basement',  sort:30 },
+  { id:'BM-KIT',    name:'Basement Kitchenette',     floor:'Basement',  sort:31 },
+  { id:'BM-LAUNDRY',name:'Basement Laundry',         floor:'Basement',  sort:32 },
+  { id:'BM-BATH',   name:'Basement Bathroom',        floor:'Basement',  sort:33 },
+  { id:'BM-HALL',   name:'Basement Hallway',         floor:'Basement',  sort:34 },
+  { id:'BM-BR1',    name:'Basement Bedroom 1 (NW)',  floor:'Basement',  sort:35 },
+  { id:'BM-BR2',    name:'Basement Bedroom 2 (NE)',  floor:'Basement',  sort:36 },
+  { id:'GR-FRONT',  name:'Front Porch / Deck',       floor:'Grounds',   sort:40 },
+  { id:'GR-BACK',   name:'Back Deck / Pit',          floor:'Grounds',   sort:41 },
+  { id:'GR-YARD',   name:'Yard / Foundation',        floor:'Grounds',   sort:42 },
+];
+
+const TASKS = [
+  { id:'T-RF-01', task:'Roof repairs', locs:['EXT-ROOF'], type:'Contractor', status:'Done', pct:100, start:'2025-11-07', end:'2025-11-07', contractor:'Dr Roof', estimate:1455, actual:1455, blocked_by:[], notes:'' },
+  { id:'T-RF-02', task:'Chimney tuck pointing', locs:['EXT-ROOF'], type:'Contractor', status:'Done', pct:100, start:'2025-11-26', end:'2025-11-26', contractor:'A Better Chimney', estimate:2000, actual:2000, blocked_by:[], notes:'Bids: $3,500 Alliance; $5,300 Pacific' },
+  { id:'T-RF-03', task:'Remove old HVAC flue', locs:['EXT-ROOF'], type:'Contractor', status:'Done', pct:100, start:'2026-02-18', end:'2026-02-18', contractor:'Dr Roof', estimate:350, actual:350, blocked_by:[], notes:'' },
+  { id:'T-AT-01', task:'Attic insulation removal', locs:['EXT-ATTIC'], type:'Contractor', status:'Done', pct:100, start:'2026-04-06', end:'2026-04-06', contractor:'Gale Contractor Services', estimate:1635, actual:1635, blocked_by:[], notes:'' },
+  { id:'T-AT-02', task:'Attic blown-in insulation', locs:['EXT-ATTIC'], type:'Contractor', status:'Pending', pct:0, start:'2026-06-01', end:'2026-06-15', contractor:'Gale Contractor Services', estimate:2120, actual:0, blocked_by:['T-EL-01'], notes:'Follows Shift Electric attic work' },
+  { id:'T-SM-01', task:'Seismic retrofitting', locs:['GR-YARD'], type:'Contractor', status:'Done', pct:100, start:'2026-02-13', end:'2026-02-13', contractor:'Best Egress', estimate:4200, actual:4200, blocked_by:[], notes:'' },
+  { id:'T-RD-01', task:'Radon mitigation system', locs:['BM-ENTRY'], type:'Contractor', status:'Done', pct:100, start:'2026-02-05', end:'2026-02-13', contractor:'Soil Solutions', estimate:2050, actual:2050, blocked_by:[], notes:'Deposit + final' },
+  { id:'T-EG-01', task:'Egress windows + ext. door', locs:['BM-BR1','BM-BR2','BM-ENTRY'], type:'Contractor', status:'Done', pct:100, start:'2026-01-09', end:'2026-03-19', contractor:'Best Egress', estimate:19105, actual:19105, blocked_by:[], notes:'Permitted and inspected Mar 2026' },
+  { id:'T-DW-01', task:'Basement ductwork', locs:['BM-ENTRY','BM-KIT','BM-HALL','BM-BR1','BM-BR2','BM-BATH'], type:'Contractor', status:'Done', pct:100, start:'2026-01-13', end:'2026-01-28', contractor:'Advanced Heating & AC', estimate:5694, actual:5694, blocked_by:[], notes:'' },
+  { id:'T-PL-01', task:'Basement plumbing — full scope', locs:['BM-BATH','BM-LAUNDRY','BM-KIT'], type:'Contractor', status:'Done', pct:100, start:'2026-04-06', end:'2026-04-06', contractor:'Cliff Alex Plumbing', estimate:4136, actual:4136, blocked_by:[], notes:'' },
+  { id:'T-UB-01', task:'Upstairs bedrooms — paint, closets, fixtures', locs:['UP-PRIMARY','UP-OFFICE','UP-GUEST','UP-BONUS'], type:'DIY', status:'Done', pct:100, start:'2025-12-01', end:'2026-02-28', contractor:'', estimate:2550, actual:2550, blocked_by:[], notes:'Paint, closet shelving, light fixtures, switches, misc supplies' },
+  { id:'T-EL-01', task:'K&T rewire + upstairs electrical', locs:['EXT-ATTIC','UP-PRIMARY','UP-OFFICE','UP-GUEST','UP-BONUS','UP-HALL'], type:'Contractor', status:'In Progress', pct:100, start:'2026-03-01', end:'2026-06-15', contractor:'Shift Electric', estimate:6140, actual:5357, blocked_by:[], notes:'75% paid. Rough-in permit approved. Return after drywall.' },
+  { id:'T-EL-02', task:'Basement electrical — heaters + rough-in', locs:['BM-ENTRY','BM-KIT','BM-HALL','BM-BR1','BM-BR2','BM-BATH','BM-LAUNDRY'], type:'Contractor', status:'In Progress', pct:75, start:'2026-03-01', end:'2026-06-01', contractor:'Shift Electric', estimate:6700, actual:4285, blocked_by:[], notes:'75% paid. Return after drywall + permits.' },
+  { id:'T-FL-01', task:'Basement flooring — full install', locs:['BM-ENTRY','BM-KIT','BM-HALL','BM-BR1','BM-BR2','BM-BATH','BM-LAUNDRY'], type:'Contractor', status:'In Progress', pct:100, start:'2026-05-08', end:'2026-05-30', contractor:'Floor Coverings International', estimate:9500, actual:4550, blocked_by:[], notes:'$9,100 + $400 adj. Deposit paid. In progress.' },
+  { id:'T-PL-02', task:'Upstairs plumbing — galv. replacement', locs:['UP-BATH','MN-DINING'], type:'Contractor', status:'In Progress', pct:25, start:'2026-05-16', end:'2026-05-30', contractor:'Cliff Alex Plumbing', estimate:2000, actual:0, blocked_by:[], notes:'Tub removed. Re-piping in progress. No ETA from Cliff.' },
+  { id:'T-IN-01', task:'Basement wall insulation — R-15', locs:['BM-ENTRY','BM-KIT','BM-HALL','BM-BR1','BM-BR2','BM-BATH'], type:'DIY', status:'Pending', pct:0, start:'2026-05-20', end:'2026-06-01', contractor:'', estimate:2000, actual:1310, blocked_by:['T-EL-02'], notes:'Materials purchased (~$1,310). Install pending post-electrical.' },
+  { id:'T-DRY-01', task:'Drywall — basement (all rooms)', locs:['BM-ENTRY','BM-KIT','BM-HALL','BM-BR1','BM-BR2','BM-BATH','BM-LAUNDRY'], type:'DIY', status:'Pending', pct:0, start:'2026-06-01', end:'2026-06-21', contractor:'', estimate:5000, actual:0, blocked_by:['T-IN-01','T-EL-02'], notes:'Contractor bid $21,700 rejected. DIY.' },
+  { id:'T-BBA-01', task:'Basement bath — shower (prefab pan + tile)', locs:['BM-BATH'], type:'DIY', status:'Pending', pct:0, start:'2026-06-22', end:'2026-07-05', contractor:'', estimate:1200, actual:289, blocked_by:['T-DRY-01'], notes:'Prefab pan purchased ($289). Subway tile + accent trim.' },
+  { id:'T-BBA-02', task:'Basement bath — vanity, mirror, lighting', locs:['BM-BATH'], type:'DIY', status:'Pending', pct:0, start:'2026-06-22', end:'2026-07-05', contractor:'', estimate:800, actual:0, blocked_by:['T-DRY-01'], notes:'' },
+  { id:'T-BBA-03', task:'Basement bath — paint + finish', locs:['BM-BATH'], type:'DIY', status:'Pending', pct:0, start:'2026-07-05', end:'2026-07-10', contractor:'', estimate:150, actual:0, blocked_by:['T-BBA-01','T-BBA-02'], notes:'' },
+  { id:'T-BK-01', task:'Kitchenette — cabinets, countertop, sink', locs:['BM-KIT'], type:'DIY', status:'Pending', pct:0, start:'2026-07-01', end:'2026-07-14', contractor:'', estimate:2500, actual:0, blocked_by:['T-DRY-01'], notes:'No oven — avoids ADU classification.' },
+  { id:'T-BK-02', task:'Kitchenette — appliances + tile', locs:['BM-KIT'], type:'DIY', status:'Pending', pct:0, start:'2026-07-14', end:'2026-07-21', contractor:'', estimate:1500, actual:0, blocked_by:['T-BK-01'], notes:'Hotplate + toaster oven. Backsplash tile.' },
+  { id:'T-BBR-01', task:'Basement bedrooms — closets, paint, trim', locs:['BM-BR1','BM-BR2'], type:'DIY', status:'Pending', pct:0, start:'2026-06-22', end:'2026-07-05', contractor:'', estimate:500, actual:0, blocked_by:['T-DRY-01'], notes:'' },
+  { id:'T-BH-01', task:'Basement hallway — paint, lighting', locs:['BM-HALL'], type:'DIY', status:'Pending', pct:0, start:'2026-06-22', end:'2026-07-01', contractor:'', estimate:200, actual:0, blocked_by:['T-DRY-01'], notes:'' },
+  { id:'T-BE-01', task:'Basement entry — paint, lighting, finish', locs:['BM-ENTRY'], type:'DIY', status:'Pending', pct:0, start:'2026-06-22', end:'2026-07-05', contractor:'', estimate:300, actual:0, blocked_by:['T-DRY-01'], notes:'' },
+  { id:'T-BL-01', task:'Basement laundry — finish', locs:['BM-LAUNDRY'], type:'DIY', status:'Pending', pct:0, start:'2026-07-01', end:'2026-07-10', contractor:'', estimate:200, actual:0, blocked_by:['T-DRY-01'], notes:'Shared vs separate decision pending.' },
+  { id:'T-BST-01', task:'Basement stairwell — drywall, paint', locs:['STAIR-DN'], type:'DIY', status:'Pending', pct:0, start:'2026-07-01', end:'2026-07-10', contractor:'', estimate:300, actual:0, blocked_by:['T-DRY-01'], notes:'' },
+  { id:'T-UBA-01', task:'Upstairs bath — DIY tile shower', locs:['UP-BATH'], type:'DIY', status:'Pending', pct:0, start:'2026-07-01', end:'2026-07-14', contractor:'', estimate:1500, actual:0, blocked_by:['T-PL-02'], notes:'Contractor bids ~$15K rejected. DIY.' },
+  { id:'T-UBA-02', task:'Upstairs bath — vanity, fixtures, finish', locs:['UP-BATH'], type:'DIY', status:'Pending', pct:0, start:'2026-07-14', end:'2026-07-21', contractor:'', estimate:1000, actual:0, blocked_by:['T-UBA-01'], notes:'' },
+  { id:'T-UDR-01', task:'Upstairs drywall repair — patches', locs:['UP-PRIMARY','UP-OFFICE','UP-GUEST','UP-BONUS'], type:'DIY', status:'Pending', pct:0, start:'2026-06-01', end:'2026-06-10', contractor:'', estimate:200, actual:0, blocked_by:[], notes:'1-2 patches some rooms, more in others.' },
+  { id:'T-UDR-02', task:'Dining room wall patches', locs:['MN-DINING'], type:'DIY', status:'Pending', pct:0, start:'2026-06-01', end:'2026-06-07', contractor:'', estimate:150, actual:0, blocked_by:['T-PL-02'], notes:'Wall opened for plumbing access.' },
+  { id:'T-DRY-02', task:'Upstairs drywall repair — all scopes', locs:['UP-BATH','MN-DINING','UP-PRIMARY','UP-OFFICE','UP-GUEST','UP-BONUS'], type:'DIY', status:'Pending', pct:0, start:'2026-06-07', end:'2026-06-18', contractor:'', estimate:2000, actual:0, blocked_by:['T-PL-02'], notes:'Follows plumber.' },
+  { id:'T-MN-01', task:'Main floor — paint', locs:['MN-ENTRY','MN-LIVING','MN-DINING','MN-KITCHEN','MN-HALL'], type:'DIY', status:'Pending', pct:0, start:'2026-07-01', end:'2026-07-14', contractor:'', estimate:300, actual:0, blocked_by:[], notes:'' },
+  { id:'T-MN-02', task:'Main floor — switches + fixtures', locs:['MN-ENTRY','MN-LIVING','MN-DINING'], type:'DIY', status:'Pending', pct:0, start:'2026-07-01', end:'2026-07-07', contractor:'', estimate:200, actual:0, blocked_by:[], notes:'' },
+  { id:'T-MN-03', task:'Main floor — deep clean', locs:['MN-ENTRY','MN-LIVING','MN-DINING','MN-KITCHEN','MN-HALL','MN-BATH','MN-LAUNDRY'], type:'DIY', status:'Pending', pct:0, start:'2026-08-01', end:'2026-08-07', contractor:'', estimate:0, actual:0, blocked_by:[], notes:'Pre-listing clean.' },
+  { id:'T-MB-01', task:'Main bath — patch hole', locs:['MN-BATH'], type:'DIY', status:'Pending', pct:0, start:'2026-06-01', end:'2026-06-03', contractor:'', estimate:50, actual:0, blocked_by:[], notes:'Full update deferred to pre-sale.' },
+  { id:'T-ST-01', task:'Stairs (upper) — repaint', locs:['STAIR-UP'], type:'DIY', status:'Pending', pct:0, start:'2026-06-01', end:'2026-06-07', contractor:'', estimate:100, actual:0, blocked_by:[], notes:'Carpet removed; painted wood underneath.' },
+  { id:'T-PM-01', task:'Habitable space permit — file', locs:['BM-ENTRY'], type:'Waiting', status:'Pending', pct:0, start:'2026-05-15', end:'2026-06-15', contractor:'City of Portland BDS', estimate:600, actual:0, blocked_by:[], notes:'Inspector confirmed feasibility. Not yet filed.' },
+  { id:'T-GR-01', task:'Back deck — lower section demo', locs:['GR-BACK'], type:'DIY', status:'In Progress', pct:80, start:'2026-05-02', end:'2026-05-15', contractor:'', estimate:0, actual:0, blocked_by:[], notes:'Discovered ~8 sq ft pit with concrete walls.' },
+  { id:'T-GR-02', task:'Back deck / pit — decision', locs:['GR-BACK'], type:'Decision', status:'Pending', pct:0, start:'2026-05-15', end:'2026-05-31', contractor:'', estimate:0, actual:0, blocked_by:['T-GR-01'], notes:'Three options: fill, rebuild, or in-ground hot tub.' },
+  { id:'T-GR-03', task:'Hot tub electrical — run before drywall', locs:['BM-ENTRY','GR-BACK'], type:'Contractor', status:'Pending', pct:0, start:'2026-05-20', end:'2026-05-31', contractor:'Shift Electric', estimate:0, actual:0, blocked_by:[], notes:'240V/50A circuit. No-regret move.' },
+  { id:'T-GR-04', task:'Foundation wall paint', locs:['GR-YARD'], type:'DIY', status:'Pending', pct:0, start:'2026-09-15', end:'2026-09-30', contractor:'', estimate:100, actual:0, blocked_by:[], notes:'' },
+  { id:'T-MS-01', task:'MILESTONE: Jeremy moves to basement', locs:['BM-ENTRY'], type:'Milestone', status:'Pending', pct:0, start:'2026-07-01', end:'2026-07-01', contractor:'', estimate:0, actual:0, blocked_by:[], notes:'' },
+  { id:'T-MS-02', task:'MILESTONE: Main house listed', locs:['MN-ENTRY'], type:'Milestone', status:'Pending', pct:0, start:'2026-07-15', end:'2026-07-15', contractor:'', estimate:0, actual:0, blocked_by:['T-MS-01'], notes:'' },
+  { id:'T-MS-03', task:'MILESTONE: First tenant move-in', locs:['MN-ENTRY'], type:'Milestone', status:'Pending', pct:0, start:'2026-09-01', end:'2026-09-01', contractor:'', estimate:0, actual:0, blocked_by:['T-MS-02'], notes:'Target: August 2026' },
+];
+
+// ════════════════════════════════════════════════════════════
+// CONFIG
+// ════════════════════════════════════════════════════════════
+
+const DAY_PX = 8;
+const ROW_H = 28;
+const FLOOR_H = 28;
+const TIMELINE_START = new Date('2025-10-27'); // Monday before first task
+const TIMELINE_END   = new Date('2026-10-06'); // Monday after last task
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+
+// Derived
+const TOTAL_DAYS = Math.ceil((TIMELINE_END - TIMELINE_START) / 86400000);
+const TIMELINE_W = TOTAL_DAYS * DAY_PX;
+
+// Floor ordering and display
+const FLOORS = [
+  { key:'Exterior',  label:'Exterior',  zone:'zone-exterior' },
+  { key:'Upstairs',  label:'Upstairs',  zone:'zone-upstairs' },
+  { key:'Stairs',    label:'Stairs',    zone:'zone-stairs' },
+  { key:'Main',      label:'Main Floor',zone:'zone-main' },
+  { key:'Stairs-Dn', label:'Stairs',    zone:'zone-stairs' },
+  { key:'Basement',  label:'Basement',  zone:'zone-basement' },
+  { key:'Grounds',   label:'Grounds',   zone:'zone-grounds' },
+];
+
+// ════════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════════
+
+let filters = { type: 'all', status: 'all' };
+let showMilestones = true;
+let showDeps = false;
+const collapsedFloors = new Set(); // tracks which floor groups are collapsed
+
+// ════════════════════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════════════════════
+
+function dayOffset(dateStr) {
+  const d = new Date(dateStr);
+  return Math.round((d - TIMELINE_START) / 86400000);
+}
+
+function dayX(dateStr) { return dayOffset(dateStr) * DAY_PX; }
+
+function fmt$(n) {
+  if (n === 0) return '$0';
+  return '$' + n.toLocaleString();
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d);
+  return dt.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+}
+
+function barClass(type) {
+  switch(type) {
+    case 'Contractor': return 'bar-contractor';
+    case 'DIY':        return 'bar-diy';
+    case 'Waiting':    return 'bar-waiting';
+    case 'Decision':   return 'bar-decision';
+    case 'Milestone':  return 'bar-milestone';
+    default:           return 'bar-diy';
+  }
+}
+
+function statusClass(status) {
+  if (status === 'Done') return 'done';
+  if (status === 'In Progress') return 'in-progress';
+  return 'pending';
+}
+
+function matchesFilter(task) {
+  // Type filter
+  if (filters.type !== 'all') {
+    if (task.type !== filters.type) return false;
+  }
+  // Status filter
+  if (filters.status !== 'all') {
+    if (filters.status === 'done' && task.status !== 'Done') return false;
+    if (filters.status === 'active' && task.status !== 'In Progress') return false;
+    if (filters.status === 'planned' && (task.status === 'Done' || task.status === 'In Progress')) return false;
+  }
+  // Milestones
+  if (!showMilestones && task.type === 'Milestone') return false;
+  return true;
+}
+
+// Group locations by floor
+function getFloorGroups() {
+  const groups = [];
+  for (const f of FLOORS) {
+    const locs = LOCATIONS.filter(l => l.floor === f.key).sort((a,b) => a.sort - b.sort);
+    if (locs.length > 0) {
+      groups.push({ ...f, locs });
+    }
+  }
+  return groups;
+}
+
+// Assign a task to its primary location row
+// For multi-loc tasks: use the first location
+function taskPrimaryLoc(task) {
+  return task.locs[0] || null;
+}
+
+// ════════════════════════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════════════════════════
+
+function render() {
+  const floorGroups = getFloorGroups();
+  const filteredTasks = TASKS.filter(matchesFilter);
+
+  // Build location → row index map (skip collapsed floors' locations)
+  let rowIdx = 0;
+  const locRowMap = {};
+  const rowMeta = []; // { type: 'floor'|'loc', floor, loc? }
+
+  for (const fg of floorGroups) {
+    const isCollapsed = collapsedFloors.has(fg.key);
+    locRowMap['__floor_' + fg.key] = rowIdx;
+    rowMeta.push({ type: 'floor', floor: fg, collapsed: isCollapsed });
+    rowIdx++;
+    if (!isCollapsed) {
+      for (const loc of fg.locs) {
+        locRowMap[loc.id] = rowIdx;
+        rowMeta.push({ type: 'loc', floor: fg, loc });
+        rowIdx++;
+      }
+    }
+  }
+
+  const totalRows = rowIdx;
+  const contentH = totalRows * ROW_H;
+
+  // ── Left panel ──
+  let leftHTML = '';
+
+  for (const rm of rowMeta) {
+    if (rm.type === 'floor') {
+      const arrow = rm.collapsed ? 'collapsed' : '';
+      leftHTML += `<div class="floor-header ${rm.floor.zone}" data-floor="${rm.floor.key}" style="height:${ROW_H}px"><span class="floor-toggle ${arrow}">▾</span>${rm.floor.label}</div>`;
+    } else {
+      leftHTML += `<div class="loc-row ${rm.floor.zone}" style="height:${ROW_H}px"><div class="loc-label">${rm.loc.name}</div></div>`;
+    }
+  }
+  document.getElementById('ganttLeftInner').innerHTML = leftHTML;
+  document.getElementById('ganttLeftInner').style.minHeight = contentH + 'px';
+
+  // ── Right panel ──
+  let rightHTML = '';
+
+  // Background rows (zone shading + grid)
+  for (const rm of rowMeta) {
+    if (rm.type === 'floor') {
+      rightHTML += `<div class="track-row-floor ${rm.floor.zone}" style="height:${ROW_H}px"></div>`;
+    } else {
+      rightHTML += `<div class="track-row ${rm.floor.zone}" style="height:${ROW_H}px"></div>`;
+    }
+  }
+
+  // Timeline container with absolute positioning
+  rightHTML = `<div style="position:relative;width:${TIMELINE_W}px;height:${contentH}px">` +
+    // Zone backgrounds
+    rightHTML +
+    // Week grid lines
+    renderGridLines(contentH) +
+    // Date labels at top
+    renderDateLabels() +
+    // Today line
+    renderTodayLine(contentH) +
+    // Task bars
+    renderBars(filteredTasks, locRowMap, floorGroups) +
+    // Milestone vertical lines
+    renderMilestones(TASKS.filter(t => t.type === 'Milestone'), contentH) +
+    // Dependency arrows
+    (showDeps ? renderDeps(filteredTasks, locRowMap) : '') +
+    `</div>`;
+
+  document.getElementById('ganttRightInner').innerHTML = rightHTML;
+
+  // ── Expand/collapse: toggle state and re-render ──
+  document.querySelectorAll('.floor-header[data-floor]').forEach(header => {
+    header.addEventListener('click', () => {
+      const floor = header.dataset.floor;
+      if (collapsedFloors.has(floor)) {
+        collapsedFloors.delete(floor);
+      } else {
+        collapsedFloors.add(floor);
+      }
+      render(); // full re-render recalculates all row positions
+    });
+  });
+
+  // Scroll to today — account for 200px sticky left panel
+  const todayX = dayX(TODAY.toISOString().slice(0, 10));
+  const scrollContainer = document.getElementById('ganttScroll');
+  const viewW = scrollContainer.clientWidth - 200; // visible timeline width
+  scrollContainer.scrollLeft = Math.max(0, todayX - viewW * 0.3);
+}
+
+// renderHouseSVG removed — outline wasn't working at these scales
+
+function renderGridLines(h) {
+  let html = '';
+  // Weekly grid lines
+  const d = new Date(TIMELINE_START);
+  while (d <= TIMELINE_END) {
+    if (d.getDay() === 1) { // Monday
+      const x = dayOffset(d.toISOString().slice(0,10)) * DAY_PX;
+      html += `<div class="grid-line" style="left:${x}px;height:${h}px"></div>`;
+    }
+    d.setDate(d.getDate() + 1);
+  }
+  return html;
+}
+
+function renderDateLabels() {
+  let html = '';
+  const d = new Date(TIMELINE_START);
+  let lastMonth = -1;
+  while (d <= TIMELINE_END) {
+    const x = dayOffset(d.toISOString().slice(0,10)) * DAY_PX;
+    // Month labels
+    if (d.getMonth() !== lastMonth && d.getDate() <= 7) {
+      const monthName = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+      html += `<div class="month-marker" style="left:${x}px;top:-22px">${monthName}</div>`;
+      lastMonth = d.getMonth();
+    }
+    // Week labels (Mondays)
+    if (d.getDay() === 1) {
+      const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      html += `<div class="week-marker" style="left:${x}px">${label}</div>`;
+    }
+    d.setDate(d.getDate() + 1);
+  }
+  return html;
+}
+
+function renderTodayLine(h) {
+  const x = dayOffset(TODAY.toISOString().slice(0,10)) * DAY_PX;
+  return `<div class="today-line" style="left:${x}px;height:${h}px"></div>` +
+    `<div class="today-label" style="left:${x}px;top:-18px">Today</div>`;
+}
+
+function renderBars(tasks, locRowMap, floorGroups) {
+  let html = '';
+  for (const task of tasks) {
+    if (!task.start) continue;
+    // Milestones render as vertical lines (see renderMilestones), not bars
+    if (task.type === 'Milestone') continue;
+    const endDate = task.end || task.start;
+    const x = dayX(task.start);
+    const w = Math.max(DAY_PX, dayX(endDate) - x + DAY_PX); // min 1 day width
+    const pct = task.pct || 0;
+
+    // Determine row
+    const primaryLoc = taskPrimaryLoc(task);
+    let rowIndex;
+
+    // Check if multi-location within same floor
+    const taskFloors = [...new Set(task.locs.map(lid => {
+      const loc = LOCATIONS.find(l => l.id === lid);
+      return loc ? loc.floor : null;
+    }).filter(Boolean))];
+
+    if (task.locs.length > 2 && taskFloors.length === 1) {
+      // Multi-loc, same floor → place on floor header row
+      rowIndex = locRowMap['__floor_' + taskFloors[0]];
+    } else {
+      // Single loc or cross-floor → use primary location
+      rowIndex = locRowMap[primaryLoc];
+    }
+
+    if (rowIndex === undefined) continue;
+
+    const y = rowIndex * ROW_H;
+    const cls = barClass(task.type);
+    const doneClass = task.status === 'Done' ? ' bar-done' : '';
+    const fillW = pct > 0 ? `width:${pct}%` : 'width:0';
+    const label = task.type === 'Milestone' ? task.task.replace('MILESTONE: ', '▸ ') : task.task;
+
+    html += `<div class="gantt-bar ${cls}${doneClass}" data-task-id="${task.id}"
+      style="left:${x}px;top:${y + 3}px;width:${w}px;height:22px"
+      onclick="openModal('${task.id}')">
+      <div class="bar-fill" style="${fillW}"></div>
+      <span class="bar-text">${label}</span>
+    </div>`;
+  }
+  return html;
+}
+
+function renderMilestones(tasks, contentH) {
+  if (!showMilestones) return '';
+  let html = '';
+  const milestones = tasks.filter(t => t.type === 'Milestone');
+  for (const ms of milestones) {
+    if (!ms.start) continue;
+    const x = dayX(ms.start);
+    const label = ms.task.replace('MILESTONE: ', '');
+    html += `<div class="milestone-line" style="left:${x}px;height:${contentH}px"></div>`;
+    html += `<div class="milestone-label" style="left:${x}px" onclick="openModal('${ms.id}')">${label}</div>`;
+  }
+  return html;
+}
+
+function renderDeps(tasks, locRowMap) {
+  // SVG overlay for dependency arrows
+  const taskMap = {};
+  for (const t of tasks) taskMap[t.id] = t;
+
+  let arrows = '';
+  for (const task of tasks) {
+    if (!task.blocked_by || task.blocked_by.length === 0) continue;
+    for (const depId of task.blocked_by) {
+      const dep = taskMap[depId];
+      if (!dep || !dep.start || !task.start) continue;
+
+      // Get positions
+      const depEnd = dayX(dep.end || dep.start) + DAY_PX;
+      const taskStart = dayX(task.start);
+      const depRow = getTaskRow(dep, locRowMap);
+      const taskRow = getTaskRow(task, locRowMap);
+      if (depRow === undefined || taskRow === undefined) continue;
+
+      const y1 = depRow * ROW_H + ROW_H / 2;
+      const y2 = taskRow * ROW_H + ROW_H / 2;
+      const midX = (depEnd + taskStart) / 2;
+
+      arrows += `<path class="dep-arrow" d="M${depEnd},${y1} C${midX},${y1} ${midX},${y2} ${taskStart},${y2}" marker-end="url(#arrowhead)"/>`;
+    }
+  }
+
+  return `<svg class="dep-svg" style="width:${TIMELINE_W}px;height:${document.getElementById('ganttRightInner')?.offsetHeight || 2000}px">
+    <defs><marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon class="dep-arrow-head" points="0 0, 8 3, 0 6"/>
+    </marker></defs>
+    ${arrows}
+  </svg>`;
+}
+
+function getTaskRow(task, locRowMap) {
+  const taskFloors = [...new Set(task.locs.map(lid => {
+    const loc = LOCATIONS.find(l => l.id === lid);
+    return loc ? loc.floor : null;
+  }).filter(Boolean))];
+  if (task.locs.length > 2 && taskFloors.length === 1) {
+    return locRowMap['__floor_' + taskFloors[0]];
+  }
+  return locRowMap[taskPrimaryLoc(task)];
+}
+
+// ════════════════════════════════════════════════════════════
+// MODAL
+// ════════════════════════════════════════════════════════════
+
+function openModal(taskId) {
+  const task = TASKS.find(t => t.id === taskId);
+  if (!task) return;
+
+  const locNames = task.locs.map(lid => {
+    const loc = LOCATIONS.find(l => l.id === lid);
+    return loc ? loc.name : lid;
+  }).join(', ');
+
+  const blockers = task.blocked_by.map(bid => {
+    const bt = TASKS.find(t => t.id === bid);
+    return bt ? `${bid}: ${bt.task}` : bid;
+  }).join('<br>');
+
+  const sc = statusClass(task.status);
+  const progressColor = task.status === 'Done' ? 'var(--ok)' :
+    task.status === 'In Progress' ? 'var(--info)' : 'var(--candle)';
+
+  let html = `
+    <h3>${task.task}</h3>
+    <div class="modal-row">
+      <span class="modal-label">ID</span>
+      <span class="modal-value" style="font-family:var(--font-mono)">${task.id}</span>
+    </div>
+    <div class="modal-row">
+      <span class="modal-label">Status</span>
+      <span class="modal-value"><span class="modal-status ${sc}">${task.status}</span></span>
+    </div>
+    <div class="modal-row">
+      <span class="modal-label">Progress</span>
+      <span class="modal-value" style="flex:1">
+        ${task.pct}%
+        <div class="progress-track"><div class="progress-fill" style="width:${task.pct}%;background:${progressColor}"></div></div>
+      </span>
+    </div>
+    <div class="modal-row">
+      <span class="modal-label">Type</span>
+      <span class="modal-value">${task.type}</span>
+    </div>
+    <div class="modal-row">
+      <span class="modal-label">Dates</span>
+      <span class="modal-value">${fmtDate(task.start)}${task.end && task.end !== task.start ? ' → ' + fmtDate(task.end) : ''}</span>
+    </div>
+    ${task.contractor ? `<div class="modal-row">
+      <span class="modal-label">Contractor</span>
+      <span class="modal-value">${task.contractor}</span>
+    </div>` : ''}
+    <div class="modal-row">
+      <span class="modal-label">Locations</span>
+      <span class="modal-value">${locNames}</span>
+    </div>
+    <div class="modal-row">
+      <span class="modal-label">Estimate</span>
+      <span class="modal-value">${fmt$(task.estimate)}</span>
+    </div>
+    <div class="modal-row">
+      <span class="modal-label">Actual</span>
+      <span class="modal-value">${fmt$(task.actual)}${task.estimate > 0 && task.actual > 0 ? ` (${Math.round(task.actual/task.estimate*100)}%)` : ''}</span>
+    </div>
+    ${task.blocked_by.length > 0 ? `<div class="modal-row">
+      <span class="modal-label">Blocked by</span>
+      <span class="modal-value">${blockers}</span>
+    </div>` : ''}
+    ${task.notes ? `<div class="modal-row">
+      <span class="modal-label">Notes</span>
+      <span class="modal-value">${task.notes}</span>
+    </div>` : ''}
+  `;
+
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+// ════════════════════════════════════════════════════════════
+// FILTER HANDLERS
+// ════════════════════════════════════════════════════════════
+
+document.getElementById('controls').addEventListener('click', e => {
+  const btn = e.target.closest('.filter-btn');
+  if (!btn) return;
+
+  const filter = btn.dataset.filter;
+  const value = btn.dataset.value;
+
+  if (filter) {
+    // Radio-style within group
+    const group = btn.closest('.control-group');
+    group.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filters[filter] = value;
+    render();
+  }
+});
+
+document.getElementById('toggleMilestones').addEventListener('click', function() {
+  showMilestones = !showMilestones;
+  this.classList.toggle('active', showMilestones);
+  this.dataset.on = showMilestones;
+  render();
+});
+
+document.getElementById('toggleDeps').addEventListener('click', function() {
+  showDeps = !showDeps;
+  this.classList.toggle('active', showDeps);
+  this.dataset.on = showDeps;
+  render();
+});
+
+// Close modal on overlay click
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+// Close modal on Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// ════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════
+
+document.getElementById('footerDate').textContent = TODAY.toISOString().slice(0, 10);
+render();
+</script>
+</body>
+</html>
