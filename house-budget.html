@@ -373,9 +373,102 @@
 
 </div>
 <script>
+  // ── PASTE YOUR DEPLOYED GAS URL HERE (same URL as timeline page) ──
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycby0z9wLdBVFxQ3YL7W6EgurHBNTJAzHYDVsUy_gKTTGGA7hO9kvVUJeGsohmqKoU7nNYA/exec'; // e.g. 'https://script.google.com/macros/s/AKfyc.../exec'
+  const BUDGET_TARGET = 100000;
+
   const today = new Date().toISOString().slice(0,10);
-  // genDate element removed from header
   document.getElementById('footerDate').textContent = today;
+
+  function fmt$(n) { return '$' + Math.round(n).toLocaleString(); }
+  function fmtK$(n) { return '$' + (n / 1000).toFixed(1) + 'K'; }
+
+  function updateBudgetUI(tasks) {
+    // Classify floors: "Basement" = basement scope, everything else = whole house
+    const basementFloors = new Set(['Basement']);
+    let whSpent = 0, whEst = 0, bmSpent = 0, bmEst = 0;
+
+    for (const t of tasks) {
+      if (t.type === 'Milestone' || t.type === 'Decision') continue;
+      const floor = t.floor || '';
+      const actual = t.actual || 0;
+      const estimate = t.estimate || 0;
+
+      if (basementFloors.has(floor)) {
+        bmSpent += actual;
+        bmEst += estimate;
+      } else {
+        whSpent += actual;
+        whEst += estimate;
+      }
+    }
+
+    const whRemain = Math.max(0, whEst - whSpent);
+    const bmRemain = Math.max(0, bmEst - bmSpent);
+    const totalSpent = whSpent + bmSpent;
+    const totalRemain = whRemain + bmRemain;
+    const totalProjected = totalSpent + totalRemain;
+    const headroom = Math.max(0, BUDGET_TARGET - totalProjected);
+
+    // Whole house column
+    document.getElementById('wh-spent').textContent = fmt$(whSpent);
+    document.getElementById('wh-remain').textContent = fmt$(whRemain);
+    document.getElementById('wh-total').textContent = fmt$(whEst);
+    const whPct = whEst > 0 ? Math.round(whSpent / whEst * 100) : 0;
+    document.getElementById('wh-bar').style.width = whPct + '%';
+
+    // Basement column
+    document.getElementById('bm-spent').textContent = fmt$(bmSpent);
+    document.getElementById('bm-remain').textContent = fmt$(bmRemain);
+    document.getElementById('bm-total').textContent = fmt$(bmEst);
+    const bmPct = bmEst > 0 ? Math.round(bmSpent / bmEst * 100) : 0;
+    document.getElementById('bm-bar').style.width = bmPct + '%';
+
+    // Grand totals
+    document.querySelector('.grand-total-value.val-spent').textContent = fmt$(totalSpent);
+    document.querySelector('.grand-total-value.val-remain').textContent = fmt$(totalRemain);
+    document.querySelector('.grand-total-value.val-total').textContent = fmt$(totalProjected);
+    const grandPct = totalProjected > 0 ? Math.round(totalSpent / totalProjected * 100) : 0;
+    document.querySelector('.grand-total .budget-progress-fill').style.width = grandPct + '%';
+    document.querySelector('.grand-total div[style*="margin-top"] > div:last-child').textContent =
+      fmt$(headroom) + ' headroom against ' + fmt$(BUDGET_TARGET) + ' budget target';
+
+    // Stacked bars (scaled against BUDGET_TARGET)
+    const bars = document.querySelectorAll('.stacked-bar');
+    if (bars[0]) {
+      bars[0].querySelector('.seg-spent').style.width = (whSpent / BUDGET_TARGET * 100) + '%';
+      bars[0].querySelector('.seg-spent').textContent = fmtK$(whSpent);
+      bars[0].querySelector('.seg-remain').style.width = (whRemain / BUDGET_TARGET * 100) + '%';
+      bars[0].querySelector('.seg-remain').textContent = fmtK$(whRemain);
+    }
+    if (bars[1]) {
+      bars[1].querySelector('.seg-spent').style.width = (bmSpent / BUDGET_TARGET * 100) + '%';
+      bars[1].querySelector('.seg-spent').textContent = fmtK$(bmSpent);
+      bars[1].querySelector('.seg-remain').style.width = (bmRemain / BUDGET_TARGET * 100) + '%';
+      bars[1].querySelector('.seg-remain').textContent = fmtK$(bmRemain);
+    }
+  }
+
+  async function loadBudgetData() {
+    if (!GAS_URL) {
+      console.log('No GAS_URL configured — using static HTML values');
+      return;
+    }
+    try {
+      const res = await fetch(GAS_URL + '?tab=tasks');
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      if (data.status !== 'ok') throw new Error(data.message || 'GAS error');
+      if (data.tasks && data.tasks.length > 0) {
+        updateBudgetUI(data.tasks);
+        console.log('Budget updated from ' + data.tasks.length + ' tasks (' + data.generated + ')');
+      }
+    } catch (err) {
+      console.warn('GAS fetch failed — using static values:', err.message);
+    }
+  }
+
+  loadBudgetData();
 </script>
 </body>
 </html>
