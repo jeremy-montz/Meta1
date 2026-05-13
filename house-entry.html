@@ -235,11 +235,11 @@
     button.submit-btn:active { transform: scale(0.98); }
     button.submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    #statusMsg {
+    .status-msg {
       font-size: 0.72rem; letter-spacing: 0.05em; display: none;
     }
-    #statusMsg.success { color: var(--ok); display: block; }
-    #statusMsg.error { color: var(--err); display: block; }
+    .status-msg.success { color: var(--ok); display: block; }
+    .status-msg.error { color: var(--err); display: block; }
 
     /* ── Footer ── */
     .footer {
@@ -355,7 +355,7 @@
 
       <div class="submit-row">
         <button type="button" class="submit-btn" id="taskSubmit" onclick="submitTask()">Add Task</button>
-        <span id="statusMsg"></span>
+        <span id="statusMsg" class="status-msg"></span>
       </div>
     </div>
 
@@ -426,7 +426,7 @@
 
       <div class="submit-row">
         <button type="button" class="submit-btn" id="expenseSubmit" onclick="submitExpense()">Add Expense</button>
-        <span id="statusMsg2"></span>
+        <span id="statusMsg2" class="status-msg"></span>
       </div>
     </div>
 
@@ -510,7 +510,7 @@ function setMode(mode) {
 function clearStatus() {
   ['statusMsg', 'statusMsg2'].forEach(id => {
     const el = document.getElementById(id);
-    el.className = ''; el.textContent = '';
+    el.className = 'status-msg'; el.textContent = '';
   });
 }
 
@@ -688,7 +688,7 @@ async function submitTask() {
     });
 
     // no-cors returns opaque response — treat as success
-    showMsg(msg, 'success', `Task #${nextId} added — "${task}"`);
+    showMsg(msg, 'success', `Task added — #${nextId} "${task}"`);
 
     // Add to local task list so next expense can link to it
     tasks.push({ id: String(nextId), task, status: payload.data.status });
@@ -757,7 +757,9 @@ async function submitExpense() {
       mode: 'no-cors'
     });
 
-    showMsg(msg, 'success', `Expense added — ${vendor} $${parseFloat(amount).toFixed(2)}`);
+    const linkedTask = document.getElementById('eTaskId').value;
+    const linkedNote = linkedTask ? ` (task #${linkedTask})` : '';
+    showMsg(msg, 'success', `Expense added — ${vendor} $${parseFloat(amount).toFixed(2)}${linkedNote}`);
 
     // Reset form — keep date and budget (likely to repeat)
     document.getElementById('eVendor').value = '';
@@ -777,7 +779,7 @@ async function submitExpense() {
 
 // ── Helpers ──
 function showMsg(el, type, text) {
-  el.className = type;
+  el.className = 'status-msg ' + type;
   el.textContent = (type === 'success' ? '✓ ' : '✗ ') + text;
 }
 </script>
