@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add Entry — Davis St</title>
+  <link rel="stylesheet" href="https://jeremymontz.github.io/Meta1/design-system/fonts.css">
+  <link rel="stylesheet" href="https://jeremymontz.github.io/Meta1/design-system/colors_and_type.css">
+  <style>
+    :root {
+      --radius: 2px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-mono);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 900px 700px at 20% 10%, color-mix(in oklch, var(--accent-deep) 14%, transparent), transparent 60%),
+        radial-gradient(ellipse 700px 600px at 80% 80%, color-mix(in oklch, var(--accent) 10%, transparent), transparent 60%),
+        linear-gradient(var(--grid-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, var(--grid-size) var(--grid-size), var(--grid-size) var(--grid-size);
+      pointer-events: none; opacity: 0.7; z-index: 0;
+    }
+
+    .container { width: 100%; max-width: 560px; position: relative; z-index: 1; }
+
+    /* ── Header ── */
+    .header { margin-bottom: 1.5rem; }
+
+    .header-tag {
+      font-size: var(--fs-micro); letter-spacing: var(--ls-widest);
+      color: var(--accent); text-transform: uppercase; margin-bottom: 0.5rem;
+    }
+    .header h1 {
+      font-family: var(--font-display); font-size: 1.8rem;
+      font-weight: 700; letter-spacing: var(--ls-tight); line-height: 1;
+      font-variation-settings: "opsz" 96;
+    }
+    .header h1 span { color: var(--accent); font-style: italic; }
+    .header-sub {
+      margin-top: 0.5rem; font-size: 0.72rem;
+      color: var(--fg-faint); letter-spacing: 0.05em;
+      font-family: var(--font-sans);
+    }
+
+    /* ── Nav ── */
+    .page-nav {
+      display: flex; gap: var(--sp-2); margin-bottom: var(--sp-4);
+    }
+    .page-nav a {
+      font-size: var(--fs-xs); letter-spacing: var(--ls-wide); text-transform: uppercase;
+      color: var(--fg-subtle); text-decoration: none;
+      padding: var(--sp-1) var(--sp-3);
+      border: 1px solid var(--line-soft); border-radius: var(--r-1);
+      transition: all var(--dur) var(--ease-out);
+    }
+    .page-nav a:hover { color: var(--fg); border-color: var(--line-loud); }
+    .page-nav a.active { color: var(--accent); border-color: var(--accent); background: var(--accent-low); }
+
+    /* ── Mode toggle ── */
+    .mode-toggle {
+      display: flex; margin-bottom: 1.5rem;
+      border: 1px solid var(--line); border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .mode-btn {
+      flex: 1; padding: 0.7rem 1rem; text-align: center;
+      font-family: var(--font-mono); font-size: 0.78rem; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--fg-faint); background: var(--bg-elev-1);
+      border: none; cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .mode-btn:first-child { border-right: 1px solid var(--line); }
+    .mode-btn:hover { color: var(--fg-subtle); }
+    .mode-btn.active {
+      color: var(--accent); background: var(--bg-elev-2);
+      box-shadow: inset 0 -2px 0 var(--accent);
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--bg-elev-2); border: 1px solid var(--line);
+      padding: 2rem; position: relative;
+    }
+    .card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-deep));
+    }
+
+    /* ── Section labels ── */
+    .section-label {
+      font-size: 0.6rem; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--accent-deep); margin: 1.5rem 0 1rem;
+      display: flex; align-items: center; gap: 0.75rem;
+      font-family: var(--font-display); font-weight: 500;
+      font-variation-settings: "opsz" 48;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 1px; background: var(--line);
+    }
+    .section-label:first-child { margin-top: 0; }
+
+    /* ── Fields ── */
+    .field { margin-bottom: 1.1rem; }
+
+    label {
+      display: block; font-size: 0.65rem; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--fg-faint); margin-bottom: 0.4rem;
+    }
+    label .req { color: var(--accent); margin-left: 0.25em; }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select,
+    textarea {
+      width: 100%; background: var(--bg); border: 1px solid var(--line);
+      color: var(--fg); font-family: var(--font-mono); font-size: 0.82rem;
+      padding: 0.6rem 0.75rem; border-radius: var(--radius);
+      outline: none; transition: border-color 0.15s; appearance: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px color-mix(in oklch, var(--accent) 8%, transparent);
+    }
+    textarea { resize: vertical; min-height: 60px; }
+
+    /* Number input — hide spinners */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type="number"] { -moz-appearance: textfield; }
+
+    select {
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237a758c' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      padding-right: 2rem;
+    }
+
+    /* ── Location chips (multi-select) ── */
+    .chip-container {
+      display: flex; flex-wrap: wrap; gap: 0.4rem;
+      padding: 0.5rem; background: var(--bg);
+      border: 1px solid var(--line); border-radius: var(--radius);
+      min-height: 42px; cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .chip-container:focus-within { border-color: var(--accent); }
+    .chip-container.empty::after {
+      content: 'tap to select'; color: var(--fg-faint);
+      font-size: 0.75rem; padding: 0.1rem 0.25rem;
+    }
+
+    .chip {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      background: color-mix(in oklch, var(--accent) 12%, transparent);
+      border: 1px solid color-mix(in oklch, var(--accent) 30%, transparent);
+      color: var(--accent); font-size: 0.68rem; letter-spacing: 0.05em;
+      padding: 0.2rem 0.5rem; border-radius: 2px;
+    }
+    .chip-x {
+      cursor: pointer; font-size: 0.8rem; line-height: 1;
+      opacity: 0.6; transition: opacity 0.1s;
+    }
+    .chip-x:hover { opacity: 1; }
+
+    /* Location picker dropdown */
+    .loc-picker {
+      position: relative;
+    }
+    .loc-dropdown {
+      display: none; position: absolute; top: 100%; left: 0; right: 0;
+      max-height: 240px; overflow-y: auto;
+      background: var(--bg-elev-1); border: 1px solid var(--line);
+      border-top: none; z-index: 10;
+    }
+    .loc-dropdown.open { display: block; }
+    .loc-group-label {
+      font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--accent-deep); padding: 0.5rem 0.75rem 0.25rem;
+      font-family: var(--font-display);
+    }
+    .loc-option {
+      padding: 0.45rem 0.75rem; font-size: 0.75rem;
+      color: var(--fg-subtle); cursor: pointer;
+      transition: background 0.1s;
+    }
+    .loc-option:hover { background: var(--bg-elev-2); color: var(--fg); }
+    .loc-option.selected {
+      color: var(--accent);
+      background: color-mix(in oklch, var(--accent) 6%, transparent);
+    }
+
+    /* ── Dollar prefix ── */
+    .dollar-wrap {
+      position: relative;
+    }
+    .dollar-wrap::before {
+      content: '$'; position: absolute; left: 0.75rem; top: 50%;
+      transform: translateY(-50%); color: var(--fg-faint);
+      font-family: var(--font-mono); font-size: 0.82rem;
+      pointer-events: none;
+    }
+    .dollar-wrap input { padding-left: 1.5rem; }
+
+    /* ── Submit ── */
+    .submit-row {
+      margin-top: 1.75rem; display: flex; align-items: center; gap: 1rem;
+    }
+    button[type="button"].submit-btn {
+      background: var(--accent); color: var(--bg); border: none;
+      font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      padding: 0.7rem 1.5rem; border-radius: var(--radius);
+      cursor: pointer; transition: opacity 0.15s, transform 0.1s;
+    }
+    button.submit-btn:hover { opacity: 0.85; }
+    button.submit-btn:active { transform: scale(0.98); }
+    button.submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    #statusMsg {
+      font-size: 0.72rem; letter-spacing: 0.05em; display: none;
+    }
+    #statusMsg.success { color: var(--ok); display: block; }
+    #statusMsg.error { color: var(--err); display: block; }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 1rem; font-size: 0.6rem; color: var(--fg-faint);
+      letter-spacing: 0.08em; display: flex; justify-content: space-between;
+    }
+
+    /* ── Data status ── */
+    .data-status {
+      font-size: 0.65rem; letter-spacing: 0.08em; color: var(--fg-faint);
+      margin-bottom: 1rem; padding: 0.4rem 0.75rem;
+      border-left: 2px solid var(--line);
+    }
+    .data-status.ok { border-color: var(--ok); }
+    .data-status.error { border-color: var(--err); color: var(--err); }
+
+    /* ── Hidden form ── */
+    .form-panel { display: none; }
+    .form-panel.active { display: block; }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      body { padding: 1rem 0.75rem; }
+      .card { padding: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <div class="header">
+      <div class="header-tag">// data entry</div>
+      <h1>Add <span>Entry</span></h1>
+      <div class="header-sub">Quick-add tasks and expenses to the Davis Sheet</div>
+    </div>
+
+    <nav class="page-nav">
+      <a href="house-timeline.html">Timeline</a>
+      <a href="house-budget.html">Budget</a>
+      <a href="house-entry.html" class="active">Add Entry</a>
+    </nav>
+
+    <div class="data-status" id="dataStatus">Loading reference data&hellip;</div>
+
+    <!-- Mode toggle -->
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="modeTask" onclick="setMode('task')">New Task</button>
+      <button class="mode-btn" id="modeExpense" onclick="setMode('expense')">New Expense</button>
+    </div>
+
+    <!-- ═══════════════ TASK FORM ═══════════════ -->
+    <div class="card form-panel active" id="taskForm">
+      <div class="section-label">Task Details</div>
+
+      <div class="field">
+        <label for="tTask">Task name <span class="req">*</span></label>
+        <input type="text" id="tTask" placeholder="e.g. Install bathroom vanity" required />
+      </div>
+
+      <div class="field">
+        <label for="tBudget">Budget scope <span class="req">*</span></label>
+        <select id="tBudget" required>
+          <option value="" disabled selected>-- select --</option>
+          <option value="House">House</option>
+          <option value="Basement">Basement</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="tType">Type</label>
+        <select id="tType">
+          <option value="" selected>-- optional --</option>
+          <option value="DIY">DIY</option>
+          <option value="Contractor">Contractor</option>
+          <option value="Decision">Decision</option>
+          <option value="Milestone">Milestone</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="tEstimate">Cost estimate</label>
+        <div class="dollar-wrap">
+          <input type="number" id="tEstimate" placeholder="0" min="0" step="0.01" />
+        </div>
+      </div>
+
+      <div class="section-label">Location &amp; Assignment</div>
+
+      <div class="field loc-picker" id="locPicker">
+        <label>Locations</label>
+        <div class="chip-container empty" id="locChips" onclick="toggleLocDropdown()"></div>
+        <div class="loc-dropdown" id="locDropdown"></div>
+      </div>
+
+      <div class="field">
+        <label for="tStatus">Status</label>
+        <select id="tStatus">
+          <option value="Pending" selected>Pending</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Done">Done</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="tContractor">Contractor / resource</label>
+        <input type="text" id="tContractor" placeholder="e.g. Shift Electric" />
+      </div>
+
+      <div class="field">
+        <label for="tNotes">Notes</label>
+        <textarea id="tNotes" placeholder="Optional details"></textarea>
+      </div>
+
+      <div class="submit-row">
+        <button type="button" class="submit-btn" id="taskSubmit" onclick="submitTask()">Add Task</button>
+        <span id="statusMsg"></span>
+      </div>
+    </div>
+
+    <!-- ═══════════════ EXPENSE FORM ═══════════════ -->
+    <div class="card form-panel" id="expenseForm">
+      <div class="section-label">Expense Details</div>
+
+      <div class="field">
+        <label for="eVendor">Vendor <span class="req">*</span></label>
+        <input type="text" id="eVendor" placeholder="e.g. Home Depot" required />
+      </div>
+
+      <div class="field">
+        <label for="eAmount">Amount <span class="req">*</span></label>
+        <div class="dollar-wrap">
+          <input type="number" id="eAmount" placeholder="0.00" min="0" step="0.01" required />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="eDate">Date <span class="req">*</span></label>
+        <input type="date" id="eDate" required />
+      </div>
+
+      <div class="field">
+        <label for="eBudget">Budget scope <span class="req">*</span></label>
+        <select id="eBudget" required>
+          <option value="" disabled selected>-- select --</option>
+          <option value="House">House</option>
+          <option value="Basement">Basement</option>
+        </select>
+      </div>
+
+      <div class="section-label">Optional</div>
+
+      <div class="field">
+        <label for="eDescription">Description</label>
+        <input type="text" id="eDescription" placeholder="What was purchased" />
+      </div>
+
+      <div class="field">
+        <label for="eCategory">Category</label>
+        <select id="eCategory">
+          <option value="" selected>-- optional --</option>
+          <option value="Bathroom">Bathroom</option>
+          <option value="Chimney">Chimney</option>
+          <option value="Demo">Demo</option>
+          <option value="Ductwork">Ductwork</option>
+          <option value="Electrical">Electrical</option>
+          <option value="Flooring">Flooring</option>
+          <option value="Insulation">Insulation</option>
+          <option value="Misc">Misc</option>
+          <option value="Misc Interior">Misc Interior</option>
+          <option value="Paint">Paint</option>
+          <option value="Permits">Permits</option>
+          <option value="Plumbing">Plumbing</option>
+          <option value="Roof">Roof</option>
+          <option value="Windows/Doors">Windows/Doors</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="eTaskId">Linked task</label>
+        <select id="eTaskId">
+          <option value="" selected>-- none --</option>
+        </select>
+      </div>
+
+      <div class="submit-row">
+        <button type="button" class="submit-btn" id="expenseSubmit" onclick="submitExpense()">Add Expense</button>
+        <span id="statusMsg2"></span>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>house-entry v1.0 &middot; writes to Davis Sheet</span>
+      <span id="footerTaskCount"></span>
+    </div>
+
+  </div>
+
+<script>
+// ── Config ──
+const GAS_URL = 'https://script.google.com/macros/s/AKfycby0z9wLdBVFxQ3YL7W6EgurHBNTJAzHYDVsUy_gKTTGGA7hO9kvVUJeGsohmqKoU7nNYA/exec';
+
+// ── State ──
+let locations = [];   // from Locations tab
+let tasks = [];       // from Tasks tab (for linked-task dropdown + id generation)
+let selectedLocs = []; // currently selected location IDs
+let locDropdownOpen = false;
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', async () => {
+  // Default date to today
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  document.getElementById('eDate').value = `${yyyy}-${mm}-${dd}`;
+
+  await loadReferenceData();
+});
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  const picker = document.getElementById('locPicker');
+  if (!picker.contains(e.target)) {
+    closeLocDropdown();
+  }
+});
+
+// ── Load reference data from GAS ──
+async function loadReferenceData() {
+  const el = document.getElementById('dataStatus');
+  try {
+    const res = await fetch(GAS_URL + '?tab=tasks,locations');
+    // GAS only supports single tab or all — fetch all
+    const allRes = await fetch(GAS_URL);
+    const data = await allRes.json();
+
+    if (data.status !== 'ok') throw new Error(data.message || 'Bad response');
+
+    locations = data.locations || [];
+    tasks = data.tasks || [];
+
+    buildLocDropdown();
+    buildTaskDropdown();
+
+    const maxId = Math.max(0, ...tasks.map(t => parseInt(t.id, 10) || 0));
+    document.getElementById('footerTaskCount').textContent = `${tasks.length} tasks · next ID: ${maxId + 1}`;
+
+    el.textContent = `Live data loaded · ${tasks.length} tasks · ${locations.length} locations`;
+    el.classList.add('ok');
+
+  } catch (err) {
+    console.error('Failed to load reference data:', err);
+    el.textContent = 'Could not load reference data — form still works, but location picker and task list unavailable.';
+    el.classList.add('error');
+  }
+}
+
+// ── Mode toggle ──
+function setMode(mode) {
+  document.getElementById('modeTask').classList.toggle('active', mode === 'task');
+  document.getElementById('modeExpense').classList.toggle('active', mode === 'expense');
+  document.getElementById('taskForm').classList.toggle('active', mode === 'task');
+  document.getElementById('expenseForm').classList.toggle('active', mode === 'expense');
+  // Clear status messages
+  clearStatus();
+}
+
+function clearStatus() {
+  ['statusMsg', 'statusMsg2'].forEach(id => {
+    const el = document.getElementById(id);
+    el.className = ''; el.textContent = '';
+  });
+}
+
+// ── Location multi-select ──
+function buildLocDropdown() {
+  const dd = document.getElementById('locDropdown');
+  dd.innerHTML = '';
+
+  // Group by floor
+  const groups = {};
+  locations.forEach(loc => {
+    const floor = loc.floor || 'Other';
+    if (!groups[floor]) groups[floor] = [];
+    groups[floor].push(loc);
+  });
+
+  const floorOrder = ['Exterior', 'Upstairs', 'Main', 'Stairs', 'Basement', 'Grounds'];
+  const sortedFloors = Object.keys(groups).sort((a, b) => {
+    const ai = floorOrder.indexOf(a); const bi = floorOrder.indexOf(b);
+    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+  });
+
+  sortedFloors.forEach(floor => {
+    const label = document.createElement('div');
+    label.className = 'loc-group-label';
+    label.textContent = floor;
+    dd.appendChild(label);
+
+    groups[floor].sort((a, b) => (a.sort || 0) - (b.sort || 0)).forEach(loc => {
+      const opt = document.createElement('div');
+      opt.className = 'loc-option';
+      opt.dataset.id = loc.id;
+      opt.dataset.name = loc.name;
+      opt.dataset.floor = loc.floor;
+      opt.textContent = loc.name;
+      opt.onclick = (e) => { e.stopPropagation(); toggleLocation(loc.id, loc.name); };
+      dd.appendChild(opt);
+    });
+  });
+}
+
+function toggleLocDropdown() {
+  const dd = document.getElementById('locDropdown');
+  locDropdownOpen = !locDropdownOpen;
+  dd.classList.toggle('open', locDropdownOpen);
+}
+
+function closeLocDropdown() {
+  locDropdownOpen = false;
+  document.getElementById('locDropdown').classList.remove('open');
+}
+
+function toggleLocation(id, name) {
+  const idx = selectedLocs.findIndex(l => l.id === id);
+  if (idx >= 0) {
+    selectedLocs.splice(idx, 1);
+  } else {
+    selectedLocs.push({ id, name });
+  }
+  renderChips();
+  updateLocOptions();
+}
+
+function renderChips() {
+  const container = document.getElementById('locChips');
+  container.innerHTML = '';
+  container.classList.toggle('empty', selectedLocs.length === 0);
+
+  selectedLocs.forEach(loc => {
+    const chip = document.createElement('span');
+    chip.className = 'chip';
+    chip.innerHTML = `${loc.name} <span class="chip-x" onclick="event.stopPropagation(); removeLocation('${loc.id}')">&times;</span>`;
+    container.appendChild(chip);
+  });
+}
+
+function removeLocation(id) {
+  selectedLocs = selectedLocs.filter(l => l.id !== id);
+  renderChips();
+  updateLocOptions();
+}
+
+function updateLocOptions() {
+  document.querySelectorAll('.loc-option').forEach(opt => {
+    opt.classList.toggle('selected', selectedLocs.some(l => l.id === opt.dataset.id));
+  });
+}
+
+// ── Task dropdown (for expense linking) ──
+function buildTaskDropdown() {
+  const sel = document.getElementById('eTaskId');
+  // Keep the "none" option
+  sel.innerHTML = '<option value="" selected>-- none --</option>';
+
+  // Show active tasks (non-Done), sorted by ID descending so recent ones are first
+  const active = tasks
+    .filter(t => t.status !== 'Done')
+    .sort((a, b) => (parseInt(b.id, 10) || 0) - (parseInt(a.id, 10) || 0));
+
+  active.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t.id;
+    opt.textContent = `#${t.id} — ${t.task}`;
+    sel.appendChild(opt);
+  });
+
+  // Add a separator and Done tasks
+  if (tasks.some(t => t.status === 'Done')) {
+    const sep = document.createElement('option');
+    sep.disabled = true;
+    sep.textContent = '── completed ──';
+    sel.appendChild(sep);
+
+    tasks.filter(t => t.status === 'Done')
+      .sort((a, b) => (parseInt(b.id, 10) || 0) - (parseInt(a.id, 10) || 0))
+      .forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = `#${t.id} — ${t.task}`;
+        sel.appendChild(opt);
+      });
+  }
+}
+
+// ── Submit task ──
+async function submitTask() {
+  const btn = document.getElementById('taskSubmit');
+  const msg = document.getElementById('statusMsg');
+
+  const task = document.getElementById('tTask').value.trim();
+  const budget = document.getElementById('tBudget').value;
+
+  if (!task) { showMsg(msg, 'error', 'Task name is required.'); return; }
+  if (!budget) { showMsg(msg, 'error', 'Budget scope is required.'); return; }
+
+  // Auto-generate next task ID
+  const maxId = Math.max(0, ...tasks.map(t => parseInt(t.id, 10) || 0));
+  const nextId = maxId + 1;
+
+  const locsStr = selectedLocs.map(l => l.id).join(', ');
+
+  // Derive floor from first selected location
+  let floor = '';
+  if (selectedLocs.length > 0) {
+    const firstLoc = locations.find(l => l.id === selectedLocs[0].id);
+    if (firstLoc) floor = firstLoc.floor;
+  }
+
+  const payload = {
+    action: 'addTask',
+    data: {
+      task,
+      budget,
+      type:       document.getElementById('tType').value,
+      estimate:   document.getElementById('tEstimate').value || '',
+      locations:  locsStr,
+      floor,
+      status:     document.getElementById('tStatus').value,
+      contractor: document.getElementById('tContractor').value.trim(),
+      notes:      document.getElementById('tNotes').value.trim()
+    }
+  };
+
+  btn.disabled = true;
+  btn.textContent = 'Adding...';
+  clearStatus();
+
+  try {
+    await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload),
+      redirect: 'follow',
+      mode: 'no-cors'
+    });
+
+    // no-cors returns opaque response — treat as success
+    showMsg(msg, 'success', `Task #${nextId} added — "${task}"`);
+
+    // Add to local task list so next expense can link to it
+    tasks.push({ id: String(nextId), task, status: payload.data.status });
+    buildTaskDropdown();
+    document.getElementById('footerTaskCount').textContent = `${tasks.length} tasks · next ID: ${nextId + 1}`;
+
+    // Reset form
+    document.getElementById('tTask').value = '';
+    document.getElementById('tBudget').value = '';
+    document.getElementById('tType').value = '';
+    document.getElementById('tEstimate').value = '';
+    document.getElementById('tStatus').value = 'Pending';
+    document.getElementById('tContractor').value = '';
+    document.getElementById('tNotes').value = '';
+    selectedLocs = [];
+    renderChips();
+    updateLocOptions();
+
+  } catch (err) {
+    showMsg(msg, 'error', 'Submission failed — check console.');
+    console.error(err);
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Add Task';
+}
+
+// ── Submit expense ──
+async function submitExpense() {
+  const btn = document.getElementById('expenseSubmit');
+  const msg = document.getElementById('statusMsg2');
+
+  const vendor = document.getElementById('eVendor').value.trim();
+  const amount = document.getElementById('eAmount').value;
+  const date   = document.getElementById('eDate').value;
+  const budget = document.getElementById('eBudget').value;
+
+  if (!vendor) { showMsg(msg, 'error', 'Vendor is required.'); return; }
+  if (!amount) { showMsg(msg, 'error', 'Amount is required.'); return; }
+  if (!date)   { showMsg(msg, 'error', 'Date is required.'); return; }
+  if (!budget) { showMsg(msg, 'error', 'Budget scope is required.'); return; }
+
+  const payload = {
+    action: 'addExpense',
+    data: {
+      vendor,
+      amount: parseFloat(amount),
+      date,
+      budget,
+      description: document.getElementById('eDescription').value.trim(),
+      category:    document.getElementById('eCategory').value,
+      task_id:     document.getElementById('eTaskId').value
+    }
+  };
+
+  btn.disabled = true;
+  btn.textContent = 'Adding...';
+  clearStatus();
+
+  try {
+    await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload),
+      redirect: 'follow',
+      mode: 'no-cors'
+    });
+
+    showMsg(msg, 'success', `Expense added — ${vendor} $${parseFloat(amount).toFixed(2)}`);
+
+    // Reset form — keep date and budget (likely to repeat)
+    document.getElementById('eVendor').value = '';
+    document.getElementById('eAmount').value = '';
+    document.getElementById('eDescription').value = '';
+    document.getElementById('eCategory').value = '';
+    document.getElementById('eTaskId').value = '';
+
+  } catch (err) {
+    showMsg(msg, 'error', 'Submission failed — check console.');
+    console.error(err);
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Add Expense';
+}
+
+// ── Helpers ──
+function showMsg(el, type, text) {
+  el.className = type;
+  el.textContent = (type === 'success' ? '✓ ' : '✗ ') + text;
+}
+</script>
+</body>
+</html>
