@@ -13,8 +13,7 @@
       background: var(--bg);
       color: var(--fg);
       font-family: var(--font-mono);
-      height: 100vh;
-      overflow: hidden; /* no page-level scrollbar — gantt handles its own scroll */
+      min-height: 100vh;
     }
     body::before {
       content: '';
@@ -31,14 +30,13 @@
     }
     .page {
       position: relative; z-index: 1; padding: 1.5rem;
-      height: 100%; display: flex; flex-direction: column;
+      max-width: 1600px; margin: 0 auto;
     }
 
     /* ── Header ── */
     .header {
       display: flex; align-items: flex-end; justify-content: space-between;
       margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;
-      max-width: 1600px; margin-left: auto; margin-right: auto;
     }
     .header-tag {
       font-size: var(--fs-micro); letter-spacing: var(--ls-widest);
@@ -58,7 +56,6 @@
     /* ── Nav ── */
     .page-nav {
       display: flex; gap: var(--sp-2); margin-bottom: var(--sp-4);
-      max-width: 1600px; margin-left: auto; margin-right: auto;
     }
     .page-nav a {
       font-size: var(--fs-xs); letter-spacing: var(--ls-wide); text-transform: uppercase;
@@ -75,8 +72,6 @@
       display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: center;
       background: var(--bg-elev-1); border: 1px solid var(--line);
       padding: var(--sp-2) var(--sp-4); margin-bottom: 0;
-      max-width: 1600px; margin-left: auto; margin-right: auto;
-      flex-shrink: 0;
     }
     .control-group { display: flex; align-items: center; gap: var(--sp-2); }
     .control-label {
@@ -90,7 +85,7 @@
       transition: all var(--dur) var(--ease-out);
     }
     .filter-btn:hover { color: var(--fg); border-color: var(--line-loud); }
-    .filter-btn.active { color: var(--accent); border-color: var(--accent); background: var(--accent-low); }
+    .filter-btn.active { color: var(--ok); border-color: var(--ok); background: color-mix(in oklch, var(--ok) 10%, transparent); }
     .control-sep { width: 1px; height: 20px; background: var(--line); }
 
     /* ── Legend ── */
@@ -98,8 +93,6 @@
       display: flex; gap: var(--sp-4); flex-wrap: wrap; align-items: center;
       background: var(--bg-elev-1); border: 1px solid var(--line); border-top: none;
       padding: var(--sp-2) var(--sp-4);
-      max-width: 1600px; margin-left: auto; margin-right: auto;
-      flex-shrink: 0;
     }
     .legend-item { display: flex; align-items: center; gap: 6px; font-size: var(--fs-xs); color: var(--fg-subtle); }
     .leg-swatch { width: 20px; height: 10px; border-radius: var(--r-1); flex-shrink: 0; }
@@ -107,16 +100,14 @@
 
     /* ── Gantt container — fills remaining viewport height ── */
     .gantt-wrap {
-      max-width: 1600px; margin: 0 auto;
       border: 1px solid var(--line); border-top: none;
       background: var(--bg-elev-1);
-      flex: 1; min-height: 0; /* flex child: grow to fill, allow shrink */
     }
 
     /* Single scroll container — handles BOTH vertical + horizontal scroll */
     .gantt-scroll-sync {
-      height: 100%;
-      overflow: auto;         /* one vertical + one horizontal scrollbar */
+      overflow-x: auto;       /* horizontal scroll for long timeline */
+      overflow-y: visible;    /* vertical scroll handled by page */
       display: flex;
       align-items: flex-start;
     }
@@ -159,11 +150,11 @@
     .zone-basement  { background: color-mix(in oklch, var(--ok) 3%, var(--bg-elev-1)); }
     .zone-grounds   { background: color-mix(in oklch, var(--candle) 2%, var(--bg-elev-1)); }
 
-    .floor-header.zone-exterior  { color: var(--ether); }
-    .floor-header.zone-upstairs  { color: var(--accent); }
-    .floor-header.zone-stairs    { color: var(--fg-subtle); }
-    .floor-header.zone-main      { color: var(--candle); }
-    .floor-header.zone-basement  { color: var(--ok); }
+    .floor-header.zone-exterior,
+    .floor-header.zone-upstairs,
+    .floor-header.zone-stairs,
+    .floor-header.zone-main,
+    .floor-header.zone-basement,
     .floor-header.zone-grounds   { color: var(--candle); }
 
     /* ── Location rows ── */
@@ -247,8 +238,8 @@
     /* Bar type colors */
     .bar-contractor      { background: rgba(50,102,173,0.2); border-left: 2px solid #3266ad; color: #8dc8f7; }
     .bar-contractor .bar-fill { background: rgba(50,102,173,0.55); }
-    .bar-diy             { background: rgba(167,255,125,0.08); border-left: 2px solid rgba(167,255,125,0.5); color: var(--ok); }
-    .bar-diy .bar-fill   { background: rgba(167,255,125,0.25); }
+    .bar-diy             { background: rgba(181,123,255,0.12); border-left: 2px solid rgba(181,123,255,0.6); color: var(--accent); }
+    .bar-diy .bar-fill   { background: rgba(181,123,255,0.3); }
     .bar-waiting         { background: rgba(100,100,130,0.2); border-left: 2px solid rgba(100,100,130,0.5); color: var(--fg-faint); }
     .bar-waiting .bar-fill { background: rgba(100,100,130,0.4); }
     .bar-decision        { background: transparent; border: 1.5px dashed var(--candle); color: var(--candle); }
@@ -261,19 +252,19 @@
     /* ── Milestone vertical lines (span all rows, like today line) ── */
     .milestone-line {
       position: absolute; top: 0; bottom: 0; width: 2px;
-      background: var(--accent); z-index: 4; opacity: 0.6;
+      background: var(--candle); z-index: 4; opacity: 0.6;
       pointer-events: none; cursor: pointer;
     }
     .milestone-label {
       position: absolute; top: 4px; font-size: var(--fs-micro);
-      color: var(--accent); letter-spacing: var(--ls-wide);
+      color: var(--candle); letter-spacing: var(--ls-wide);
       white-space: nowrap; font-weight: 600; z-index: 6;
       pointer-events: auto; cursor: pointer;
-      background: color-mix(in oklch, var(--accent) 12%, var(--bg));
+      background: color-mix(in oklch, var(--candle) 12%, var(--bg));
       padding: 1px 6px; border-radius: var(--r-1);
       transform: translateX(4px);
     }
-    .milestone-label:hover { background: var(--accent-low); }
+    .milestone-label:hover { background: color-mix(in oklch, var(--candle) 20%, var(--bg)); }
 
     /* ── Expand/collapse floor groups ── */
     .floor-header { cursor: pointer; user-select: none; }
@@ -339,11 +330,10 @@
 
     /* ── Footer ── */
     .footer {
-      max-width: 1600px; margin: var(--sp-2) auto 0;
+      margin-top: var(--sp-2);
       font-size: var(--fs-xs); color: var(--fg-faint);
       letter-spacing: var(--ls-wide);
       display: flex; justify-content: space-between;
-      flex-shrink: 0;
     }
 
     /* ── Dependency arrows ── */
@@ -353,6 +343,34 @@
     }
     .dep-arrow { fill: none; stroke: var(--candle); stroke-width: 1.5; opacity: 0.5; }
     .dep-arrow-head { fill: var(--candle); opacity: 0.5; }
+
+    /* ── Scrollbar styling ── */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-elev-1); }
+    ::-webkit-scrollbar-thumb { background: var(--line-loud); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--fg-faint); }
+    ::-webkit-scrollbar-corner { background: var(--bg-elev-1); }
+
+    /* ── Data status banner ── */
+    .data-status {
+      padding: var(--sp-2) var(--sp-4);
+      font-size: var(--fs-xs); letter-spacing: var(--ls-wide);
+      text-align: center; border-radius: var(--r-1);
+      margin-bottom: var(--sp-3);
+    }
+    .data-status.loading {
+      background: color-mix(in oklch, var(--candle) 10%, var(--bg-elev-1));
+      color: var(--candle); border: 1px solid color-mix(in oklch, var(--candle) 30%, transparent);
+    }
+    .data-status.error {
+      background: color-mix(in oklch, var(--err) 10%, var(--bg-elev-1));
+      color: var(--err); border: 1px solid color-mix(in oklch, var(--err) 30%, transparent);
+    }
+    .data-status.live {
+      background: color-mix(in oklch, var(--ok) 8%, var(--bg-elev-1));
+      color: var(--ok); border: 1px solid color-mix(in oklch, var(--ok) 20%, transparent);
+    }
+    .data-status.hidden { display: none; }
   </style>
 </head>
 <body>
@@ -370,6 +388,8 @@
     <a href="house-timeline.html" class="active">Timeline</a>
     <a href="house-budget.html">Budget</a>
   </nav>
+
+  <div class="data-status loading" id="dataStatus">Loading live data from Google Sheet&hellip;</div>
 
   <div class="controls" id="controls">
     <div class="control-group">
@@ -398,10 +418,9 @@
 
   <div class="legend">
     <div class="legend-item"><div class="leg-swatch" style="background:rgba(50,102,173,0.5);border-left:2px solid #3266ad"></div>Contractor</div>
-    <div class="legend-item"><div class="leg-swatch" style="background:rgba(167,255,125,0.15);border-left:2px solid rgba(167,255,125,0.5)"></div>DIY</div>
-    <div class="legend-item"><div class="leg-swatch" style="background:rgba(100,100,130,0.2);border-left:2px solid rgba(100,100,130,0.5)"></div>Waiting</div>
+    <div class="legend-item"><div class="leg-swatch" style="background:rgba(181,123,255,0.2);border-left:2px solid rgba(181,123,255,0.6)"></div>DIY</div>
     <div class="legend-item"><div class="leg-swatch" style="border:1.5px dashed #f5c56a;background:transparent"></div>Decision</div>
-    <div class="legend-item"><div class="leg-line" style="background:var(--accent)"></div>Milestone</div>
+    <div class="legend-item"><div class="leg-line" style="background:var(--candle)"></div>Milestone</div>
     <div class="legend-item"><div class="leg-line" style="background:var(--err);width:2px;height:14px"></div><span style="color:var(--err)">Today</span></div>
   </div>
 
@@ -439,86 +458,12 @@
 // ════════════════════════════════════════════════════════════
 
 // ── PASTE YOUR DEPLOYED GAS URL HERE ──
-const GAS_URL = 'https://script.google.com/macros/s/AKfycby0z9wLdBVFxQ3YL7W6EgurHBNTJAzHYDVsUy_gKTTGGA7hO9kvVUJeGsohmqKoU7nNYA/exec'; // e.g. 'https://script.google.com/macros/s/AKfyc.../exec'
+const GAS_URL = 'https://script.google.com/macros/s/AKfycby0z9wLdBVFxQ3YL7W6EgurHBNTJAzHYDVsUy_gKTTGGA7hO9kvVUJeGsohmqKoU7nNYA/exec';
 
-// ── Static fallback data (from Sheet snapshot 2026-05-12) ──
-let LOCATIONS = [
-  { id:'EXT-ROOF',  name:'Roof / Chimney',          floor:'Exterior',  sort:1 },
-  { id:'EXT-ATTIC', name:'Attic',                    floor:'Exterior',  sort:2 },
-  { id:'UP-PRIMARY',name:'Primary Bedroom (NW)',     floor:'Upstairs',  sort:10 },
-  { id:'UP-OFFICE', name:'Office (NE)',              floor:'Upstairs',  sort:11 },
-  { id:'UP-GUEST',  name:'Guest Bedroom (SE)',       floor:'Upstairs',  sort:12 },
-  { id:'UP-BONUS',  name:'Bonus Room (SW)',          floor:'Upstairs',  sort:13 },
-  { id:'UP-BATH',   name:'Upstairs Bathroom',        floor:'Upstairs',  sort:14 },
-  { id:'UP-HALL',   name:'Upstairs Hallway',         floor:'Upstairs',  sort:15 },
-  { id:'STAIR-UP',  name:'Stairs (upper → main)',    floor:'Stairs',    sort:16 },
-  { id:'MN-ENTRY',  name:'Entryway',                 floor:'Main',      sort:20 },
-  { id:'MN-LIVING', name:'Living Room',              floor:'Main',      sort:21 },
-  { id:'MN-DINING', name:'Dining Room',              floor:'Main',      sort:22 },
-  { id:'MN-KITCHEN',name:'Kitchen',                  floor:'Main',      sort:23 },
-  { id:'MN-HALL',   name:'Main Floor Hallway',       floor:'Main',      sort:24 },
-  { id:'MN-BATH',   name:'Main Floor Bathroom',      floor:'Main',      sort:25 },
-  { id:'MN-LAUNDRY',name:'Laundry Closet',           floor:'Main',      sort:26 },
-  { id:'STAIR-DN',  name:'Stairs (main → basement)', floor:'Stairs-Dn', sort:27 },
-  { id:'BM-ENTRY',  name:'Basement Entry / Living',  floor:'Basement',  sort:30 },
-  { id:'BM-KIT',    name:'Basement Kitchenette',     floor:'Basement',  sort:31 },
-  { id:'BM-LAUNDRY',name:'Basement Laundry',         floor:'Basement',  sort:32 },
-  { id:'BM-BATH',   name:'Basement Bathroom',        floor:'Basement',  sort:33 },
-  { id:'BM-HALL',   name:'Basement Hallway',         floor:'Basement',  sort:34 },
-  { id:'BM-BR1',    name:'Basement Bedroom 1 (NW)',  floor:'Basement',  sort:35 },
-  { id:'BM-BR2',    name:'Basement Bedroom 2 (NE)',  floor:'Basement',  sort:36 },
-  { id:'GR-FRONT',  name:'Front Porch / Deck',       floor:'Grounds',   sort:40 },
-  { id:'GR-BACK',   name:'Back Deck / Pit',          floor:'Grounds',   sort:41 },
-  { id:'GR-YARD',   name:'Yard / Foundation',        floor:'Grounds',   sort:42 },
-];
+// ── Data arrays — populated from GAS fetch ──
+let LOCATIONS = [];
 
-let TASKS = [
-  { id:'T-RF-01', task:'Roof repairs', locs:['EXT-ROOF'], type:'Contractor', status:'Done', pct:100, start:'2025-11-07', end:'2025-11-07', contractor:'Dr Roof', estimate:1455, actual:1455, blocked_by:[], notes:'' },
-  { id:'T-RF-02', task:'Chimney tuck pointing', locs:['EXT-ROOF'], type:'Contractor', status:'Done', pct:100, start:'2025-11-26', end:'2025-11-26', contractor:'A Better Chimney', estimate:2000, actual:2000, blocked_by:[], notes:'Bids: $3,500 Alliance; $5,300 Pacific' },
-  { id:'T-RF-03', task:'Remove old HVAC flue', locs:['EXT-ROOF'], type:'Contractor', status:'Done', pct:100, start:'2026-02-18', end:'2026-02-18', contractor:'Dr Roof', estimate:350, actual:350, blocked_by:[], notes:'' },
-  { id:'T-AT-01', task:'Attic insulation removal', locs:['EXT-ATTIC'], type:'Contractor', status:'Done', pct:100, start:'2026-04-06', end:'2026-04-06', contractor:'Gale Contractor Services', estimate:1635, actual:1635, blocked_by:[], notes:'' },
-  { id:'T-AT-02', task:'Attic blown-in insulation', locs:['EXT-ATTIC'], type:'Contractor', status:'Pending', pct:0, start:'2026-06-01', end:'2026-06-15', contractor:'Gale Contractor Services', estimate:2120, actual:0, blocked_by:['T-EL-01'], notes:'Follows Shift Electric attic work' },
-  { id:'T-SM-01', task:'Seismic retrofitting', locs:['GR-YARD'], type:'Contractor', status:'Done', pct:100, start:'2026-02-13', end:'2026-02-13', contractor:'Best Egress', estimate:4200, actual:4200, blocked_by:[], notes:'' },
-  { id:'T-RD-01', task:'Radon mitigation system', locs:['BM-ENTRY'], type:'Contractor', status:'Done', pct:100, start:'2026-02-05', end:'2026-02-13', contractor:'Soil Solutions', estimate:2050, actual:2050, blocked_by:[], notes:'Deposit + final' },
-  { id:'T-EG-01', task:'Egress windows + ext. door', locs:['BM-BR1','BM-BR2','BM-ENTRY'], type:'Contractor', status:'Done', pct:100, start:'2026-01-09', end:'2026-03-19', contractor:'Best Egress', estimate:19105, actual:19105, blocked_by:[], notes:'Permitted and inspected Mar 2026' },
-  { id:'T-DW-01', task:'Basement ductwork', locs:['BM-ENTRY','BM-KIT','BM-HALL','BM-BR1','BM-BR2','BM-BATH'], type:'Contractor', status:'Done', pct:100, start:'2026-01-13', end:'2026-01-28', contractor:'Advanced Heating & AC', estimate:5694, actual:5694, blocked_by:[], notes:'' },
-  { id:'T-PL-01', task:'Basement plumbing — full scope', locs:['BM-BATH','BM-LAUNDRY','BM-KIT'], type:'Contractor', status:'Done', pct:100, start:'2026-04-06', end:'2026-04-06', contractor:'Cliff Alex Plumbing', estimate:4136, actual:4136, blocked_by:[], notes:'' },
-  { id:'T-UB-01', task:'Upstairs bedrooms — paint, closets, fixtures', locs:['UP-PRIMARY','UP-OFFICE','UP-GUEST','UP-BONUS'], type:'DIY', status:'Done', pct:100, start:'2025-12-01', end:'2026-02-28', contractor:'', estimate:2550, actual:2550, blocked_by:[], notes:'Paint, closet shelving, light fixtures, switches, misc supplies' },
-  { id:'T-EL-01', task:'K&T rewire + upstairs electrical', locs:['EXT-ATTIC','UP-PRIMARY','UP-OFFICE','UP-GUEST','UP-BONUS','UP-HALL'], type:'Contractor', status:'In Progress', pct:100, start:'2026-03-01', end:'2026-06-15', contractor:'Shift Electric', estimate:6140, actual:5357, blocked_by:[], notes:'75% paid. Rough-in permit approved. Return after drywall.' },
-  { id:'T-EL-02', task:'Basement electrical — heaters + rough-in', locs:['BM-ENTRY','BM-KIT','BM-HALL','BM-BR1','BM-BR2','BM-BATH','BM-LAUNDRY'], type:'Contractor', status:'In Progress', pct:75, start:'2026-03-01', end:'2026-06-01', contractor:'Shift Electric', estimate:6700, actual:4285, blocked_by:[], notes:'75% paid. Return after drywall + permits.' },
-  { id:'T-FL-01', task:'Basement flooring — full install', locs:['BM-ENTRY','BM-KIT','BM-HALL','BM-BR1','BM-BR2','BM-BATH','BM-LAUNDRY'], type:'Contractor', status:'In Progress', pct:100, start:'2026-05-08', end:'2026-05-30', contractor:'Floor Coverings International', estimate:9500, actual:4550, blocked_by:[], notes:'$9,100 + $400 adj. Deposit paid. In progress.' },
-  { id:'T-PL-02', task:'Upstairs plumbing — galv. replacement', locs:['UP-BATH','MN-DINING'], type:'Contractor', status:'In Progress', pct:25, start:'2026-05-16', end:'2026-05-30', contractor:'Cliff Alex Plumbing', estimate:2000, actual:0, blocked_by:[], notes:'Tub removed. Re-piping in progress. No ETA from Cliff.' },
-  { id:'T-IN-01', task:'Basement wall insulation — R-15', locs:['BM-ENTRY','BM-KIT','BM-HALL','BM-BR1','BM-BR2','BM-BATH'], type:'DIY', status:'Pending', pct:0, start:'2026-05-20', end:'2026-06-01', contractor:'', estimate:2000, actual:1310, blocked_by:['T-EL-02'], notes:'Materials purchased (~$1,310). Install pending post-electrical.' },
-  { id:'T-DRY-01', task:'Drywall — basement (all rooms)', locs:['BM-ENTRY','BM-KIT','BM-HALL','BM-BR1','BM-BR2','BM-BATH','BM-LAUNDRY'], type:'DIY', status:'Pending', pct:0, start:'2026-06-01', end:'2026-06-21', contractor:'', estimate:5000, actual:0, blocked_by:['T-IN-01','T-EL-02'], notes:'Contractor bid $21,700 rejected. DIY.' },
-  { id:'T-BBA-01', task:'Basement bath — shower (prefab pan + tile)', locs:['BM-BATH'], type:'DIY', status:'Pending', pct:0, start:'2026-06-22', end:'2026-07-05', contractor:'', estimate:1200, actual:289, blocked_by:['T-DRY-01'], notes:'Prefab pan purchased ($289). Subway tile + accent trim.' },
-  { id:'T-BBA-02', task:'Basement bath — vanity, mirror, lighting', locs:['BM-BATH'], type:'DIY', status:'Pending', pct:0, start:'2026-06-22', end:'2026-07-05', contractor:'', estimate:800, actual:0, blocked_by:['T-DRY-01'], notes:'' },
-  { id:'T-BBA-03', task:'Basement bath — paint + finish', locs:['BM-BATH'], type:'DIY', status:'Pending', pct:0, start:'2026-07-05', end:'2026-07-10', contractor:'', estimate:150, actual:0, blocked_by:['T-BBA-01','T-BBA-02'], notes:'' },
-  { id:'T-BK-01', task:'Kitchenette — cabinets, countertop, sink', locs:['BM-KIT'], type:'DIY', status:'Pending', pct:0, start:'2026-07-01', end:'2026-07-14', contractor:'', estimate:2500, actual:0, blocked_by:['T-DRY-01'], notes:'No oven — avoids ADU classification.' },
-  { id:'T-BK-02', task:'Kitchenette — appliances + tile', locs:['BM-KIT'], type:'DIY', status:'Pending', pct:0, start:'2026-07-14', end:'2026-07-21', contractor:'', estimate:1500, actual:0, blocked_by:['T-BK-01'], notes:'Hotplate + toaster oven. Backsplash tile.' },
-  { id:'T-BBR-01', task:'Basement bedrooms — closets, paint, trim', locs:['BM-BR1','BM-BR2'], type:'DIY', status:'Pending', pct:0, start:'2026-06-22', end:'2026-07-05', contractor:'', estimate:500, actual:0, blocked_by:['T-DRY-01'], notes:'' },
-  { id:'T-BH-01', task:'Basement hallway — paint, lighting', locs:['BM-HALL'], type:'DIY', status:'Pending', pct:0, start:'2026-06-22', end:'2026-07-01', contractor:'', estimate:200, actual:0, blocked_by:['T-DRY-01'], notes:'' },
-  { id:'T-BE-01', task:'Basement entry — paint, lighting, finish', locs:['BM-ENTRY'], type:'DIY', status:'Pending', pct:0, start:'2026-06-22', end:'2026-07-05', contractor:'', estimate:300, actual:0, blocked_by:['T-DRY-01'], notes:'' },
-  { id:'T-BL-01', task:'Basement laundry — finish', locs:['BM-LAUNDRY'], type:'DIY', status:'Pending', pct:0, start:'2026-07-01', end:'2026-07-10', contractor:'', estimate:200, actual:0, blocked_by:['T-DRY-01'], notes:'Shared vs separate decision pending.' },
-  { id:'T-BST-01', task:'Basement stairwell — drywall, paint', locs:['STAIR-DN'], type:'DIY', status:'Pending', pct:0, start:'2026-07-01', end:'2026-07-10', contractor:'', estimate:300, actual:0, blocked_by:['T-DRY-01'], notes:'' },
-  { id:'T-UBA-01', task:'Upstairs bath — DIY tile shower', locs:['UP-BATH'], type:'DIY', status:'Pending', pct:0, start:'2026-07-01', end:'2026-07-14', contractor:'', estimate:1500, actual:0, blocked_by:['T-PL-02'], notes:'Contractor bids ~$15K rejected. DIY.' },
-  { id:'T-UBA-02', task:'Upstairs bath — vanity, fixtures, finish', locs:['UP-BATH'], type:'DIY', status:'Pending', pct:0, start:'2026-07-14', end:'2026-07-21', contractor:'', estimate:1000, actual:0, blocked_by:['T-UBA-01'], notes:'' },
-  { id:'T-UDR-01', task:'Upstairs drywall repair — patches', locs:['UP-PRIMARY','UP-OFFICE','UP-GUEST','UP-BONUS'], type:'DIY', status:'Pending', pct:0, start:'2026-06-01', end:'2026-06-10', contractor:'', estimate:200, actual:0, blocked_by:[], notes:'1-2 patches some rooms, more in others.' },
-  { id:'T-UDR-02', task:'Dining room wall patches', locs:['MN-DINING'], type:'DIY', status:'Pending', pct:0, start:'2026-06-01', end:'2026-06-07', contractor:'', estimate:150, actual:0, blocked_by:['T-PL-02'], notes:'Wall opened for plumbing access.' },
-  { id:'T-DRY-02', task:'Upstairs drywall repair — all scopes', locs:['UP-BATH','MN-DINING','UP-PRIMARY','UP-OFFICE','UP-GUEST','UP-BONUS'], type:'DIY', status:'Pending', pct:0, start:'2026-06-07', end:'2026-06-18', contractor:'', estimate:2000, actual:0, blocked_by:['T-PL-02'], notes:'Follows plumber.' },
-  { id:'T-MN-01', task:'Main floor — paint', locs:['MN-ENTRY','MN-LIVING','MN-DINING','MN-KITCHEN','MN-HALL'], type:'DIY', status:'Pending', pct:0, start:'2026-07-01', end:'2026-07-14', contractor:'', estimate:300, actual:0, blocked_by:[], notes:'' },
-  { id:'T-MN-02', task:'Main floor — switches + fixtures', locs:['MN-ENTRY','MN-LIVING','MN-DINING'], type:'DIY', status:'Pending', pct:0, start:'2026-07-01', end:'2026-07-07', contractor:'', estimate:200, actual:0, blocked_by:[], notes:'' },
-  { id:'T-MN-03', task:'Main floor — deep clean', locs:['MN-ENTRY','MN-LIVING','MN-DINING','MN-KITCHEN','MN-HALL','MN-BATH','MN-LAUNDRY'], type:'DIY', status:'Pending', pct:0, start:'2026-08-01', end:'2026-08-07', contractor:'', estimate:0, actual:0, blocked_by:[], notes:'Pre-listing clean.' },
-  { id:'T-MB-01', task:'Main bath — patch hole', locs:['MN-BATH'], type:'DIY', status:'Pending', pct:0, start:'2026-06-01', end:'2026-06-03', contractor:'', estimate:50, actual:0, blocked_by:[], notes:'Full update deferred to pre-sale.' },
-  { id:'T-ST-01', task:'Stairs (upper) — repaint', locs:['STAIR-UP'], type:'DIY', status:'Pending', pct:0, start:'2026-06-01', end:'2026-06-07', contractor:'', estimate:100, actual:0, blocked_by:[], notes:'Carpet removed; painted wood underneath.' },
-  { id:'T-PM-01', task:'Habitable space permit — file', locs:['BM-ENTRY'], type:'Waiting', status:'Pending', pct:0, start:'2026-05-15', end:'2026-06-15', contractor:'City of Portland BDS', estimate:600, actual:0, blocked_by:[], notes:'Inspector confirmed feasibility. Not yet filed.' },
-  { id:'T-GR-01', task:'Back deck — lower section demo', locs:['GR-BACK'], type:'DIY', status:'In Progress', pct:80, start:'2026-05-02', end:'2026-05-15', contractor:'', estimate:0, actual:0, blocked_by:[], notes:'Discovered ~8 sq ft pit with concrete walls.' },
-  { id:'T-GR-02', task:'Back deck / pit — decision', locs:['GR-BACK'], type:'Decision', status:'Pending', pct:0, start:'2026-05-15', end:'2026-05-31', contractor:'', estimate:0, actual:0, blocked_by:['T-GR-01'], notes:'Three options: fill, rebuild, or in-ground hot tub.' },
-  { id:'T-GR-03', task:'Hot tub electrical — run before drywall', locs:['BM-ENTRY','GR-BACK'], type:'Contractor', status:'Pending', pct:0, start:'2026-05-20', end:'2026-05-31', contractor:'Shift Electric', estimate:0, actual:0, blocked_by:[], notes:'240V/50A circuit. No-regret move.' },
-  { id:'T-GR-04', task:'Foundation wall paint', locs:['GR-YARD'], type:'DIY', status:'Pending', pct:0, start:'2026-09-15', end:'2026-09-30', contractor:'', estimate:100, actual:0, blocked_by:[], notes:'' },
-  { id:'T-MS-01', task:'MILESTONE: Jeremy moves to basement', locs:['BM-ENTRY'], type:'Milestone', status:'Pending', pct:0, start:'2026-07-01', end:'2026-07-01', contractor:'', estimate:0, actual:0, blocked_by:[], notes:'' },
-  { id:'T-MS-02', task:'MILESTONE: Main house listed', locs:['MN-ENTRY'], type:'Milestone', status:'Pending', pct:0, start:'2026-07-15', end:'2026-07-15', contractor:'', estimate:0, actual:0, blocked_by:['T-MS-01'], notes:'' },
-  { id:'T-MS-03', task:'MILESTONE: First tenant move-in', locs:['MN-ENTRY'], type:'Milestone', status:'Pending', pct:0, start:'2026-09-01', end:'2026-09-01', contractor:'', estimate:0, actual:0, blocked_by:['T-MS-02'], notes:'Target: August 2026' },
-];
+let TASKS = [];
 
 // ════════════════════════════════════════════════════════════
 // CONFIG
@@ -527,7 +472,7 @@ let TASKS = [
 const DAY_PX = 8;
 const ROW_H = 28;
 const FLOOR_H = 28;
-const TIMELINE_START = new Date('2025-10-27'); // Monday before first task
+const TIMELINE_START = new Date('2025-10-01'); // Extended left to show earliest tasks
 const TIMELINE_END   = new Date('2026-10-06'); // Monday after last task
 const TODAY = new Date(); TODAY.setHours(0,0,0,0);
 
@@ -930,6 +875,10 @@ function openModal(taskId) {
       <span class="modal-label">Locations</span>
       <span class="modal-value">${locNames}</span>
     </div>
+    ${task.budget ? `<div class="modal-row">
+      <span class="modal-label">Budget</span>
+      <span class="modal-value">${task.budget}</span>
+    </div>` : ''}
     <div class="modal-row">
       <span class="modal-label">Estimate</span>
       <span class="modal-value">${fmt$(task.estimate)}</span>
@@ -941,6 +890,10 @@ function openModal(taskId) {
     ${task.blocked_by.length > 0 ? `<div class="modal-row">
       <span class="modal-label">Blocked by</span>
       <span class="modal-value">${blockers}</span>
+    </div>` : ''}
+    ${task.bids ? `<div class="modal-row">
+      <span class="modal-label">Bids</span>
+      <span class="modal-value">${task.bids}</span>
     </div>` : ''}
     ${task.notes ? `<div class="modal-row">
       <span class="modal-label">Notes</span>
@@ -1002,14 +955,22 @@ document.addEventListener('keydown', e => {
 });
 
 // ════════════════════════════════════════════════════════════
-// DATA FETCH — loads live data from GAS, falls back to static
+// DATA FETCH — loads live data from GAS; shows explicit status
 // ════════════════════════════════════════════════════════════
+
+function setDataStatus(cls, msg) {
+  const el = document.getElementById('dataStatus');
+  el.className = 'data-status ' + cls;
+  el.textContent = msg;
+  if (cls === 'live') setTimeout(() => el.classList.add('hidden'), 4000);
+}
 
 async function loadData() {
   if (!GAS_URL) {
-    console.log('No GAS_URL configured — using static fallback data');
-    return;
+    setDataStatus('error', 'No data source configured — GAS_URL is empty.');
+    return false;
   }
+  setDataStatus('loading', 'Loading live data from Google Sheet…');
   try {
     const res = await fetch(GAS_URL);
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -1022,9 +983,14 @@ async function loadData() {
     if (data.tasks && data.tasks.length > 0) {
       TASKS = data.tasks;
     }
+    const ts = data.generated ? new Date(data.generated).toLocaleTimeString() : '';
+    setDataStatus('live', `Live — ${TASKS.length} tasks, ${LOCATIONS.length} locations` + (ts ? ` (${ts})` : ''));
     console.log(`Loaded ${LOCATIONS.length} locations, ${TASKS.length} tasks from Sheet (${data.generated})`);
+    return true;
   } catch (err) {
-    console.warn('GAS fetch failed — using static fallback:', err.message);
+    setDataStatus('error', 'Failed to load data: ' + err.message);
+    console.error('GAS fetch failed:', err.message);
+    return false;
   }
 }
 
@@ -1034,8 +1000,9 @@ async function loadData() {
 
 document.getElementById('footerDate').textContent = TODAY.toISOString().slice(0, 10);
 
-// Load live data then render (static fallback renders immediately if no GAS_URL)
-loadData().then(() => render());
+loadData().then(ok => {
+  if (ok) render();
+});
 </script>
 </body>
 </html>
