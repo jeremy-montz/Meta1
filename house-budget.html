@@ -122,10 +122,10 @@
     }
 
     /* Color coding */
-    .val-spent  { color: var(--info); }
+    .val-spent  { color: var(--ok); }
     .val-remain { color: var(--candle); }
-    .val-total  { color: var(--fg); }
-    .fill-spent { background: var(--info); }
+    .val-total  { color: var(--accent); }
+    .fill-spent { background: var(--ok); }
     .fill-remain { background: var(--candle); }
 
     /* Divider */
@@ -177,7 +177,7 @@
       overflow: hidden; margin-bottom: var(--sp-2);
     }
     .stacked-bar .seg-spent {
-      background: var(--info); display: flex; align-items: center;
+      background: var(--ok); display: flex; align-items: center;
       justify-content: center; font-size: var(--fs-xs); color: var(--bg);
       font-weight: 600; min-width: 0;
     }
@@ -215,6 +215,60 @@
     ::-webkit-scrollbar-track { background: var(--bg-elev-1); }
     ::-webkit-scrollbar-thumb { background: var(--line-loud); border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--fg-faint); }
+
+    /* Clickable budget values */
+    .budget-card-value[id] {
+      cursor: pointer; transition: opacity var(--dur) var(--ease-out);
+    }
+    .budget-card-value[id]:hover { opacity: 0.7; }
+
+    /* Drill-down modal */
+    .dd-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6); z-index: 100;
+      align-items: center; justify-content: center;
+    }
+    .dd-overlay.open { display: flex; }
+    .dd-modal {
+      background: var(--bg-elev-2); border: 1px solid var(--line);
+      border-radius: var(--r-2); padding: var(--sp-5);
+      max-width: 800px; width: 90vw; max-height: 80vh; overflow-y: auto;
+      position: relative; box-shadow: var(--shadow-3, 0 8px 32px rgba(0,0,0,0.4));
+    }
+    .dd-close {
+      position: absolute; top: var(--sp-3); right: var(--sp-3);
+      background: none; border: none; color: var(--fg-subtle);
+      font-size: var(--fs-xl); cursor: pointer; line-height: 1;
+    }
+    .dd-close:hover { color: var(--fg); }
+    .dd-header {
+      font-family: var(--font-display); font-size: var(--fs-lg);
+      font-weight: 700; margin-bottom: var(--sp-4);
+      color: var(--accent);
+    }
+    .dd-table {
+      width: 100%; border-collapse: collapse;
+      font-size: var(--fs-sm);
+    }
+    .dd-table th {
+      text-align: left; font-size: var(--fs-xs);
+      letter-spacing: var(--ls-wider); text-transform: uppercase;
+      color: var(--fg-faint); padding: var(--sp-2) var(--sp-3);
+      border-bottom: 1px solid var(--line);
+    }
+    .dd-table td {
+      padding: var(--sp-2) var(--sp-3);
+      border-bottom: 1px solid var(--line-soft);
+      color: var(--fg-subtle);
+    }
+    .dd-table td:first-child { color: var(--fg-faint); font-size: var(--fs-xs); }
+    .dd-table td:nth-child(n+3) { text-align: right; font-variant-numeric: tabular-nums; }
+    .dd-table th:nth-child(n+3) { text-align: right; }
+    .dd-table tfoot td {
+      font-weight: 700; color: var(--fg);
+      border-top: 2px solid var(--line); border-bottom: none;
+    }
+    .dd-table tbody tr:hover { background: var(--bg-elev-1); }
 
     /* Data status banner */
     .data-status {
@@ -256,7 +310,7 @@
 
   <div class="data-status loading" id="dataStatus">Loading live data from Google Sheet&hellip;</div>
 
-  <!-- Two apartments side by side -->
+  <!-- Two units side by side -->
   <div class="budget-container">
 
     <!-- House outline background -->
@@ -268,21 +322,20 @@
       <!-- Floor line -->
       <line x1="30" y1="310" x2="270" y2="310" stroke="var(--fg-subtle)" stroke-width="1"/>
       <!-- Ground level -->
-      <line x1="10" y1="310" x2="290" y2="310" stroke="var(--ok)" stroke-width="2.5"/>
+      <line x1="10" y1="310" x2="290" y2="310" stroke="var(--accent)" stroke-width="2.5"/>
       <!-- Basement walls -->
-      <rect x="30" y="310" width="240" height="140" fill="none" stroke="var(--ok)" stroke-width="1.5" stroke-dasharray="6,4"/>
+      <rect x="30" y="310" width="240" height="140" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="6,4"/>
       <!-- Foundation -->
       <line x1="30" y1="450" x2="270" y2="450" stroke="var(--fg-faint)" stroke-width="1.5"/>
       <!-- Labels -->
       <text x="150" y="260" text-anchor="middle" fill="var(--accent)" font-family="var(--font-mono)" font-size="11" letter-spacing="0.1em" opacity="0.7">WHOLE HOUSE</text>
-      <text x="150" y="395" text-anchor="middle" fill="var(--ok)" font-family="var(--font-mono)" font-size="11" letter-spacing="0.1em" opacity="0.7">BASEMENT</text>
+      <text x="150" y="395" text-anchor="middle" fill="var(--accent)" font-family="var(--font-mono)" font-size="11" letter-spacing="0.1em" opacity="0.7">BASEMENT</text>
     </svg>
 
     <!-- Whole House column -->
     <div class="budget-col">
       <div class="budget-col-header">
         <div class="budget-col-title" style="color:var(--accent)">Whole House</div>
-        <div class="budget-col-subtitle">Main floor + Upstairs + Exterior</div>
       </div>
 
       <div class="budget-card">
@@ -298,9 +351,6 @@
       <div class="budget-card">
         <div class="budget-card-label">Projected Total</div>
         <div class="budget-card-value val-total" id="wh-total">—</div>
-        <div class="budget-progress">
-          <div class="budget-progress-fill fill-spent" id="wh-bar" style="width:0%"></div>
-        </div>
       </div>
     </div>
 
@@ -309,8 +359,7 @@
     <!-- Basement column -->
     <div class="budget-col">
       <div class="budget-col-header">
-        <div class="budget-col-title" style="color:var(--ok)">Basement</div>
-        <div class="budget-col-subtitle">Owner-occupied 2BR/1BA unit</div>
+        <div class="budget-col-title" style="color:var(--accent)">Basement</div>
       </div>
 
       <div class="budget-card">
@@ -326,9 +375,6 @@
       <div class="budget-card">
         <div class="budget-card-label">Projected Total</div>
         <div class="budget-card-value val-total" id="bm-total">—</div>
-        <div class="budget-progress">
-          <div class="budget-progress-fill fill-spent" id="bm-bar" style="width:0%"></div>
-        </div>
       </div>
     </div>
 
@@ -336,7 +382,7 @@
 
   <!-- Grand totals -->
   <div class="grand-total">
-    <div class="grand-total-label">Combined — Both Apartments</div>
+    <div class="grand-total-label">Combined — Both Units</div>
     <div class="grand-total-row">
       <div class="grand-total-item">
         <div class="grand-total-value val-spent">—</div>
@@ -351,12 +397,15 @@
         <div class="grand-total-sub">Projected total</div>
       </div>
     </div>
-    <div style="margin-top:var(--sp-4)">
-      <div class="budget-progress" style="max-width:500px;margin:0 auto;height:10px">
-        <div class="budget-progress-fill fill-spent" style="width:0%"></div>
+    <div style="margin-top:var(--sp-4);max-width:600px;margin-left:auto;margin-right:auto">
+      <div class="stacked-bar" id="grandBar" style="height:12px;border-radius:6px">
+        <div class="seg-spent" style="width:0%"></div>
+        <div class="seg-remain" style="width:0%"></div>
+        <div class="seg-headroom" style="flex:1"></div>
       </div>
-      <div style="font-size:var(--fs-xs);color:var(--fg-subtle);margin-top:var(--sp-2)">
-        Loading&hellip;
+      <div style="display:flex;justify-content:space-between;margin-top:var(--sp-2);font-size:var(--fs-xs)">
+        <span style="color:var(--fg-subtle)" id="headroomNote">Loading&hellip;</span>
+        <span style="color:var(--fg-faint)" id="targetNote"></span>
       </div>
     </div>
   </div>
@@ -380,34 +429,45 @@
     </div>
 
     <div style="margin-top:var(--sp-3)" class="bar-legend">
-      <span><span class="bar-legend-dot" style="background:var(--info)"></span>Spent</span>
+      <span><span class="bar-legend-dot" style="background:var(--ok)"></span>Spent</span>
       <span><span class="bar-legend-dot" style="background:color-mix(in oklch, var(--candle) 30%, transparent)"></span>Remaining</span>
       <span><span class="bar-legend-dot" style="background:var(--bg-elev-1)"></span>Headroom</span>
     </div>
-    <div style="font-size:var(--fs-micro);color:var(--fg-faint);margin-top:var(--sp-2)">
-      Bars scaled against $100K budget target
+    <div style="font-size:var(--fs-micro);color:var(--fg-faint);margin-top:var(--sp-2)" id="barScaleNote">
+      Bars scaled against per-unit budget targets
+    </div>
+  </div>
+
+  <!-- Drill-down modal overlay -->
+  <div class="dd-overlay" id="ddOverlay">
+    <div class="dd-modal">
+      <button class="dd-close" onclick="closeDrillDown()">&times;</button>
+      <div id="ddBody"></div>
     </div>
   </div>
 
   <div class="footer">
-    <span>house-budget v2.0 · <span id="footerDate"></span></span>
+    <span>house-budget v3.0 · <span id="footerDate"></span></span>
     <span>House — Pura Vida</span>
   </div>
 
 </div>
 <script>
-  // ── PASTE YOUR DEPLOYED GAS URL HERE (same URL as timeline page) ──
   const GAS_URL = 'https://script.google.com/macros/s/AKfycby0z9wLdBVFxQ3YL7W6EgurHBNTJAzHYDVsUy_gKTTGGA7hO9kvVUJeGsohmqKoU7nNYA/exec';
-  const BUDGET_TARGET = 100000;
+  let BUDGET_TARGET = 120000; // fallback; overridden by Sheet targets
+  let TARGET_HOUSE = 60000;
+  let TARGET_BASEMENT = 60000;
 
   const today = new Date().toISOString().slice(0,10);
   document.getElementById('footerDate').textContent = today;
+
+  let _allTasks = []; // stored for drill-down
 
   function fmt$(n) { return '$' + Math.round(n).toLocaleString(); }
   function fmtK$(n) { return '$' + (n / 1000).toFixed(1) + 'K'; }
 
   function updateBudgetUI(tasks) {
-    // Classify by budget column: "Basement" = basement scope, everything else = whole house
+    _allTasks = tasks;
     let whSpent = 0, whEst = 0, bmSpent = 0, bmEst = 0;
 
     for (const t of tasks) {
@@ -417,11 +477,9 @@
       const estimate = t.estimate || 0;
 
       if (bucket === 'Basement') {
-        bmSpent += actual;
-        bmEst += estimate;
+        bmSpent += actual; bmEst += estimate;
       } else {
-        whSpent += actual;
-        whEst += estimate;
+        whSpent += actual; whEst += estimate;
       }
     }
 
@@ -436,40 +494,99 @@
     document.getElementById('wh-spent').textContent = fmt$(whSpent);
     document.getElementById('wh-remain').textContent = fmt$(whRemain);
     document.getElementById('wh-total').textContent = fmt$(whEst);
-    const whPct = whEst > 0 ? Math.round(whSpent / whEst * 100) : 0;
-    document.getElementById('wh-bar').style.width = whPct + '%';
 
     // Basement column
     document.getElementById('bm-spent').textContent = fmt$(bmSpent);
     document.getElementById('bm-remain').textContent = fmt$(bmRemain);
     document.getElementById('bm-total').textContent = fmt$(bmEst);
-    const bmPct = bmEst > 0 ? Math.round(bmSpent / bmEst * 100) : 0;
-    document.getElementById('bm-bar').style.width = bmPct + '%';
 
     // Grand totals
     document.querySelector('.grand-total-value.val-spent').textContent = fmt$(totalSpent);
     document.querySelector('.grand-total-value.val-remain').textContent = fmt$(totalRemain);
     document.querySelector('.grand-total-value.val-total').textContent = fmt$(totalProjected);
-    const grandPct = totalProjected > 0 ? Math.round(totalSpent / totalProjected * 100) : 0;
-    document.querySelector('.grand-total .budget-progress-fill').style.width = grandPct + '%';
-    document.querySelector('.grand-total div[style*="margin-top"] > div:last-child').textContent =
-      fmt$(headroom) + ' headroom against ' + fmt$(BUDGET_TARGET) + ' budget target';
+    document.getElementById('headroomNote').textContent =
+      fmt$(headroom) + ' headroom against ' + fmt$(BUDGET_TARGET) + ' target';
+    document.getElementById('targetNote').textContent =
+      'Budget: ' + fmt$(TARGET_HOUSE) + ' house · ' + fmt$(TARGET_BASEMENT) + ' basement';
 
-    // Stacked bars (scaled against BUDGET_TARGET)
-    const bars = document.querySelectorAll('.stacked-bar');
-    if (bars[0]) {
-      bars[0].querySelector('.seg-spent').style.width = (whSpent / BUDGET_TARGET * 100) + '%';
-      bars[0].querySelector('.seg-spent').textContent = fmtK$(whSpent);
-      bars[0].querySelector('.seg-remain').style.width = (whRemain / BUDGET_TARGET * 100) + '%';
-      bars[0].querySelector('.seg-remain').textContent = fmtK$(whRemain);
+    // Grand total progress bar
+    const grandBar = document.getElementById('grandBar');
+    if (grandBar) {
+      grandBar.querySelector('.seg-spent').style.width = (totalSpent / BUDGET_TARGET * 100) + '%';
+      grandBar.querySelector('.seg-remain').style.width = (totalRemain / BUDGET_TARGET * 100) + '%';
     }
-    if (bars[1]) {
-      bars[1].querySelector('.seg-spent').style.width = (bmSpent / BUDGET_TARGET * 100) + '%';
-      bars[1].querySelector('.seg-spent').textContent = fmtK$(bmSpent);
-      bars[1].querySelector('.seg-remain').style.width = (bmRemain / BUDGET_TARGET * 100) + '%';
-      bars[1].querySelector('.seg-remain').textContent = fmtK$(bmRemain);
+
+    // Stacked bars (per-unit, scaled against that unit's target)
+    const allocBars = document.querySelectorAll('.budget-bar-section .stacked-bar');
+    if (allocBars[0]) {
+      allocBars[0].querySelector('.seg-spent').style.width = (whSpent / TARGET_HOUSE * 100) + '%';
+      allocBars[0].querySelector('.seg-spent').textContent = fmtK$(whSpent);
+      allocBars[0].querySelector('.seg-remain').style.width = (whRemain / TARGET_HOUSE * 100) + '%';
+      allocBars[0].querySelector('.seg-remain').textContent = fmtK$(whRemain);
+    }
+    if (allocBars[1]) {
+      allocBars[1].querySelector('.seg-spent').style.width = (bmSpent / TARGET_BASEMENT * 100) + '%';
+      allocBars[1].querySelector('.seg-spent').textContent = fmtK$(bmSpent);
+      allocBars[1].querySelector('.seg-remain').style.width = (bmRemain / TARGET_BASEMENT * 100) + '%';
+      allocBars[1].querySelector('.seg-remain').textContent = fmtK$(bmRemain);
     }
   }
+
+  // ── Drill-down modal ──
+  function filterTasks(unit, category) {
+    return _allTasks.filter(t => {
+      if (t.type === 'Milestone' || t.type === 'Decision') return false;
+      const bucket = (t.budget || '').trim();
+      const isUnit = unit === 'Basement' ? bucket === 'Basement' : bucket !== 'Basement';
+      if (!isUnit) return false;
+      if (category === 'spent') return (t.actual || 0) > 0;
+      if (category === 'remaining') return (t.estimate || 0) - (t.actual || 0) > 0;
+      return true; // 'total'
+    });
+  }
+
+  function showDrillDown(unit, category) {
+    const items = filterTasks(unit, category);
+    const label = unit + ' — ' + category.charAt(0).toUpperCase() + category.slice(1);
+    let html = '<div class="dd-header">' + label + ' (' + items.length + ' tasks)</div>';
+    html += '<table class="dd-table"><thead><tr><th>#</th><th>Task</th><th>Estimate</th><th>Actual</th><th>Remaining</th></tr></thead><tbody>';
+    let totEst = 0, totAct = 0;
+    for (const t of items) {
+      const est = t.estimate || 0;
+      const act = t.actual || 0;
+      const rem = Math.max(0, est - act);
+      totEst += est; totAct += act;
+      html += '<tr><td>' + t.id + '</td><td>' + (t.task || '') + '</td>';
+      html += '<td>' + (est ? fmt$(est) : '—') + '</td>';
+      html += '<td>' + (act ? fmt$(act) : '—') + '</td>';
+      html += '<td>' + (rem ? fmt$(rem) : '—') + '</td></tr>';
+    }
+    const totRem = Math.max(0, totEst - totAct);
+    html += '</tbody><tfoot><tr><td></td><td>Total</td><td>' + fmt$(totEst) + '</td><td>' + fmt$(totAct) + '</td><td>' + fmt$(totRem) + '</td></tr></tfoot></table>';
+
+    const overlay = document.getElementById('ddOverlay');
+    const body = document.getElementById('ddBody');
+    body.innerHTML = html;
+    overlay.classList.add('open');
+  }
+
+  function closeDrillDown() {
+    document.getElementById('ddOverlay').classList.remove('open');
+  }
+
+  // Wire up click handlers after DOM ready
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('wh-spent').addEventListener('click', () => showDrillDown('House', 'spent'));
+    document.getElementById('wh-remain').addEventListener('click', () => showDrillDown('House', 'remaining'));
+    document.getElementById('wh-total').addEventListener('click', () => showDrillDown('House', 'total'));
+    document.getElementById('bm-spent').addEventListener('click', () => showDrillDown('Basement', 'spent'));
+    document.getElementById('bm-remain').addEventListener('click', () => showDrillDown('Basement', 'remaining'));
+    document.getElementById('bm-total').addEventListener('click', () => showDrillDown('Basement', 'total'));
+
+    document.getElementById('ddOverlay').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeDrillDown();
+    });
+  });
 
   function setDataStatus(cls, msg) {
     const el = document.getElementById('dataStatus');
@@ -485,21 +602,26 @@
     }
     setDataStatus('loading', 'Loading live data from Google Sheet…');
     try {
-      const res = await fetch(GAS_URL + '?tab=tasks');
+      const res = await fetch(GAS_URL + '?tab=all');
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
       if (data.status !== 'ok') throw new Error(data.message || 'GAS error');
       if (data.tasks && data.tasks.length > 0) {
+        // Apply targets from Sheet if available
+        if (data.summary && data.summary.targets) {
+          const t = data.summary.targets;
+          if (t.total > 0) BUDGET_TARGET = t.total;
+          if (t.house > 0) TARGET_HOUSE = t.house;
+          if (t.basement > 0) TARGET_BASEMENT = t.basement;
+        }
         updateBudgetUI(data.tasks);
         const ts = data.generated ? new Date(data.generated).toLocaleTimeString() : '';
         setDataStatus('live', `Live — ${data.tasks.length} tasks` + (ts ? ` (${ts})` : ''));
-        console.log('Budget updated from ' + data.tasks.length + ' tasks (' + data.generated + ')');
       } else {
         setDataStatus('error', 'No task data returned from Sheet.');
       }
     } catch (err) {
       setDataStatus('error', 'Failed to load data: ' + err.message);
-      console.error('GAS fetch failed:', err.message);
     }
   }
 
