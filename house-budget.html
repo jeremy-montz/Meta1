@@ -209,6 +209,33 @@
       letter-spacing: var(--ls-wide);
       display: flex; justify-content: space-between;
     }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-elev-1); }
+    ::-webkit-scrollbar-thumb { background: var(--line-loud); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--fg-faint); }
+
+    /* Data status banner */
+    .data-status {
+      padding: var(--sp-2) var(--sp-4);
+      font-size: var(--fs-xs); letter-spacing: var(--ls-wide);
+      text-align: center; border-radius: var(--r-1);
+      margin-bottom: var(--sp-3);
+    }
+    .data-status.loading {
+      background: color-mix(in oklch, var(--candle) 10%, var(--bg-elev-1));
+      color: var(--candle); border: 1px solid color-mix(in oklch, var(--candle) 30%, transparent);
+    }
+    .data-status.error {
+      background: color-mix(in oklch, var(--err) 10%, var(--bg-elev-1));
+      color: var(--err); border: 1px solid color-mix(in oklch, var(--err) 30%, transparent);
+    }
+    .data-status.live {
+      background: color-mix(in oklch, var(--ok) 8%, var(--bg-elev-1));
+      color: var(--ok); border: 1px solid color-mix(in oklch, var(--ok) 20%, transparent);
+    }
+    .data-status.hidden { display: none; }
   </style>
 </head>
 <body>
@@ -226,6 +253,8 @@
     <a href="house-timeline.html">Timeline</a>
     <a href="house-budget.html" class="active">Budget</a>
   </nav>
+
+  <div class="data-status loading" id="dataStatus">Loading live data from Google Sheet&hellip;</div>
 
   <!-- Two apartments side by side -->
   <div class="budget-container">
@@ -258,23 +287,20 @@
 
       <div class="budget-card">
         <div class="budget-card-label">Spent</div>
-        <div class="budget-card-value val-spent" id="wh-spent">$24,529</div>
-        <div class="budget-card-detail">10 contractor + DIY tasks completed or in progress</div>
+        <div class="budget-card-value val-spent" id="wh-spent">—</div>
       </div>
 
       <div class="budget-card">
         <div class="budget-card-label">Remaining Estimate</div>
-        <div class="budget-card-value val-remain" id="wh-remain">$12,403</div>
-        <div class="budget-card-detail">Paint, drywall repair, bath tile, fixtures, insulation</div>
+        <div class="budget-card-value val-remain" id="wh-remain">—</div>
       </div>
 
       <div class="budget-card">
         <div class="budget-card-label">Projected Total</div>
-        <div class="budget-card-value val-total" id="wh-total">$36,932</div>
+        <div class="budget-card-value val-total" id="wh-total">—</div>
         <div class="budget-progress">
-          <div class="budget-progress-fill fill-spent" id="wh-bar" style="width:66%"></div>
+          <div class="budget-progress-fill fill-spent" id="wh-bar" style="width:0%"></div>
         </div>
-        <div class="budget-card-detail">66% of projected already spent</div>
       </div>
     </div>
 
@@ -289,23 +315,20 @@
 
       <div class="budget-card">
         <div class="budget-card-label">Spent</div>
-        <div class="budget-card-value val-spent" id="bm-spent">$37,329</div>
-        <div class="budget-card-detail">Egress, ductwork, plumbing, electrical, flooring, radon</div>
+        <div class="budget-card-value val-spent" id="bm-spent">—</div>
       </div>
 
       <div class="budget-card">
         <div class="budget-card-label">Remaining Estimate</div>
-        <div class="budget-card-value val-remain" id="bm-remain">$23,331</div>
-        <div class="budget-card-detail">Drywall, insulation, bath, kitchenette, bedrooms, finish</div>
+        <div class="budget-card-value val-remain" id="bm-remain">—</div>
       </div>
 
       <div class="budget-card">
         <div class="budget-card-label">Projected Total</div>
-        <div class="budget-card-value val-total" id="bm-total">$60,660</div>
+        <div class="budget-card-value val-total" id="bm-total">—</div>
         <div class="budget-progress">
-          <div class="budget-progress-fill fill-spent" id="bm-bar" style="width:62%"></div>
+          <div class="budget-progress-fill fill-spent" id="bm-bar" style="width:0%"></div>
         </div>
-        <div class="budget-card-detail">62% of projected already spent</div>
       </div>
     </div>
 
@@ -316,24 +339,24 @@
     <div class="grand-total-label">Combined — Both Apartments</div>
     <div class="grand-total-row">
       <div class="grand-total-item">
-        <div class="grand-total-value val-spent">$61,858</div>
+        <div class="grand-total-value val-spent">—</div>
         <div class="grand-total-sub">Total spent</div>
       </div>
       <div class="grand-total-item">
-        <div class="grand-total-value val-remain">$35,734</div>
+        <div class="grand-total-value val-remain">—</div>
         <div class="grand-total-sub">Remaining estimate</div>
       </div>
       <div class="grand-total-item">
-        <div class="grand-total-value val-total">$97,592</div>
+        <div class="grand-total-value val-total">—</div>
         <div class="grand-total-sub">Projected total</div>
       </div>
     </div>
     <div style="margin-top:var(--sp-4)">
       <div class="budget-progress" style="max-width:500px;margin:0 auto;height:10px">
-        <div class="budget-progress-fill fill-spent" style="width:63%"></div>
+        <div class="budget-progress-fill fill-spent" style="width:0%"></div>
       </div>
       <div style="font-size:var(--fs-xs);color:var(--fg-subtle);margin-top:var(--sp-2)">
-        $2,408 headroom against $100K budget target
+        Loading&hellip;
       </div>
     </div>
   </div>
@@ -344,15 +367,15 @@
 
     <div style="font-size:var(--fs-xs);color:var(--fg-subtle);margin-bottom:var(--sp-2)">Whole House</div>
     <div class="stacked-bar">
-      <div class="seg-spent" style="width:25.1%">$24.5K</div>
-      <div class="seg-remain" style="width:12.7%">$12.4K</div>
+      <div class="seg-spent" style="width:0%"></div>
+      <div class="seg-remain" style="width:0%"></div>
       <div class="seg-headroom" style="flex:1"></div>
     </div>
 
     <div style="font-size:var(--fs-xs);color:var(--fg-subtle);margin-bottom:var(--sp-2);margin-top:var(--sp-3)">Basement</div>
     <div class="stacked-bar">
-      <div class="seg-spent" style="width:38.2%">$37.3K</div>
-      <div class="seg-remain" style="width:23.9%">$23.3K</div>
+      <div class="seg-spent" style="width:0%"></div>
+      <div class="seg-remain" style="width:0%"></div>
       <div class="seg-headroom" style="flex:1"></div>
     </div>
 
@@ -374,7 +397,7 @@
 </div>
 <script>
   // ── PASTE YOUR DEPLOYED GAS URL HERE (same URL as timeline page) ──
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycby0z9wLdBVFxQ3YL7W6EgurHBNTJAzHYDVsUy_gKTTGGA7hO9kvVUJeGsohmqKoU7nNYA/exec'; // e.g. 'https://script.google.com/macros/s/AKfyc.../exec'
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycby0z9wLdBVFxQ3YL7W6EgurHBNTJAzHYDVsUy_gKTTGGA7hO9kvVUJeGsohmqKoU7nNYA/exec';
   const BUDGET_TARGET = 100000;
 
   const today = new Date().toISOString().slice(0,10);
@@ -384,17 +407,16 @@
   function fmtK$(n) { return '$' + (n / 1000).toFixed(1) + 'K'; }
 
   function updateBudgetUI(tasks) {
-    // Classify floors: "Basement" = basement scope, everything else = whole house
-    const basementFloors = new Set(['Basement']);
+    // Classify by budget column: "Basement" = basement scope, everything else = whole house
     let whSpent = 0, whEst = 0, bmSpent = 0, bmEst = 0;
 
     for (const t of tasks) {
       if (t.type === 'Milestone' || t.type === 'Decision') continue;
-      const floor = t.floor || '';
+      const bucket = (t.budget || '').trim();
       const actual = t.actual || 0;
       const estimate = t.estimate || 0;
 
-      if (basementFloors.has(floor)) {
+      if (bucket === 'Basement') {
         bmSpent += actual;
         bmEst += estimate;
       } else {
@@ -449,11 +471,19 @@
     }
   }
 
+  function setDataStatus(cls, msg) {
+    const el = document.getElementById('dataStatus');
+    el.className = 'data-status ' + cls;
+    el.textContent = msg;
+    if (cls === 'live') setTimeout(() => el.classList.add('hidden'), 4000);
+  }
+
   async function loadBudgetData() {
     if (!GAS_URL) {
-      console.log('No GAS_URL configured — using static HTML values');
+      setDataStatus('error', 'No data source configured — GAS_URL is empty.');
       return;
     }
+    setDataStatus('loading', 'Loading live data from Google Sheet…');
     try {
       const res = await fetch(GAS_URL + '?tab=tasks');
       if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -461,10 +491,15 @@
       if (data.status !== 'ok') throw new Error(data.message || 'GAS error');
       if (data.tasks && data.tasks.length > 0) {
         updateBudgetUI(data.tasks);
+        const ts = data.generated ? new Date(data.generated).toLocaleTimeString() : '';
+        setDataStatus('live', `Live — ${data.tasks.length} tasks` + (ts ? ` (${ts})` : ''));
         console.log('Budget updated from ' + data.tasks.length + ' tasks (' + data.generated + ')');
+      } else {
+        setDataStatus('error', 'No task data returned from Sheet.');
       }
     } catch (err) {
-      console.warn('GAS fetch failed — using static values:', err.message);
+      setDataStatus('error', 'Failed to load data: ' + err.message);
+      console.error('GAS fetch failed:', err.message);
     }
   }
 
