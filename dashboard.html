@@ -1,677 +1,504 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Agent Status — Claudemonzter</title>
-  <link rel="stylesheet" href="design-system/fonts.css">
-  <link rel="stylesheet" href="design-system/colors_and_type.css">
-  <style>
-    :root {
-      --bg:         #08070d;
-      --surface:    #161420;
-      --surface2:   #201e29;
-      --border:     #32303f;
-      --text:       #f4f3f7;
-      --muted:      #7a758c;
-      --accent:     #b57bff;
-      --accent2:    #7b61ff;
-      --mono:       'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
-      --display:    'Fraunces', 'Iowan Old Style', Georgia, serif;
-      --radius:     2px;
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Agent Status — Claudemonzter</title>
+<style>
+:root {
+  --bg: #08070d;
+  --surface: #161420;
+  --surface2: #201e29;
+  --surface3: #32303f;
+  --border: #32303f;
+  --text: #f4f3f7;
+  --text-muted: #d8d6e0;
+  --muted: #7a758c;
+  --faint: #4f4b60;
+  --accent: #b57bff;
+  --accent-deep: #7b61ff;
+  --ok: #a7ff7d;
+  --warn: #f5c56a;
+  --err: #ff4757;
+  --mono: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+  --display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --radius: 2px;
+  --L1: #7b61ff;
+  --L2: #5b8def;
+  --L3: #4ade80;
+  --L4: #f5c56a;
+  --L5: #ff6b6b;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg); color: var(--text); font-family: var(--mono);
+  font-size: 13px; min-height: 100vh; padding: 1.5rem 2rem 3rem;
+  position: relative; z-index: 1;
+}
+body::before {
+  content: ""; position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 900px 700px at 20% 10%, color-mix(in oklch, #7b61ff 14%, transparent), transparent 60%),
+    radial-gradient(ellipse 700px 600px at 80% 80%, color-mix(in oklch, #b57bff 10%, transparent), transparent 60%);
+  pointer-events: none; z-index: 0;
+}
+body::after {
+  content: ""; position: fixed; inset: 0;
+  background-image:
+    linear-gradient(color-mix(in oklch, #b57bff 6%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklch, #b57bff 6%, transparent) 1px, transparent 1px);
+  background-size: 48px 48px; pointer-events: none; opacity: 0.35; z-index: 0;
+}
 
-      /* Agent status colors */
-      --s-open:         #7a758c;
-      --s-active:       #a7ff7d;
-      --s-incomplete:   #f5c56a;
-      --s-pending:      #b57bff;
-      --s-alert:        #f5c56a;
-      --s-error:        #ff4757;
-      --s-orchestrator: #b57bff;
+/* Header */
+.header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2rem; position: relative; z-index: 1; }
+.header-tag { font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.3rem; }
+h1 { font-family: var(--display); font-weight: 700; font-size: 2.8rem; letter-spacing: -0.02em; color: var(--text); line-height: 1; font-variation-settings: "opsz" 96; }
+h1 span { color: var(--accent); font-style: italic; font-variation-settings: "opsz" 96, "SOFT" 100; }
+.header-meta { text-align: right; font-size: 0.62rem; color: var(--muted); letter-spacing: 0.08em; }
+.refresh-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.1em; padding: 0.3rem 0.75rem; cursor: pointer; transition: border-color 0.15s, color 0.15s; display: block; margin-left: auto; margin-top: 0.4rem; }
+.refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-      /* Canon Integrity colors */
-      --ci-clean:  #a7ff7d;
-      --ci-alert:  #f5c56a;
-      --ci-error:  #ff4757;
-      --ci-na:     #7a758c;
-    }
+/* Summary */
+.summary { display: flex; gap: 0.75rem; margin-bottom: 2rem; flex-wrap: wrap; position: relative; z-index: 1; }
+.summary-chip { background: var(--surface); border: 1px solid var(--border); padding: 0.4rem 0.85rem; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; display: flex; align-items: center; gap: 0.5rem; }
+.chip-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* Grid */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); position: relative; z-index: 1; }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--mono);
-      font-size: 0.82rem;
-      min-height: 100vh;
-      padding: 1.5rem 2rem 3rem;
-      position: relative;
-      z-index: 1;
-    }
+/* Card */
+.agent-card { background: var(--surface); padding: 1.25rem; position: relative; transition: background 0.15s; display: flex; flex-direction: column; }
+.agent-card:hover { background: var(--surface2); }
+.agent-card::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 3px; }
+.agent-card[data-status="active"]::before { background: var(--ok); }
+.agent-card[data-status="idle"]::before { background: var(--muted); }
+.agent-card[data-status="blocked"]::before { background: var(--err); }
+.agent-card[data-status="flagged"]::before { background: var(--warn); }
 
-    body::before {
-      content: "";
-      position: fixed; inset: 0;
-      background:
-        radial-gradient(ellipse 900px 700px at 20% 10%, color-mix(in oklch, #7b61ff 14%, transparent), transparent 60%),
-        radial-gradient(ellipse 700px 600px at 80% 80%, color-mix(in oklch, #b57bff 10%, transparent), transparent 60%);
-      pointer-events: none;
-      z-index: 0;
-    }
+/* Upper band */
+.card-upper { padding-left: 0.5rem; margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+.upper-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.25rem; }
+.upper-left { flex: 1; min-width: 0; }
+.upper-right { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; margin-left: 0.75rem; gap: 0.2rem; }
+.agent-name { font-family: var(--display); font-size: 1.25rem; font-weight: 500; letter-spacing: -0.01em; color: var(--text); line-height: 1.1; font-variation-settings: "opsz" 36; }
+.project-name { font-size: 0.6rem; color: var(--faint); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 0.15rem; }
+.card-timestamp { font-size: 0.5rem; color: var(--faint); letter-spacing: 0.06em; white-space: nowrap; }
+.badge { font-size: 0.55rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; padding: 0.2rem 0.55rem; border-radius: var(--radius); white-space: nowrap; }
+.badge-active { background: rgba(167,255,125,0.12); color: var(--ok); }
+.badge-idle { background: rgba(122,117,140,0.2); color: var(--muted); }
+.badge-blocked { background: rgba(255,71,87,0.15); color: var(--err); }
+.badge-flagged { background: rgba(245,197,106,0.15); color: var(--warn); }
+.mood-value { font-size: 0.7rem; color: var(--accent-deep); font-style: italic; letter-spacing: 0.02em; }
+.persona-line { font-size: 0.7rem; color: var(--muted); font-style: italic; line-height: 1.3; margin-top: 0.35rem; }
 
-    body::after {
-      content: "";
-      position: fixed; inset: 0;
-      background-image:
-        linear-gradient(color-mix(in oklch, #b57bff 6%, transparent) 1px, transparent 1px),
-        linear-gradient(90deg, color-mix(in oklch, #b57bff 6%, transparent) 1px, transparent 1px);
-      background-size: 48px 48px;
-      pointer-events: none;
-      opacity: 0.35;
-      z-index: 0;
-    }
+/* Config pips */
+.config-layers { display: flex; gap: 3px; margin-top: 0.6rem; }
+.layer-pip { display: flex; align-items: center; gap: 4px; padding: 3px 7px; border-radius: var(--radius); font-size: 8px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; border: 1px solid; cursor: default; position: relative; }
+.layer-pip.reported { border-color: color-mix(in oklch, var(--layer-color) 40%, transparent); background: color-mix(in oklch, var(--layer-color) 8%, transparent); color: var(--layer-color); }
+.layer-pip.not-reported { border-color: rgba(79,75,96,0.4); background: rgba(79,75,96,0.08); color: var(--faint); }
+.layer-pip .pip-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.layer-pip.reported .pip-dot { background: var(--layer-color); }
+.layer-pip.not-reported .pip-dot { background: var(--faint); }
+.layer-pip .pip-tip { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); white-space: nowrap; background: var(--surface3); color: var(--text-muted); border: 1px solid var(--border); padding: 4px 8px; font-size: 9px; font-weight: 400; letter-spacing: 0.04em; text-transform: none; z-index: 10; pointer-events: none; }
+.layer-pip:hover .pip-tip { display: block; }
 
-    /* ── Header ── */
-    .header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      margin-bottom: 2rem;
-      position: relative;
-      z-index: 1;
-    }
+/* Flag banner */
+.flag-banner { margin-top: 0.55rem; background: rgba(255,71,87,0.08); border: 1px solid rgba(255,71,87,0.25); padding: 0.4rem 0.65rem; font-size: 0.62rem; color: var(--err); letter-spacing: 0.05em; display: flex; align-items: baseline; gap: 0.4rem; }
+.flag-reason { color: var(--text-muted); }
 
-    .header-tag {
-      font-size: 10px;
-      letter-spacing: 0.28em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 0.3rem;
-    }
+/* Session section */
+.card-session { padding-left: 0.5rem; flex: 1; }
+.session-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+.session-label { font-size: 0.55rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+.session-stale-tag { font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warn); background: rgba(245,197,106,0.1); border: 1px solid rgba(245,197,106,0.2); padding: 2px 6px; }
+.session-date-tag { font-size: 0.5rem; color: var(--faint); letter-spacing: 0.06em; margin-right: 0.4rem; }
+.session-field { margin-bottom: 0.5rem; }
+.session-field-label { font-size: 0.52rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); margin-bottom: 0.15rem; }
+.session-field-value { font-size: 0.72rem; color: var(--text-muted); line-height: 1.4; }
+.card-session.stale { opacity: 0.6; }
+.card-session.stale .session-field-value { color: var(--muted); }
+.session-expand { font-size: 0.55rem; color: var(--faint); letter-spacing: 0.06em; cursor: pointer; text-align: right; margin-top: 0.35rem; transition: color 0.15s; }
+.session-expand:hover { color: var(--accent); }
+.session-detail { display: none; }
+.session-detail.open { display: block; }
 
-    h1 {
-      font-family: var(--display);
-      font-weight: 700;
-      font-size: 2.8rem;
-      letter-spacing: -0.02em;
-      color: var(--text);
-      line-height: 1;
-      font-variation-settings: "opsz" 96;
-    }
+/* State messages */
+.state-msg { padding: 4rem 2rem; text-align: center; color: var(--muted); position: relative; z-index: 1; }
+.state-msg .big { font-family: var(--display); font-weight: 700; font-size: 2rem; color: var(--border); margin-bottom: 0.5rem; font-variation-settings: "opsz" 96; }
 
-    h1 span {
-      color: var(--accent);
-      font-style: italic;
-      font-variation-settings: "opsz" 96, "SOFT" 100;
-    }
-
-    .header-meta {
-      text-align: right;
-      font-size: 0.62rem;
-      color: var(--muted);
-      letter-spacing: 0.08em;
-    }
-
-    .last-refresh { margin-bottom: 0.4rem; }
-
-    .refresh-btn {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      font-family: var(--mono);
-      font-size: 0.62rem;
-      letter-spacing: 0.1em;
-      padding: 0.3rem 0.75rem;
-      cursor: pointer;
-      transition: border-color 0.15s, color 0.15s;
-      display: block;
-      margin-left: auto;
-    }
-
-    .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-    /* ── Summary bar ── */
-    .summary {
-      display: flex;
-      gap: 0.75rem;
-      margin-bottom: 2rem;
-      flex-wrap: wrap;
-      position: relative;
-      z-index: 1;
-    }
-
-    .summary-chip {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      padding: 0.4rem 0.85rem;
-      font-size: 0.65rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .chip-dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    /* ── Agent grid ── */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-      position: relative;
-      z-index: 1;
-    }
-
-    .agent-card {
-      background: var(--surface);
-      padding: 1.25rem;
-      position: relative;
-      transition: background 0.15s;
-    }
-
-    .agent-card:hover { background: var(--surface2); }
-
-    /* Status accent bar on left */
-    .agent-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; bottom: 0;
-      width: 3px;
-    }
-
-    .agent-card[data-status="open"]::before        { background: var(--s-open); }
-    .agent-card[data-status="active"]::before      { background: var(--s-active); }
-    .agent-card[data-status="incomplete"]::before  { background: var(--s-incomplete); }
-    .agent-card[data-status="pending"]::before     { background: var(--s-pending); }
-    .agent-card[data-status="alert"]::before       { background: var(--s-alert); }
-    .agent-card[data-status="error"]::before       { background: var(--s-error); }
-    .agent-card[data-status="orchestrator"]::before { background: var(--s-orchestrator); }
-
-    /* Card top row */
-    .card-top {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      margin-bottom: 0.75rem;
-      padding-left: 0.5rem;
-    }
-
-    .agent-name {
-      font-family: var(--display);
-      font-size: 1.2rem;
-      font-weight: 500;
-      letter-spacing: -0.01em;
-      color: var(--text);
-      line-height: 1.1;
-      font-variation-settings: "opsz" 36;
-    }
-
-    /* Status badge */
-    .badge {
-      font-size: 0.55rem;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      padding: 0.25rem 0.6rem;
-      border-radius: var(--radius);
-      white-space: nowrap;
-      flex-shrink: 0;
-      margin-left: 0.5rem;
-    }
-
-    .badge-open        { background: rgba(122,117,140,0.25);  color: var(--s-open); }
-    .badge-active      { background: rgba(167,255,125,0.12);  color: var(--s-active); }
-    .badge-incomplete  { background: rgba(245,197,106,0.15); color: var(--s-incomplete); }
-    .badge-pending     { background: rgba(181,123,255,0.15);color: var(--s-pending); }
-    .badge-alert       { background: rgba(245,197,106,0.15); color: var(--s-alert); }
-    .badge-error       { background: rgba(255,71,87,0.15); color: var(--s-error); }
-    .badge-orchestrator{ background: rgba(181,123,255,0.15);color: var(--s-orchestrator); }
-
-    /* ── Card body ── */
-    .card-body {
-      padding-left: 0.5rem;
-    }
-
-    /* Canon Integrity row — first field */
-    .ci-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 0.75rem;
-      padding-bottom: 0.75rem;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .ci-label {
-      font-size: 0.58rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      flex-shrink: 0;
-    }
-
-    .ci-badge {
-      font-size: 0.58rem;
-      font-weight: 700;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      padding: 0.2rem 0.5rem;
-      border-radius: var(--radius);
-    }
-
-    .ci-clean  { background: rgba(167,255,125,0.1);  color: var(--ci-clean); border: 1px solid rgba(167,255,125,0.2); }
-    .ci-alert  { background: rgba(245,197,106,0.1); color: var(--ci-alert); border: 1px solid rgba(245,197,106,0.2); }
-    .ci-error  { background: rgba(255,71,87,0.1); color: var(--ci-error); border: 1px solid rgba(255,71,87,0.2); }
-    .ci-na     { background: transparent; color: var(--muted); border: 1px solid var(--border); }
-    .ci-blank  { background: transparent; color: var(--muted); border: 1px solid var(--border); font-style: italic; }
-
-    /* Data rows */
-    .data-row {
-      display: grid;
-      grid-template-columns: 5rem 1fr;
-      gap: 0.4rem;
-      margin-bottom: 0.5rem;
-      align-items: baseline;
-    }
-
-    .data-label {
-      font-size: 0.58rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .data-value {
-      font-size: 0.75rem;
-      color: var(--text);
-      text-align: right;
-      line-height: 1.4;
-    }
-
-    .data-value.mood { color: var(--accent2); font-style: italic; }
-    .data-value.missing { color: var(--muted); font-style: italic; }
-
-    /* Flag banner */
-    .flag-banner {
-      margin-top: 0.85rem;
-      background: rgba(255,71,87,0.08);
-      border: 1px solid rgba(255,71,87,0.25);
-      padding: 0.45rem 0.65rem;
-      font-size: 0.65rem;
-      color: var(--s-error);
-      letter-spacing: 0.05em;
-      display: flex;
-      align-items: baseline;
-      gap: 0.5rem;
-    }
-
-    .flag-icon { font-size: 0.7rem; flex-shrink: 0; }
-
-    /* Render alert — HTML-local data quality signal */
-    .render-alert {
-      margin-top: 0.5rem;
-      background: rgba(245,197,106,0.06);
-      border: 1px solid rgba(245,197,106,0.2);
-      padding: 0.4rem 0.65rem;
-      font-size: 0.6rem;
-      color: var(--ci-alert);
-      letter-spacing: 0.05em;
-    }
-
-    .render-alert-label {
-      color: var(--muted);
-      margin-right: 0.35rem;
-    }
-
-    /* Signal footer */
-    .signal-footer {
-      margin-top: 0.85rem;
-      font-size: 0.6rem;
-      color: var(--muted);
-      letter-spacing: 0.06em;
-      padding-left: 0;
-    }
-
-    /* ── State messages ── */
-    .state-msg {
-      padding: 4rem 2rem;
-      text-align: center;
-      color: var(--muted);
-      position: relative;
-      z-index: 1;
-    }
-
-    .state-msg .big {
-      font-family: var(--display);
-      font-weight: 700;
-      font-size: 2rem;
-      color: var(--border);
-      margin-bottom: 0.5rem;
-      font-variation-settings: "opsz" 96;
-    }
-
-    /* ── Footer ── */
-    .footer {
-      margin-top: 2rem;
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.6rem;
-      color: var(--muted);
-      letter-spacing: 0.1em;
-      position: relative;
-      z-index: 1;
-    }
-  </style>
+/* Footer */
+.footer { margin-top: 2rem; display: flex; justify-content: space-between; font-size: 0.6rem; color: var(--muted); letter-spacing: 0.1em; position: relative; z-index: 1; }
+</style>
 </head>
 <body>
 
-  <div class="header">
-    <div>
-      <div class="header-tag">// mission control</div>
-      <h1>Agent <span>Status</span></h1>
-    </div>
-    <div class="header-meta">
-      <div class="last-refresh" id="lastRefresh">—</div>
-      <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
-    </div>
+<div class="header">
+  <div>
+    <div class="header-tag">// mission control</div>
+    <h1>Agent <span>Status</span></h1>
   </div>
-
-  <div class="summary" id="summaryBar"></div>
-
-  <div id="dashOutput">
-    <div class="state-msg">
-      <div class="big">Loading...</div>
-      <div>Fetching agent data</div>
-    </div>
+  <div class="header-meta">
+    <div id="lastRefresh">—</div>
+    <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
   </div>
+</div>
 
-  <div class="footer">
-    <span>agent-dashboard v1.0</span>
-    <span id="agentCount">—</span>
-  </div>
+<div class="summary" id="summaryBar"></div>
 
-  <script>
-    var SHEET_ID = "12JrRfdHx2u2wsU_KQPHkYDRNk3_jUIEV9zSq4lFe8KE";
+<div id="dashOutput">
+  <div class="state-msg"><div class="big">Loading...</div><div>Fetching agent data</div></div>
+</div>
 
-    // ── Agent roster — one tab per node, uniform schema ───────
-    // Each tab is append-only; dashboard reads the last row.
-    // To add a node: add an entry here and create the tab in the sheet.
-    var AGENT_TABS = [
-      { tab: "JeremyCheckin",   nickname: "Jeremy",   order: 1 },
-      { tab: "Meta1Checkin",    nickname: "Meta1",    order: 2 },
-      { tab: "BondCheckin",     nickname: "Bond",     order: 3 },
-      { tab: "EvolveCheckin",   nickname: "Evolve",   order: 4 },
-      { tab: "AssessorCheckin", nickname: "Assessor", order: 5 },
-      { tab: "HouseCheckin",    nickname: "House",    order: 6 },
-      { tab: "FreedomCheckin",  nickname: "Freedom",  order: 7 },
-      { tab: "PhilCheckin",     nickname: "Phil",     order: 8 },
-    ];
+<div class="footer">
+  <span>agent-dashboard v2.0</span>
+  <span id="agentCount">—</span>
+</div>
 
-    // ── CSV fetch ─────────────────────────────────────────────
-    function csvUrl(tab) {
-      return "https://docs.google.com/spreadsheets/d/" + SHEET_ID +
-             "/gviz/tq?tqx=out:csv&sheet=" + encodeURIComponent(tab);
+<script>
+// ── Configuration ─────────────────────────────────────────
+var SHEET_ID = "16OAh0lBMAZJLhJqsu1574PBsD7tkP_sqHIZa58t_-VI";
+var STALE_DAYS = 7; // days before dashboard overrides status to idle
+
+var DOMAIN_TABS = [
+  { tab: "Meta1Checkin",    domain: "Meta1",    order: 1, isHuman: false },
+  { tab: "BondCheckin",     domain: "Bond",     order: 2, isHuman: false },
+  { tab: "HouseCheckin",    domain: "House",    order: 3, isHuman: false },
+  { tab: "FreedomCheckin",  domain: "Freedom",  order: 4, isHuman: false },
+  { tab: "EvolveCheckin",   domain: "Evolve",   order: 5, isHuman: false },
+  { tab: "AssessorCheckin", domain: "Assessor", order: 6, isHuman: false },
+  { tab: "PhilCheckin",     domain: "Phil",     order: 7, isHuman: false },
+  { tab: "HumanCheckin",    domain: "Jeremy",   order: 8, isHuman: true  }
+];
+
+// ── CSV helpers ───────────────────────────────────────────
+function csvUrl(tab) {
+  return "https://docs.google.com/spreadsheets/d/" + SHEET_ID +
+    "/gviz/tq?tqx=out:csv&sheet=" + encodeURIComponent(tab);
+}
+
+function parseCSV(text) {
+  var lines = text.trim().split("\n");
+  if (lines.length < 2) return [];
+  var headers = splitCSVLine(lines[0]);
+  return lines.slice(1).map(function(line) {
+    var cols = splitCSVLine(line);
+    var obj = {};
+    headers.forEach(function(h, i) {
+      obj[h.trim().replace(/^"|"$/g,"")] = (cols[i] || "").replace(/^"|"$/g,"").trim();
+    });
+    return obj;
+  });
+}
+
+function splitCSVLine(line) {
+  var cols = [], inQ = false, cur = "";
+  for (var i = 0; i < line.length; i++) {
+    var c = line[i];
+    if (c === '"') { inQ = !inQ; }
+    else if (c === ',' && !inQ) { cols.push(cur); cur = ""; }
+    else { cur += c; }
+  }
+  cols.push(cur);
+  return cols;
+}
+
+function esc(s) {
+  return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+// ── Date helpers ──────────────────────────────────────────
+function parseDate(raw) {
+  if (!raw) return null;
+  var d = new Date(raw);
+  return isNaN(d) ? null : d;
+}
+
+function fmtDate(d) {
+  if (!d) return "—";
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) +
+    ", " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+}
+
+function fmtDateShort(d) {
+  if (!d) return "";
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function daysSince(d) {
+  if (!d) return Infinity;
+  return (Date.now() - d.getTime()) / (1000 * 60 * 60 * 24);
+}
+
+function sameDay(a, b) {
+  if (!a || !b) return false;
+  return a.toDateString() === b.toDateString();
+}
+
+// ── Compositing logic ─────────────────────────────────────
+// Returns { upperRow, closeRow, isStale, displayStatus }
+function compositeRows(rows) {
+  var openRow = null, closeRow = null;
+
+  rows.forEach(function(r) {
+    var ts = parseDate(r["Timestamp"]);
+    if (!ts) return;
+    r._ts = ts;
+    if (r["Type"] === "open") {
+      if (!openRow || ts > openRow._ts) openRow = r;
+    } else if (r["Type"] === "close") {
+      if (!closeRow || ts > closeRow._ts) closeRow = r;
     }
+  });
 
-    function parseCSV(text) {
-      var lines = text.trim().split("\n");
-      if (lines.length < 2) return [];
-      var headers = splitCSVLine(lines[0]);
-      return lines.slice(1).map(function(line) {
-        var cols = splitCSVLine(line);
-        var obj = {};
-        headers.forEach(function(h, i) {
-          obj[h.trim()] = (cols[i] || "").replace(/^"|"$/g, "").trim();
-        });
-        return obj;
-      });
-    }
+  // Upper band: most recent row of either type
+  var upperRow = null;
+  if (openRow && closeRow) {
+    upperRow = openRow._ts > closeRow._ts ? openRow : closeRow;
+  } else {
+    upperRow = openRow || closeRow || null;
+  }
 
-    function splitCSVLine(line) {
-      var cols = [], inQuote = false, current = "";
-      for (var i = 0; i < line.length; i++) {
-        var ch = line[i];
-        if (ch === '"') { inQuote = !inQuote; }
-        else if (ch === ',' && !inQuote) { cols.push(current); current = ""; }
-        else { current += ch; }
-      }
-      cols.push(current);
-      return cols;
-    }
+  // Session details stale if open is more recent than close
+  var isStale = openRow && closeRow && openRow._ts > closeRow._ts;
 
-    // ── Sort by order ascending ───────────────────────────────
-    function sortByOrder(agents) {
-      return agents.slice().sort(function(a, b) {
-        var av = a._order != null ? a._order : 9999;
-        var bv = b._order != null ? b._order : 9999;
-        return av - bv;
-      });
-    }
+  // Display status: override to idle if stale data
+  var displayStatus = upperRow ? (upperRow["Status"] || "active").toLowerCase() : "idle";
+  if (upperRow && daysSince(upperRow._ts) > STALE_DAYS) {
+    displayStatus = "idle";
+  }
 
-    // ── Status helpers ────────────────────────────────────────
-    function badgeClass(status) {
-      var map = {
-        open:"open", active:"active", incomplete:"incomplete",
-        pending:"pending", alert:"alert", error:"error", orchestrator:"orchestrator"
-      };
-      return "badge-" + (map[(status||"").toLowerCase()] || "open");
-    }
+  return { upperRow: upperRow, closeRow: closeRow, isStale: isStale, displayStatus: displayStatus };
+}
 
-    function statusColor(status) {
-      var map = {
-        open:"var(--s-open)", active:"var(--s-active)", incomplete:"var(--s-incomplete)",
-        pending:"var(--s-pending)", alert:"var(--s-alert)", error:"var(--s-error)",
-        orchestrator:"var(--s-orchestrator)"
-      };
-      return map[(status||"").toLowerCase()] || "var(--muted)";
-    }
+// ── Parse pass phrases ────────────────────────────────────
+function parsePhrases(raw) {
+  // Format: "L1: phrase | L2: phrase (version) | ..."
+  var layers = { L1: null, L2: null, L3: null, L4: null };
+  if (!raw) return layers;
+  var parts = raw.split("|");
+  parts.forEach(function(p) {
+    var m = p.trim().match(/^(L\d):\s*(.+)/);
+    if (m) layers[m[1]] = m[2].trim();
+  });
+  return layers;
+}
 
-    // ── Canon Integrity helpers ───────────────────────────────
-    function ciClass(ci) {
-      var v = (ci || "").toLowerCase();
-      if (v === "clean")  return "ci-clean";
-      if (v === "alert")  return "ci-alert";
-      if (v === "error")  return "ci-error";
-      if (v === "n/a")    return "ci-na";
-      return "ci-blank";
-    }
+// ── Render config pips ────────────────────────────────────
+function renderPips(upperRow, closeRow, isHuman) {
+  if (isHuman) return ""; // no config layers for human card
 
-    function ciLabel(ci) {
-      var v = (ci || "").trim();
-      return v || "—";
-    }
+  var phrases = parsePhrases(upperRow ? upperRow["Pass Phrases"] : "");
+  var canon = upperRow ? (upperRow["Canon Version"] || "") : "";
 
-    // ── Format timestamp ──────────────────────────────────────
-    function fmtTime(raw) {
-      if (!raw) return null;
-      var d = new Date(raw);
-      if (isNaN(d)) return raw;
-      return d.toLocaleDateString("en-US", { month:"short", day:"numeric" }) +
-             ", " + d.toLocaleTimeString("en-US", { hour:"numeric", minute:"2-digit" });
-    }
+  // L5: reported if close-checkin data exists
+  var l5Reported = closeRow && closeRow["Session Summary"];
 
-    // ── Render summary chips ──────────────────────────────────
-    function renderSummary(agents) {
-      var counts = {};
-      agents.forEach(function(a) {
-        var s = (a["Agent Status"] || "unknown").toLowerCase();
-        counts[s] = (counts[s] || 0) + 1;
-      });
-      var html = "";
-      Object.keys(counts).sort().forEach(function(s) {
-        html += '<div class="summary-chip">' +
-          '<div class="chip-dot" style="background:' + statusColor(s) + '"></div>' +
-          counts[s] + "&nbsp;" + s +
-        '</div>';
-      });
-      document.getElementById("summaryBar").innerHTML = html;
-    }
+  function pip(label, phrase, color) {
+    var reported = !!phrase && phrase !== "(not reported)";
+    var cls = reported ? "reported" : "not-reported";
+    var tip = reported ? esc(phrase) : "Not reported";
+    return '<div class="layer-pip ' + cls + '" style="--layer-color: var(--' + color + ')">' +
+      '<span class="pip-dot"></span>' + label +
+      '<span class="pip-tip">' + tip + '</span></div>';
+  }
 
-    // ── Render alert — HTML-local data quality signal ─────────
-    function renderAlertHTML(agent) {
-      var missing = [];
-      if (!agent["Agent ID"])    missing.push("Agent ID");
-      if (!agent["Agent Order"]) missing.push("Agent Order");
-      if (missing.length === 0) return "";
-      return '<div class="render-alert">' +
-        '<span class="render-alert-label">// render</span>' +
-        '⚠ data: ' + missing.join(", ") + ' missing' +
-        '</div>';
-    }
+  return '<div class="config-layers">' +
+    pip("L1", phrases.L1, "L1") +
+    pip("L2", phrases.L2, "L2") +
+    pip("L3", phrases.L3, "L3") +
+    pip("L4", phrases.L4, "L4") +
+    pip("L5", l5Reported ? "Session data from close-checkin" : null, "L5") +
+    '</div>';
+}
 
-    // ── Render one agent card ─────────────────────────────────
-    function renderCard(agent) {
-      var nickname  = agent["Agent Nickname"] || "Unknown";
-      var agentId   = agent["Agent ID"]       || "";
-      var status    = (agent["Agent Status"]  || "open").toLowerCase();
-      var profile   = agent["Agent Profile"]  || "";
-      var mood      = agent["Agent Mood"]     || "";
-      var domain    = agent["Agent Domain"]   || "";
-      var project   = agent["Project Name"]   || "";
-      var pstatus   = agent["Project Status"] || "";
-      var flagged   = (agent["Project Flagged"] || "").toLowerCase();
-      var flagReason= agent["Flag Reason"]    || "";
-      var lastSig   = agent["Last Signal"]    || agent["Timestamp"] || "";
-      var ci        = agent["Canon Integrity"]|| "";
+// ── Render flag banner ────────────────────────────────────
+function renderFlags(row) {
+  if (!row) return "";
+  var flags = (row["Flags"] || "").trim();
+  var reason = (row["Flag Reason"] || "").trim();
+  if (!flags) return "";
+  return '<div class="flag-banner">' +
+    '<span>⚑</span>' +
+    '<span>' + esc(flags) + '</span>' +
+    (reason ? '<span class="flag-reason">— ' + esc(reason) + '</span>' : '') +
+    '</div>';
+}
 
-      // CI badge
-      var ciCls   = ciClass(ci);
-      var ciText  = ciLabel(ci);
+// ── Render one card ───────────────────────────────────────
+function renderCard(entry, comp) {
+  var upper = comp.upperRow;
+  var close = comp.closeRow;
+  var status = comp.displayStatus;
+  var isStale = comp.isStale;
 
-      // Flag banner
-      var flagHTML = "";
-      if (flagged === "yes" && flagReason) {
-        flagHTML = '<div class="flag-banner">' +
-          '<span class="flag-icon">⚑</span>' +
-          '<span><strong>FLAGGED</strong> — ' + escHtml(flagReason) + '</span>' +
-          '</div>';
-      }
+  if (!upper) {
+    return '<div class="agent-card" data-status="idle">' +
+      '<div class="card-upper"><div class="upper-top"><div class="upper-left">' +
+      '<div class="agent-name">' + esc(entry.domain) + '</div></div></div>' +
+      '<div class="persona-line" style="color:var(--faint);font-style:italic">No data</div></div></div>';
+  }
 
-      // Render alert
-      var raHTML = renderAlertHTML(agent);
+  var domain = upper["Domain"] || entry.domain;
+  var project = upper["Project"] || "";
+  var persona = upper["Persona"] || "";
+  var mood = upper["Mood"] || "";
+  var upperTs = parseDate(upper["Timestamp"]);
+  var closeTs = close ? parseDate(close["Timestamp"]) : null;
 
-      // Signal time
-      var sigFormatted = fmtTime(lastSig);
-      var sigHTML = sigFormatted
-        ? '<div class="signal-footer">last signal: ' + escHtml(sigFormatted) + '</div>'
-        : '<div class="signal-footer" style="color:var(--s-error)">last signal: —</div>';
+  // Badge
+  var badgeCls = "badge-" + status;
+  var badgeText = status.toUpperCase();
 
-      // Data rows
-      function dataRow(label, value, cls) {
-        var val = (value || "").trim();
-        var valClass = cls || "";
-        if (!val) { val = "—"; valClass = "missing"; }
-        return '<div class="data-row">' +
-          '<span class="data-label">' + label + '</span>' +
-          '<span class="data-value ' + valClass + '">' + escHtml(val) + '</span>' +
-          '</div>';
-      }
+  // Session details
+  var summary = close ? (close["Session Summary"] || "") : "";
+  var focus = close ? (close["Current Focus"] || "") : "";
+  var blockers = close ? (close["Blockers"] || "") : "";
+  var next = close ? (close["Next"] || "") : "";
+  var hasDetail = focus || blockers || next;
 
-      return '<div class="agent-card" data-status="' + escHtml(status) + '" data-id="' + escHtml(agentId) + '">' +
-        '<div class="card-top">' +
-          '<div class="agent-name">' + escHtml(nickname) + '</div>' +
-          '<div class="badge ' + badgeClass(status) + '">' + escHtml(status.toUpperCase()) + '</div>' +
-        '</div>' +
-        '<div class="card-body">' +
-          '<div class="ci-row">' +
-            '<span class="ci-label">Canon Integrity</span>' +
-            '<span class="ci-badge ' + ciCls + '">' + escHtml(ciText) + '</span>' +
-          '</div>' +
-          dataRow("Profile",  profile) +
-          dataRow("Mood",     mood, "mood") +
-          dataRow("Domain",   domain) +
-          dataRow("Project",  project) +
-          dataRow("P.Status", pstatus) +
-          flagHTML +
-          raHTML +
-          sigHTML +
-        '</div>' +
-      '</div>';
-    }
+  // Session date — only show if different day from upper timestamp
+  var showSessionDate = isStale && closeTs && upperTs && !sameDay(closeTs, upperTs);
 
-    function escHtml(s) {
-      return String(s)
-        .replace(/&/g,"&amp;")
-        .replace(/</g,"&lt;")
-        .replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;");
-    }
+  var detailId = "detail-" + entry.domain.toLowerCase();
 
-    // ── Fetch one tab — returns last row or null ──────────────
-    function fetchTab(entry) {
-      var bust = "&cachebust=" + Date.now();
-      return fetch(csvUrl(entry.tab) + bust)
-        .then(function(r) { return r.text(); })
-        .then(function(text) {
-          var rows = parseCSV(text);
-          if (rows.length === 0) return null;
-          var last = rows[rows.length - 1];
-          // Ensure nickname and order are present even if the
-          // sheet row is missing them — fall back to roster config
-          last["Agent Nickname"] = entry.nickname;
-          if (!last["Agent Order"])    last["Agent Order"] = String(entry.order);
-          last._order = entry.order;
-          return last;
-        })
-        .catch(function() {
-          // Tab missing or network error — return a shell card
-          return {
-            "Agent Nickname": entry.nickname,
-            "Agent Order": String(entry.order),
-            "Agent Status": "open",
-            "_order": entry.order,
-            "_nodata": true
-          };
-        });
-    }
+  var html = '<div class="agent-card" data-status="' + esc(status) + '">';
 
-    // ── Main load — parallel fetch across all tabs ────────────
-    function loadData() {
-      document.getElementById("lastRefresh").textContent = "Refreshing...";
-      document.getElementById("dashOutput").innerHTML =
-        '<div class="state-msg"><div class="big">Loading...</div><div>Fetching agent data</div></div>';
+  // ── Upper band ──
+  html += '<div class="card-upper">';
+  html += '<div class="upper-top">';
+  html += '<div class="upper-left">';
+  html += '<div class="agent-name">' + esc(domain) + '</div>';
+  if (project) html += '<div class="project-name">' + esc(project) + '</div>';
+  html += '</div>';
+  html += '<div class="upper-right">';
+  html += '<div class="card-timestamp">' + esc(fmtDate(upperTs)) + '</div>';
+  html += '<div class="badge ' + badgeCls + '">' + badgeText + '</div>';
+  if (mood) html += '<div class="mood-value">' + esc(mood) + '</div>';
+  html += '</div></div>';
+  if (persona) html += '<div class="persona-line">' + esc(persona) + '</div>';
 
-      var fetches = AGENT_TABS.map(fetchTab);
+  // Config pips
+  html += renderPips(upper, close, entry.isHuman);
 
-      Promise.all(fetches).then(function(results) {
-        var agents = results.filter(function(r) { return r !== null; });
+  // Flags
+  html += renderFlags(upper);
 
-        if (agents.length === 0) {
-          document.getElementById("dashOutput").innerHTML =
-            '<div class="state-msg"><div class="big">No Data</div><div>No agent data found in any tab</div></div>';
-          document.getElementById("lastRefresh").textContent = "No data";
-          return;
-        }
+  html += '</div>';
 
-        agents = sortByOrder(agents);
+  // ── Session section ──
+  html += '<div class="card-session' + (isStale ? ' stale' : '') + '">';
+  html += '<div class="session-header">';
+  html += '<span class="session-label">session</span>';
+  html += '<span>';
+  if (showSessionDate) html += '<span class="session-date-tag">' + esc(fmtDateShort(closeTs)) + '</span>';
+  if (isStale) html += '<span class="session-stale-tag">previous session</span>';
+  html += '</span></div>';
 
-        renderSummary(agents);
-        var html = '<div class="grid">';
-        agents.forEach(function(a) { html += renderCard(a); });
-        html += '</div>';
-        document.getElementById("dashOutput").innerHTML = html;
+  if (summary) {
+    html += '<div class="session-field"><div class="session-field-label">Summary</div>' +
+      '<div class="session-field-value">' + esc(summary) + '</div></div>';
+  } else if (!close) {
+    html += '<div class="session-field"><div class="session-field-value" style="color:var(--faint);font-style:italic">No close-checkin yet</div></div>';
+  }
 
-        var now = new Date();
-        document.getElementById("lastRefresh").textContent =
-          "Last refresh: " + now.toLocaleTimeString("en-US", {hour:"numeric",minute:"2-digit",second:"2-digit"});
-        document.getElementById("agentCount").textContent = agents.length + " agents tracked";
+  if (hasDetail) {
+    html += '<div class="session-detail" id="' + detailId + '">';
+    if (focus) html += '<div class="session-field"><div class="session-field-label">Focus</div><div class="session-field-value">' + esc(focus) + '</div></div>';
+    if (blockers) html += '<div class="session-field"><div class="session-field-label">Blockers</div><div class="session-field-value">' + esc(blockers) + '</div></div>';
+    if (next) html += '<div class="session-field"><div class="session-field-label">Next</div><div class="session-field-value">' + esc(next) + '</div></div>';
+    html += '</div>';
+    html += '<div class="session-expand" onclick="toggleDetail(\'' + detailId + '\', this)">&#9656; more</div>';
+  }
 
-      }).catch(function(err) {
-        document.getElementById("dashOutput").innerHTML =
-          '<div class="state-msg"><div class="big">Error</div><div>' + escHtml(String(err)) + '</div></div>';
-        document.getElementById("lastRefresh").textContent = "Load failed";
-      });
-    }
+  html += '</div>'; // card-session
+  html += '</div>'; // agent-card
+  return html;
+}
 
-    loadData();
+function toggleDetail(id, el) {
+  var panel = document.getElementById(id);
+  if (!panel) return;
+  if (panel.classList.contains('open')) {
+    panel.classList.remove('open');
+    el.innerHTML = '&#9656; more';
+  } else {
+    panel.classList.add('open');
+    el.innerHTML = '&#9662; less';
+  }
+}
 
-  </script>
+// ── Summary bar ───────────────────────────────────────────
+function renderSummary(cards) {
+  var counts = {};
+  cards.forEach(function(c) {
+    var s = c.displayStatus;
+    counts[s] = (counts[s] || 0) + 1;
+  });
+  var colorMap = { active: "var(--ok)", idle: "var(--muted)", flagged: "var(--warn)", blocked: "var(--err)" };
+  var html = "";
+  Object.keys(counts).sort().forEach(function(s) {
+    html += '<div class="summary-chip"><div class="chip-dot" style="background:' +
+      (colorMap[s] || "var(--muted)") + '"></div>' + counts[s] + '&nbsp;' + s + '</div>';
+  });
+  document.getElementById("summaryBar").innerHTML = html;
+}
+
+// ── Fetch one tab ─────────────────────────────────────────
+function fetchTab(entry) {
+  var bust = "&cachebust=" + Date.now();
+  return fetch(csvUrl(entry.tab) + bust)
+    .then(function(r) { return r.text(); })
+    .then(function(text) {
+      var rows = parseCSV(text);
+      return { entry: entry, rows: rows };
+    })
+    .catch(function() {
+      return { entry: entry, rows: [] };
+    });
+}
+
+// ── Main load ─────────────────────────────────────────────
+function loadData() {
+  document.getElementById("lastRefresh").textContent = "Refreshing...";
+  document.getElementById("dashOutput").innerHTML =
+    '<div class="state-msg"><div class="big">Loading...</div><div>Fetching agent data</div></div>';
+
+  var fetches = DOMAIN_TABS.map(fetchTab);
+
+  Promise.all(fetches).then(function(results) {
+    var cards = [];
+
+    results.forEach(function(r) {
+      var comp = compositeRows(r.rows);
+      comp._entry = r.entry;
+      cards.push(comp);
+    });
+
+    // Sort by order
+    cards.sort(function(a, b) { return a._entry.order - b._entry.order; });
+
+    renderSummary(cards);
+
+    var html = '<div class="grid">';
+    cards.forEach(function(c) { html += renderCard(c._entry, c); });
+    html += '</div>';
+    document.getElementById("dashOutput").innerHTML = html;
+
+    var now = new Date();
+    document.getElementById("lastRefresh").textContent =
+      "Last refresh: " + now.toLocaleTimeString("en-US", { hour:"numeric", minute:"2-digit", second:"2-digit" });
+    document.getElementById("agentCount").textContent = cards.length + " domains tracked";
+
+  }).catch(function(err) {
+    document.getElementById("dashOutput").innerHTML =
+      '<div class="state-msg"><div class="big">Error</div><div>' + esc(String(err)) + '</div></div>';
+    document.getElementById("lastRefresh").textContent = "Load failed";
+  });
+}
+
+loadData();
+</script>
+
 </body>
 </html>
