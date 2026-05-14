@@ -1,0 +1,268 @@
+<!--
+  ╔════════════════════════════════════════════════════════════════════════╗
+  ║  AGENT PAGE · house.html                                               ║
+  ║                                                                        ║
+  ║  Template for an agent profile. To create a new one:                   ║
+  ║    1. Copy this file to agents/<agent-id>.html                         ║
+  ║    2. Edit the title, header, summary, and artifacts/sessions blocks   ║
+  ║    3. The agent must already exist in data.js (AGENTS array)           ║
+  ║                                                                        ║
+  ║  Search for [EDIT ME] to find the spots that need updating.            ║
+  ╚════════════════════════════════════════════════════════════════════════╝
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<!-- [EDIT ME] tab title -->
+<title>House · Agent Profile · Claudemonzter</title>
+<meta name="description" content="House — the project manager. Tracks renovation scope, budget, and timeline for the Pura-Vida project." />
+
+<link rel="stylesheet" href="../design-system/colors_and_type.css" />
+
+<style>
+  html, body { background: var(--bg); color: var(--fg); margin: 0; min-height: 100vh; }
+  body { font-family: var(--font-sans); }
+  a { color: inherit; text-decoration: none; }
+  .page { width: 100%; max-width: 1280px; margin: 0 auto; }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 currentColor; }
+    50%      { opacity: 0.45; box-shadow: 0 0 0 6px transparent; }
+  }
+  .pulse-dot { animation: pulse-dot 1.8s var(--ease-out) infinite; }
+
+  .scribble {
+    font-family: var(--font-hand);
+    color: var(--fg-muted);
+    font-size: 22px;
+    line-height: 1.1;
+    transform: rotate(-3deg);
+    display: inline-block;
+  }
+
+  /* Top nav (static replica) */
+  .topnav { display: flex; justify-content: space-between; align-items: center; padding: 22px 40px; border-bottom: 1px solid var(--line); gap: 32px; }
+  .topnav nav { display: flex; gap: 26px; flex: 1; justify-content: center; }
+  .topnav nav a { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--fg-muted); border-bottom: 1px solid transparent; padding-bottom: 4px; }
+
+  /* Footer */
+  .footer { margin-top: 64px; display: flex; justify-content: space-between; align-items: flex-end; padding: 30px 40px 40px; border-top: 1px solid var(--line); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-faint); }
+  .footer a { color: var(--fg-muted); margin-right: 16px; }
+
+  /* Agent profile chrome */
+  .agent-eyebrow { font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: 0.28em; text-transform: uppercase; color: var(--candle); }
+  .agent-badge { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 10px; border: 1px solid var(--line-loud); border-radius: 2px; }
+  .agent-badge.ok { color: var(--ok); border-color: color-mix(in oklch, var(--ok) 40%, transparent); }
+  .agent-badge.warn { color: var(--warn); border-color: color-mix(in oklch, var(--warn) 40%, transparent); }
+  .agent-badge.accent { color: var(--accent); border-color: color-mix(in oklch, var(--accent) 40%, transparent); }
+  .agent-badge.err { color: var(--err); border-color: color-mix(in oklch, var(--err) 40%, transparent); }
+
+  .stat-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--line-soft); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; }
+  .stat-row .k { color: var(--fg-subtle); }
+  .stat-row .v { color: var(--fg); }
+
+  .card { background: var(--bg-elev-1); border: 1px solid var(--line); padding: 22px; }
+  .card.accent { border-left: 3px solid var(--accent); }
+  .card.warn   { border-left: 3px solid var(--warn); }
+
+  .session-row { padding: 14px 0; border-bottom: 1px solid var(--line-soft); display: grid; grid-template-columns: 110px 1fr; gap: 16px; }
+  .session-row:last-child { border-bottom: none; }
+  .session-row .date { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; color: var(--fg-faint); }
+  .session-row .msg  { font-size: 14px; line-height: 1.5; color: var(--fg-muted); }
+
+  .artifact-card { display: flex; justify-content: space-between; align-items: center; padding: 16px 18px; background: var(--bg-elev-1); border: 1px solid var(--line); }
+  .artifact-card:hover { background: var(--bg-elev-2); }
+  .artifact-card .title { font-family: var(--font-display); font-size: 20px; font-weight: 600; color: var(--fg); margin-bottom: 4px; letter-spacing: -0.01em; }
+  .artifact-card .sub { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--fg-faint); }
+  .artifact-card .arrow { color: var(--accent); font-size: 18px; }
+
+  .level-chip { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; padding: 3px 7px; background: var(--bg-elev-2); color: var(--fg-muted); border: 1px solid var(--line-loud); border-radius: 2px; }
+  .level-chip .dot { width: 5px; height: 5px; border-radius: 50%; display: inline-block; }
+</style>
+</head>
+<body class="bg-grid">
+
+<div class="page">
+
+  <header class="topnav">
+    <a href="../index.html" style="font-family: var(--font-display); font-weight: 900; font-size: 22px; letter-spacing: -0.035em;">
+      <span style="color: var(--fg);">Claude</span><span style="color: var(--accent);">monzter</span>
+    </a>
+    <nav>
+      <a href="../index.html">HOME</a>
+      <a href="../portfolio.html">PORTFOLIO</a>
+      <a href="../dashboard.html">GRAPH</a>
+      <a href="../writing.html">WRITING</a>
+      <a href="../index.html#about">ABOUT</a>
+    </nav>
+    <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--fg-subtle);">
+      LAB 001 · LIVE
+    </span>
+  </header>
+
+  <!-- ─── BREADCRUMB ───────────────────────────────────────────────── -->
+  <div style="padding: 24px 40px 0; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-faint);">
+    <a href="../index.html" style="color: var(--fg-subtle);">CLAUDEMONZTER</a>
+    &nbsp;·&nbsp;
+    <a href="../index.html" style="color: var(--fg-subtle);">PURA-VIDA</a>
+    &nbsp;·&nbsp;
+    <span style="color: var(--accent);">HOUSE</span>
+  </div>
+
+  <!-- ─── AGENT HEADER ──────────────────────────────────────────────── -->
+  <section style="padding: 32px 40px 40px;">
+    <div style="display: grid; grid-template-columns: 1fr 360px; gap: 56px; align-items: flex-end;">
+      <div>
+        <div class="agent-eyebrow">// AGENT · PURA-VIDA · PROJECT MANAGER</div>
+
+        <!-- [EDIT ME] agent display name -->
+        <h1 style='font-family: var(--font-display); font-weight: 700; font-size: 108px; line-height: 0.94; letter-spacing: -0.03em; margin: 14px 0 0; font-variation-settings: "opsz" 144;'>
+          House<span style="color: var(--accent);">.</span>
+        </h1>
+
+        <!-- [EDIT ME] one-line italic role description -->
+        <p style='font-family: var(--font-display); font-style: italic; font-size: 26px; line-height: 1.3; margin-top: 14px; max-width: 640px; color: var(--fg-muted); font-variation-settings: "opsz" 72, "SOFT" 100;'>
+          The project manager. Tracks renovation scope, budget, timeline.
+        </p>
+
+        <!-- [EDIT ME] flag (delete this whole block if the agent is not flagged) -->
+        <div style="margin-top: 24px; padding: 12px 16px; background: color-mix(in oklch, var(--warn) 8%, transparent); border-left: 3px solid var(--warn); display: flex; gap: 12px; max-width: 560px;">
+          <span style="color: var(--warn); font-weight: 700; font-family: var(--font-mono);">▲</span>
+          <div style="font-family: var(--font-mono); font-size: 12px; color: var(--warn); line-height: 1.5; letter-spacing: 0.04em;">
+            Permit approval delayed — City backlog, 3 week estimate.
+          </div>
+        </div>
+      </div>
+
+      <!-- Status panel -->
+      <div class="card" style="font-family: var(--font-mono);">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 14px;">
+          <span style="font-size: 10px; letter-spacing: 0.22em; color: var(--fg-subtle); text-transform: uppercase;">// STATE</span>
+          <span class="agent-badge ok"><span class="pulse-dot" style="width: 7px; height: 7px; border-radius: 50%; background: var(--ok); color: var(--ok);"></span> ACTIVE</span>
+        </div>
+
+        <div class="stat-row"><span class="k">PROJECT</span><span class="v">PURA-VIDA</span></div>
+        <div class="stat-row"><span class="k">ROLE</span><span class="v">PROJECT MANAGER</span></div>
+        <div class="stat-row"><span class="k">MOOD</span><span class="v" style="color: var(--ok); font-style: italic; font-family: var(--font-display);">Steady</span></div>
+        <div class="stat-row"><span class="k">LAST SEEN</span><span class="v">MAY 13, 6:00 PM</span></div>
+        <div class="stat-row" style="border-bottom: none;"><span class="k">SESSIONS</span><span class="v">87 LOGGED</span></div>
+
+        <!-- L1-L5 -->
+        <div style="margin-top: 14px; display: flex; gap: 6px; flex-wrap: wrap;">
+          <span class="level-chip"><span class="dot" style="background: var(--info);"></span>L1</span>
+          <span class="level-chip"><span class="dot" style="background: var(--info);"></span>L2</span>
+          <span class="level-chip"><span class="dot" style="background: var(--ok);"></span>L3</span>
+          <span class="level-chip"><span class="dot" style="background: var(--warn);"></span>L4</span>
+          <span class="level-chip"><span class="dot" style="background: var(--err);"></span>L5</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── DESCRIPTION ──────────────────────────────────────────────── -->
+  <section style="padding: 24px 40px 56px; border-top: 1px solid var(--line);">
+    <div style="display: grid; grid-template-columns: 200px 1fr; gap: 48; padding-top: 32px;">
+      <div class="agent-eyebrow">// 01 · ABOUT</div>
+      <div>
+        <h2 style="margin: 0 0 14px;">What House does.</h2>
+        <p style="font-size: 17px; line-height: 1.6; max-width: 680px;">
+          House is the operator-grade project manager for our renovation. He tracks the scope (room by room), the budget (estimated vs. actual, with running drift), the schedule (permit windows, contractor availability), and the dozens of small decisions that compound into a finished space — tile selection, fixture orders, color names that all sound the same.
+        </p>
+        <p style="font-size: 15px; line-height: 1.6; max-width: 680px; color: var(--fg-muted); margin-top: 14px;">
+          House is also the agent with the most live artifacts attached. The publicly-visible renovation tracker, timeline, and budget views all hang off this agent.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── LINKED ARTIFACTS ────────────────────────────────────────── -->
+  <section style="padding: 24px 40px 56px; border-top: 1px dashed var(--line-loud);">
+    <div style="display: grid; grid-template-columns: 200px 1fr; gap: 48; padding-top: 32px;">
+      <div>
+        <div class="agent-eyebrow">// 02 · ARTIFACTS</div>
+        <span class="scribble" style="display: block; margin-top: 20px; color: var(--candle); font-size: 20px;">
+          (this is the &quot;portfolio piece&quot; for House)
+        </span>
+      </div>
+      <div>
+        <h2 style="margin: 0 0 14px;">Linked artifacts.</h2>
+        <p style="font-size: 15px; line-height: 1.5; max-width: 580px; margin-bottom: 24px;">
+          Live pages and dashboards that House writes to and reads from. Each opens in the same tab.
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 10px; max-width: 720px;">
+          <!-- [EDIT ME] artifact rows -->
+          <a class="artifact-card" href="https://jeremymontz.github.io/Meta1/house-timeline.html">
+            <div>
+              <div class="title">House Timeline</div>
+              <div class="sub">RENOVATION SCHEDULE · MILESTONES · PERMIT WINDOWS</div>
+            </div>
+            <span class="arrow">↗</span>
+          </a>
+          <a class="artifact-card" href="https://jeremymontz.github.io/Meta1/house.html">
+            <div>
+              <div class="title">House Dashboard</div>
+              <div class="sub">ROOMS · BUDGET · LIVING DOC</div>
+            </div>
+            <span class="arrow">↗</span>
+          </a>
+          <a class="artifact-card" href="https://jeremymontz.github.io/Meta1/checkin.html">
+            <div>
+              <div class="title">Recent Check-ins</div>
+              <div class="sub">SESSION ENTRIES · MOOD + NOTES</div>
+            </div>
+            <span class="arrow">↗</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── RECENT SESSIONS ────────────────────────────────────────── -->
+  <section style="padding: 24px 40px 56px; border-top: 1px dashed var(--line-loud);">
+    <div style="display: grid; grid-template-columns: 200px 1fr; gap: 48; padding-top: 32px;">
+      <div class="agent-eyebrow">// 03 · SESSIONS</div>
+      <div>
+        <h2 style="margin: 0 0 14px;">Recent sessions.</h2>
+        <p style="font-size: 15px; line-height: 1.5; max-width: 580px; margin-bottom: 18px;">
+          The last few times House woke up and did something. Most recent first.
+        </p>
+
+        <div class="card">
+          <!-- [EDIT ME] session rows -->
+          <div class="session-row">
+            <span class="date">MAY 13<br/>6:00 PM</span>
+            <span class="msg">Reviewed contractor bids for bathroom tile. Updated budget tracker. Permit timeline slipping — flagged for Jeremy.</span>
+          </div>
+          <div class="session-row">
+            <span class="date">MAY 11<br/>9:30 AM</span>
+            <span class="msg">Confirmed plumber quote for downstairs rough-in. Pushed start date to early June to align with permit.</span>
+          </div>
+          <div class="session-row">
+            <span class="date">MAY 08<br/>2:00 PM</span>
+            <span class="msg">Reconciled April spend against budget — under by $1,200 on materials, over by $400 on labor. Net under by $800.</span>
+          </div>
+          <div class="session-row">
+            <span class="date">MAY 04<br/>11:15 AM</span>
+            <span class="msg">Filed amended permit with City. Estimated 3-week processing window.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <span>EST. 03 / 2026 · LAB 001 · v2.5</span>
+    <div>
+      <a href="../index.html">← BACK TO GRAPH</a>
+      <a href="../dashboard.html">↗ FULL DASHBOARD</a>
+    </div>
+  </footer>
+
+</div>
+
+</body>
+</html>
