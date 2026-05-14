@@ -155,6 +155,7 @@ const HubNode = ({ hovered, setHovered, faded }) => {
     <g
       onMouseEnter={() => setHovered({ id: 'me', kind: 'hub' })}
       onMouseLeave={() => setHovered(null)}
+      onClick={() => window.location.href = 'dashboard.html'}
       style={{ cursor: 'pointer', opacity: faded ? 0.4 : 1, transition: 'opacity 200ms var(--ease-out)' }}>
       <circle cx={CX} cy={CY} r="58" fill="var(--accent-low)" stroke="var(--accent)" strokeWidth={active ? 2.5 : 1.5} />
       <circle cx={CX} cy={CY} r="58" fill="none" stroke="var(--accent-glow)" strokeWidth="8" opacity="0.45" />
@@ -189,6 +190,12 @@ const ProjectNode = ({ project, hovered, setHovered, faded }) => {
     <g
       onMouseEnter={() => setHovered({ id: project.id, kind: 'project' })}
       onMouseLeave={() => setHovered(null)}
+      onClick={() => {
+        const dest = project.id === 'meta1' ? 'agents/meta1/meta1.html' :
+                     project.id === 'pura-vida' ? 'agents/house/house.html' :
+                     project.id === 'phil' ? '#' : '#';
+        if (dest !== '#') window.location.href = dest;
+      }}
       style={{ cursor: 'pointer', opacity: faded ? 0.35 : 1, transition: 'opacity 200ms var(--ease-out)' }}>
       <circle cx={pos.x} cy={pos.y} r="34"
               fill="var(--bg-elev-2)"
@@ -219,6 +226,7 @@ const AgentNode = ({ agent, hovered, setHovered, faded }) => {
     <g
       onMouseEnter={() => setHovered({ id, kind: 'agent' })}
       onMouseLeave={() => setHovered(null)}
+      onClick={() => window.location.href = `agents/${agent.id}/${agent.id}.html`}
       style={{ cursor: 'pointer', opacity: faded ? 0.3 : 1, transition: 'opacity 200ms var(--ease-out)' }}>
       <circle cx={pos.x} cy={pos.y} r={active ? 18 : 14}
               fill="var(--bg-elev-2)"
