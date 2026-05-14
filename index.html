@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Jeremy Montz · Claudemonzter Lab</title>
+<meta name="description" content="Senior PM running a small operator-plus-agents lab in public. 90% lab coat, 10% monster." />
+
+<link rel="stylesheet" href="design-system/colors_and_type.css" />
+
+<style>
+  html, body { background: var(--bg); color: var(--fg); margin: 0; min-height: 100vh; }
+  body { font-family: var(--font-sans); }
+  a { color: inherit; text-decoration: none; }
+
+  .home-page { width: 100%; max-width: 1280px; margin: 0 auto; }
+
+  /* Reused hero treatments */
+  @keyframes hero-flicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+    20%, 24%, 55% { opacity: 0.55; }
+  }
+  .hero-flicker { animation: hero-flicker 9s infinite; }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 currentColor; }
+    50%      { opacity: 0.45; box-shadow: 0 0 0 6px transparent; }
+  }
+  .pulse-dot { animation: pulse-dot 1.8s var(--ease-out) infinite; }
+
+  .scribble {
+    font-family: var(--font-hand);
+    color: var(--fg-muted);
+    font-size: 22px;
+    line-height: 1.1;
+    transform: rotate(-3deg);
+    display: inline-block;
+  }
+</style>
+
+<!-- React + Babel -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+
+<div id="root"></div>
+
+<!-- Content data (edit me!) — loaded plain so it's the simplest possible surface. -->
+<script src="data.js"></script>
+
+<!-- Shared atoms + data -->
+<script type="text/babel" src="components/Wordmark.jsx"></script>
+<script type="text/babel" src="components/Primitives.jsx"></script>
+<script type="text/babel" src="components/HomeShell.jsx"></script>
+
+<!-- Centerpiece: agent graph + inspector -->
+<script type="text/babel" src="components/AgentGraph.jsx"></script>
+
+<!-- Live activity (fetches real GitHub events) -->
+<script type="text/babel" src="components/LiveActivity.jsx"></script>
+
+<!-- Page composition -->
+<script type="text/babel" src="components/HomeMain.jsx"></script>
+
+<script type="text/babel">
+  ReactDOM.createRoot(document.getElementById('root')).render(<HomeMain />);
+</script>
+
+</body>
+</html>
