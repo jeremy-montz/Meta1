@@ -163,8 +163,13 @@
     </div>
 
     <!-- Live agent card — populated from Sheet at runtime -->
-    <div id="liveCard">
-      <div class="card-loading">Loading status...</div>
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div id="liveCard">
+        <div class="card-loading">Loading status...</div>
+      </div>
+      <div id="personaCard">
+        <div class="card-loading">Loading persona...</div>
+      </div>
     </div>
 
     </div><!-- grid -->
@@ -422,6 +427,40 @@ fetch(csvUrl(AGENT_TAB) + "&cachebust=" + Date.now())
     document.getElementById("liveCard").innerHTML =
       '<div class="card-loading">Could not load status</div>';
   });
+</script>
+
+<!-- ── Persona card (React + GAS fetch) ───────────────────── -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+
+<script src="../../graph/heart-data.js"></script>
+<script type="text/babel" src="../../graph/heart-dials.jsx"></script>
+<script type="text/babel" src="../../graph/heart-embed.jsx"></script>
+<script type="text/babel">
+  // Fetch persona data then render PersonaCard for this agent
+  (async () => {
+    try {
+      await window.fetchHeartData();
+      const agent = window.HEART_AGENTS.find(a => a.id === 'meta1');
+      if (agent && window.PersonaCard) {
+        const container = document.getElementById('personaCard');
+        container.innerHTML = '';
+        const root = ReactDOM.createRoot(container);
+        root.render(
+          React.createElement(window.PersonaCard, {
+            agent: agent,
+            rev: '—',
+            lastSync: 'live',
+            hyde: true,
+          })
+        );
+      }
+    } catch (e) {
+      document.getElementById('personaCard').innerHTML =
+        '<div class="card-loading">Could not load persona</div>';
+    }
+  })();
 </script>
 
 </body>
