@@ -3,135 +3,184 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Agent Status — Claudemonzter</title>
+<title>Agent Status — Claudemonzter Lab</title>
+<link rel="stylesheet" href="design-system/colors_and_type.css" />
 <style>
+/* ── Dashboard-local tokens (not in design system) ──────── */
 :root {
-  --bg: #08070d;
-  --surface: #161420;
-  --surface2: #201e29;
-  --surface3: #32303f;
-  --border: #32303f;
-  --text: #f4f3f7;
-  --text-muted: #d8d6e0;
-  --muted: #7a758c;
-  --faint: #4f4b60;
-  --accent: #b57bff;
-  --accent-deep: #7b61ff;
-  --ok: #a7ff7d;
-  --warn: #f5c56a;
-  --err: #ff4757;
-  --mono: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
-  --display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
-  --radius: 2px;
   --L1: #7b61ff;
   --L2: #5b8def;
   --L3: #4ade80;
   --L4: #f5c56a;
   --L5: #ff6b6b;
+  --open: var(--info);
 }
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg); color: var(--fg); margin: 0; min-height: 100vh; }
 body {
-  background: var(--bg); color: var(--text); font-family: var(--mono);
-  font-size: 13px; min-height: 100vh; padding: 1.5rem 2rem 3rem;
+  font-family: var(--font-mono);
+  font-size: 13px; padding: 0 0 3rem;
   position: relative; z-index: 1;
 }
 body::before {
   content: ""; position: fixed; inset: 0;
   background:
-    radial-gradient(ellipse 900px 700px at 20% 10%, color-mix(in oklch, #7b61ff 14%, transparent), transparent 60%),
-    radial-gradient(ellipse 700px 600px at 80% 80%, color-mix(in oklch, #b57bff 10%, transparent), transparent 60%);
+    radial-gradient(ellipse 900px 700px at 20% 10%, color-mix(in oklch, var(--accent-deep) 14%, transparent), transparent 60%),
+    radial-gradient(ellipse 700px 600px at 80% 80%, color-mix(in oklch, var(--accent) 10%, transparent), transparent 60%);
   pointer-events: none; z-index: 0;
 }
 body::after {
   content: ""; position: fixed; inset: 0;
   background-image:
-    linear-gradient(color-mix(in oklch, #b57bff 6%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in oklch, #b57bff 6%, transparent) 1px, transparent 1px);
-  background-size: 48px 48px; pointer-events: none; opacity: 0.35; z-index: 0;
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: var(--grid-size) var(--grid-size); pointer-events: none; opacity: 0.35; z-index: 0;
 }
 
-/* Header */
+/* ── TopNav — vanilla replica of site chrome ──────────────── */
+.top-nav {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 22px 40px; border-bottom: 1px solid var(--line);
+  gap: 32; position: relative; z-index: 1;
+}
+.top-nav-brand { flex-shrink: 0; font-family: var(--font-display); font-weight: 700; font-size: 20px; color: var(--fg); letter-spacing: -0.02em; text-decoration: none; }
+.top-nav-brand i { color: var(--accent); font-style: italic; }
+.top-nav-links {
+  display: flex; gap: 26; flex: 1; justify-content: center;
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+}
+.top-nav-links a { color: var(--fg-muted); text-decoration: none; padding-bottom: 4px; border-bottom: 1px solid transparent; }
+.top-nav-links a:hover { color: var(--accent); }
+.top-nav-links a.active { color: var(--accent); border-bottom-color: var(--accent); }
+.top-nav-status {
+  display: flex; align-items: center; gap: 10; flex-shrink: 0;
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+.top-nav-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--ok); color: var(--ok);
+  animation: pulse-dot 1.8s var(--ease-out) infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 currentColor; }
+  50%      { opacity: 0.45; box-shadow: 0 0 0 6px transparent; }
+}
+
+/* ── Page content wrapper ─────────────────────────────────── */
+.page-content { padding: 1.5rem 2rem 0; }
+
+/* ── Header ───────────────────────────────────────────────── */
 .header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2rem; position: relative; z-index: 1; }
-.header-tag { font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.3rem; }
-h1 { font-family: var(--display); font-weight: 700; font-size: 2.8rem; letter-spacing: -0.02em; color: var(--text); line-height: 1; font-variation-settings: "opsz" 96; }
+.header-tag { font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: var(--ls-widest); text-transform: uppercase; color: var(--accent); margin-bottom: 0.3rem; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-3xl); letter-spacing: var(--ls-tight); color: var(--fg); line-height: var(--lh-tight); font-variation-settings: "opsz" 96; }
 h1 span { color: var(--accent); font-style: italic; font-variation-settings: "opsz" 96, "SOFT" 100; }
-.header-meta { text-align: right; font-size: 0.62rem; color: var(--muted); letter-spacing: 0.08em; }
-.refresh-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.1em; padding: 0.3rem 0.75rem; cursor: pointer; transition: border-color 0.15s, color 0.15s; display: block; margin-left: auto; margin-top: 0.4rem; }
+.header-meta { text-align: right; font-size: var(--fs-xs); color: var(--fg-subtle); letter-spacing: var(--ls-wide); }
+.refresh-btn { background: transparent; border: 1px solid var(--line-loud); color: var(--fg-subtle); font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--ls-wide); padding: 0.3rem 0.75rem; cursor: pointer; transition: border-color var(--dur), color var(--dur); display: block; margin-left: auto; margin-top: 0.4rem; }
 .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-/* Summary */
+/* ── Summary ──────────────────────────────────────────────── */
 .summary { display: flex; gap: 0.75rem; margin-bottom: 2rem; flex-wrap: wrap; position: relative; z-index: 1; }
-.summary-chip { background: var(--surface); border: 1px solid var(--border); padding: 0.4rem 0.85rem; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; display: flex; align-items: center; gap: 0.5rem; }
+.summary-chip { background: var(--bg-elev-2); border: 1px solid var(--line-loud); padding: 0.4rem 0.85rem; font-size: var(--fs-xs); letter-spacing: var(--ls-wide); text-transform: uppercase; display: flex; align-items: center; gap: 0.5rem; }
 .chip-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 
-/* Grid */
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); position: relative; z-index: 1; }
+/* ── Grid ─────────────────────────────────────────────────── */
+.grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1px; position: relative; z-index: 1;
+}
 
-/* Card */
-.agent-card { background: var(--surface); padding: 1.25rem; position: relative; transition: background 0.15s; display: flex; flex-direction: column; }
-.agent-card:hover { background: var(--surface2); }
+/* ── Card ─────────────────────────────────────────────────── */
+.agent-card {
+  background: var(--bg-elev-2); padding: 1.25rem; position: relative;
+  transition: background var(--dur); display: flex; flex-direction: column;
+  border: 1px solid var(--line-loud);
+}
+.agent-card:hover { background: var(--bg-elev-3); }
 .agent-card::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 3px; }
 .agent-card[data-status="active"]::before { background: var(--ok); }
-.agent-card[data-status="idle"]::before { background: var(--muted); }
+.agent-card[data-status="open"]::before { background: var(--open); }
+.agent-card[data-status="idle"]::before { background: var(--fg-subtle); }
 .agent-card[data-status="blocked"]::before { background: var(--err); }
 .agent-card[data-status="flagged"]::before { background: var(--warn); }
 
-/* Upper band */
-.card-upper { padding-left: 0.5rem; margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+/* ── Upper band ───────────────────────────────────────────── */
+.card-upper { padding-left: 0.5rem; margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--line-loud); }
 .upper-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.25rem; }
 .upper-left { flex: 1; min-width: 0; }
 .upper-right { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; margin-left: 0.75rem; gap: 0.2rem; }
-.agent-name { font-family: var(--display); font-size: 1.25rem; font-weight: 500; letter-spacing: -0.01em; color: var(--text); line-height: 1.1; font-variation-settings: "opsz" 36; }
-.project-name { font-size: 0.6rem; color: var(--faint); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 0.15rem; }
-.card-timestamp { font-size: 0.5rem; color: var(--faint); letter-spacing: 0.06em; white-space: nowrap; }
-.badge { font-size: 0.55rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; padding: 0.2rem 0.55rem; border-radius: var(--radius); white-space: nowrap; }
-.badge-active { background: rgba(167,255,125,0.12); color: var(--ok); }
-.badge-idle { background: rgba(122,117,140,0.2); color: var(--muted); }
-.badge-blocked { background: rgba(255,71,87,0.15); color: var(--err); }
-.badge-flagged { background: rgba(245,197,106,0.15); color: var(--warn); }
-.mood-value { font-size: 0.7rem; color: var(--accent-deep); font-style: italic; letter-spacing: 0.02em; }
-.persona-line { font-size: 0.7rem; color: var(--muted); font-style: italic; line-height: 1.3; margin-top: 0.35rem; }
+.agent-name { font-family: var(--font-display); font-size: 1.25rem; font-weight: 500; letter-spacing: var(--ls-snug); color: var(--fg); line-height: var(--lh-tight); font-variation-settings: "opsz" 36; }
+.project-name { font-size: var(--fs-micro); color: var(--fg-faint); letter-spacing: var(--ls-wider); text-transform: uppercase; margin-top: 0.15rem; }
+.card-timestamp { font-size: var(--fs-micro); color: var(--fg-faint); letter-spacing: var(--ls-wide); white-space: nowrap; }
+.badge { font-family: var(--font-mono); font-size: var(--fs-xs); font-weight: 700; letter-spacing: var(--ls-wider); text-transform: uppercase; padding: 0.2rem 0.55rem; border-radius: var(--r-1); white-space: nowrap; }
+.badge-active { background: color-mix(in oklch, var(--ok) 12%, transparent); color: var(--ok); }
+.badge-open { background: color-mix(in oklch, var(--open) 12%, transparent); color: var(--open); }
+.badge-idle { background: color-mix(in oklch, var(--fg-subtle) 20%, transparent); color: var(--fg-subtle); }
+.badge-blocked { background: color-mix(in oklch, var(--err) 15%, transparent); color: var(--err); }
+.badge-flagged { background: color-mix(in oklch, var(--warn) 15%, transparent); color: var(--warn); }
+.mood-value { font-size: var(--fs-sm); color: var(--accent-deep); font-style: italic; letter-spacing: 0.02em; }
+.persona-line { font-size: var(--fs-sm); color: var(--fg-subtle); font-style: italic; line-height: var(--lh-snug); margin-top: 0.35rem; }
 
-/* Config pips */
+/* ── Config pips ──────────────────────────────────────────── */
 .config-layers { display: flex; gap: 3px; margin-top: 0.6rem; }
-.layer-pip { display: flex; align-items: center; gap: 4px; padding: 3px 7px; border-radius: var(--radius); font-size: 8px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; border: 1px solid; cursor: default; position: relative; }
+.layer-pip { display: flex; align-items: center; gap: 4px; padding: 3px 7px; border-radius: var(--r-1); font-size: 8px; font-weight: 700; letter-spacing: var(--ls-wide); text-transform: uppercase; border: 1px solid; cursor: default; position: relative; }
 .layer-pip.reported { border-color: color-mix(in oklch, var(--layer-color) 40%, transparent); background: color-mix(in oklch, var(--layer-color) 8%, transparent); color: var(--layer-color); }
-.layer-pip.not-reported { border-color: rgba(79,75,96,0.4); background: rgba(79,75,96,0.08); color: var(--faint); }
+.layer-pip.not-reported { border-color: color-mix(in oklch, var(--fg-faint) 40%, transparent); background: color-mix(in oklch, var(--fg-faint) 8%, transparent); color: var(--fg-faint); }
 .layer-pip .pip-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
 .layer-pip.reported .pip-dot { background: var(--layer-color); }
-.layer-pip.not-reported .pip-dot { background: var(--faint); }
-.layer-pip .pip-tip { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); white-space: nowrap; background: var(--surface3); color: var(--text-muted); border: 1px solid var(--border); padding: 4px 8px; font-size: 9px; font-weight: 400; letter-spacing: 0.04em; text-transform: none; z-index: 10; pointer-events: none; }
+.layer-pip.not-reported .pip-dot { background: var(--fg-faint); }
+.layer-pip .pip-tip { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); white-space: nowrap; background: var(--bg-elev-3); color: var(--fg-muted); border: 1px solid var(--line-loud); padding: 4px 8px; font-size: 9px; font-weight: 400; letter-spacing: 0.04em; text-transform: none; z-index: 10; pointer-events: none; }
 .layer-pip:hover .pip-tip { display: block; }
 
-/* Flag banner */
-.flag-banner { margin-top: 0.55rem; background: rgba(255,71,87,0.08); border: 1px solid rgba(255,71,87,0.25); padding: 0.4rem 0.65rem; font-size: 0.62rem; color: var(--err); letter-spacing: 0.05em; display: flex; align-items: baseline; gap: 0.4rem; }
-.flag-reason { color: var(--text-muted); }
+/* ── Flag banner ──────────────────────────────────────────── */
+.flag-banner { margin-top: 0.55rem; background: color-mix(in oklch, var(--err) 8%, transparent); border: 1px solid color-mix(in oklch, var(--err) 25%, transparent); padding: 0.4rem 0.65rem; font-size: var(--fs-xs); color: var(--err); letter-spacing: 0.05em; display: flex; align-items: baseline; gap: 0.4rem; }
+.flag-reason { color: var(--fg-muted); }
 
-/* Session section */
+/* ── Session section ──────────────────────────────────────── */
 .card-session { padding-left: 0.5rem; flex: 1; }
 .session-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
-.session-label { font-size: 0.55rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
-.session-stale-tag { font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warn); background: rgba(245,197,106,0.1); border: 1px solid rgba(245,197,106,0.2); padding: 2px 6px; }
-.session-date-tag { font-size: 0.5rem; color: var(--faint); letter-spacing: 0.06em; margin-right: 0.4rem; }
+.session-label { font-size: var(--fs-xs); letter-spacing: var(--ls-wider); text-transform: uppercase; color: var(--fg-subtle); }
+.session-stale-tag { font-size: 8px; letter-spacing: var(--ls-wider); text-transform: uppercase; color: var(--warn); background: color-mix(in oklch, var(--warn) 10%, transparent); border: 1px solid color-mix(in oklch, var(--warn) 20%, transparent); padding: 2px 6px; }
+.session-date-tag { font-size: var(--fs-micro); color: var(--fg-faint); letter-spacing: var(--ls-wide); margin-right: 0.4rem; }
 .session-field { margin-bottom: 0.5rem; }
-.session-field-label { font-size: 0.52rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); margin-bottom: 0.15rem; }
-.session-field-value { font-size: 0.72rem; color: var(--text-muted); line-height: 1.4; }
+.session-field-label { font-size: var(--fs-micro); letter-spacing: var(--ls-wider); text-transform: uppercase; color: var(--fg-faint); margin-bottom: 0.15rem; }
+.session-field-value { font-size: var(--fs-sm); color: var(--fg-muted); line-height: var(--lh-normal); }
 .card-session.stale { opacity: 0.6; }
-.card-session.stale .session-field-value { color: var(--muted); }
-.session-expand { font-size: 0.55rem; color: var(--faint); letter-spacing: 0.06em; cursor: pointer; text-align: right; margin-top: 0.35rem; transition: color 0.15s; }
+.card-session.stale .session-field-value { color: var(--fg-subtle); }
+.session-expand { font-size: var(--fs-xs); color: var(--fg-faint); letter-spacing: var(--ls-wide); cursor: pointer; text-align: right; margin-top: 0.35rem; transition: color var(--dur); }
 .session-expand:hover { color: var(--accent); }
 .session-detail { display: none; }
 .session-detail.open { display: block; }
 
-/* State messages */
-.state-msg { padding: 4rem 2rem; text-align: center; color: var(--muted); position: relative; z-index: 1; }
-.state-msg .big { font-family: var(--display); font-weight: 700; font-size: 2rem; color: var(--border); margin-bottom: 0.5rem; font-variation-settings: "opsz" 96; }
+/* ── State messages ───────────────────────────────────────── */
+.state-msg { padding: 4rem 2rem; text-align: center; color: var(--fg-subtle); position: relative; z-index: 1; }
+.state-msg .big { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-2xl); color: var(--line-loud); margin-bottom: 0.5rem; font-variation-settings: "opsz" 96; }
 
-/* Footer */
-.footer { margin-top: 2rem; display: flex; justify-content: space-between; font-size: 0.6rem; color: var(--muted); letter-spacing: 0.1em; position: relative; z-index: 1; }
+/* ── Footer ───────────────────────────────────────────────── */
+.footer { margin-top: 2rem; padding: 0 2rem; display: flex; justify-content: space-between; font-size: var(--fs-xs); color: var(--fg-subtle); letter-spacing: var(--ls-wide); position: relative; z-index: 1; }
 </style>
 </head>
 <body>
+
+<!-- ── Site nav chrome ──────────────────────────────────────── -->
+<nav class="top-nav">
+  <a href="index.html" class="top-nav-brand">Claudem<i>onzter</i></a>
+  <div class="top-nav-links">
+    <a href="index.html">Home</a>
+    <a href="portfolio.html">Portfolio</a>
+    <a href="dashboard.html" class="active">Graph</a>
+    <a href="writing.html">Writing</a>
+  </div>
+  <div class="top-nav-status">
+    <span class="top-nav-dot"></span>
+    LAB 001 · LIVE
+  </div>
+</nav>
+
+<div class="page-content">
 
 <div class="header">
   <div>
@@ -151,9 +200,11 @@ h1 span { color: var(--accent); font-style: italic; font-variation-settings: "op
 </div>
 
 <div class="footer">
-  <span>agent-dashboard v2.0</span>
+  <span>agent-dashboard v2.1</span>
   <span id="agentCount">—</span>
 </div>
+
+</div><!-- .page-content -->
 
 <script>
 // ── Configuration ─────────────────────────────────────────
@@ -236,7 +287,7 @@ function sameDay(a, b) {
 }
 
 // ── Compositing logic ─────────────────────────────────────
-// Returns { upperRow, closeRow, isStale, displayStatus }
+// Returns { openRow, closeRow, upperRow, isStale, displayStatus }
 function compositeRows(rows) {
   var openRow = null, closeRow = null;
 
@@ -259,16 +310,37 @@ function compositeRows(rows) {
     upperRow = openRow || closeRow || null;
   }
 
-  // Session details stale if open is more recent than close
-  var isStale = openRow && closeRow && openRow._ts > closeRow._ts;
+  // Is the current session open? (open is more recent than close, or no close)
+  var sessionIsOpen = openRow && (!closeRow || openRow._ts > closeRow._ts);
 
-  // Display status: override to idle if stale data
-  var displayStatus = upperRow ? (upperRow["Status"] || "active").toLowerCase() : "idle";
-  if (upperRow && daysSince(upperRow._ts) > STALE_DAYS) {
-    displayStatus = "idle";
+  // Session details stale if open is more recent than close
+  var isStale = sessionIsOpen;
+
+  // Derive status from checkin type, not self-reported field
+  var displayStatus = "idle";
+  if (upperRow) {
+    if (upperRow === openRow && sessionIsOpen) {
+      // Most recent is an open checkin
+      var flags = (openRow["Flags"] || "").trim();
+      displayStatus = flags ? "flagged" : "open";
+    } else if (upperRow === closeRow) {
+      // Most recent is a close checkin
+      displayStatus = "active";
+    }
+    // Override to idle if stale
+    if (daysSince(upperRow._ts) > STALE_DAYS) {
+      displayStatus = "idle";
+    }
   }
 
-  return { upperRow: upperRow, closeRow: closeRow, isStale: isStale, displayStatus: displayStatus };
+  return {
+    openRow: openRow,
+    closeRow: closeRow,
+    upperRow: upperRow,
+    sessionIsOpen: sessionIsOpen,
+    isStale: isStale,
+    displayStatus: displayStatus
+  };
 }
 
 // ── Parse pass phrases ────────────────────────────────────
@@ -285,14 +357,18 @@ function parsePhrases(raw) {
 }
 
 // ── Render config pips ────────────────────────────────────
-function renderPips(upperRow, closeRow, isHuman) {
+function renderPips(comp, isHuman) {
   if (isHuman) return ""; // no config layers for human card
 
-  var phrases = parsePhrases(upperRow ? upperRow["Pass Phrases"] : "");
-  var canon = upperRow ? (upperRow["Canon Version"] || "") : "";
+  var openRow = comp.openRow;
+  var closeRow = comp.closeRow;
+  var sessionIsOpen = comp.sessionIsOpen;
 
-  // L5: reported if close-checkin data exists
-  var l5Reported = closeRow && closeRow["Session Summary"];
+  // L1-L4: always from the open-checkin row
+  var phrases = parsePhrases(openRow ? openRow["Pass Phrases"] : "");
+
+  // L5: lights only when close is newer than open AND has session summary
+  var l5Reported = !sessionIsOpen && closeRow && closeRow["Session Summary"];
 
   function pip(label, phrase, color) {
     var reported = !!phrase && phrase !== "(not reported)";
@@ -331,12 +407,13 @@ function renderCard(entry, comp) {
   var close = comp.closeRow;
   var status = comp.displayStatus;
   var isStale = comp.isStale;
+  var sessionIsOpen = comp.sessionIsOpen;
 
   if (!upper) {
     return '<div class="agent-card" data-status="idle">' +
       '<div class="card-upper"><div class="upper-top"><div class="upper-left">' +
       '<div class="agent-name">' + esc(entry.domain) + '</div></div></div>' +
-      '<div class="persona-line" style="color:var(--faint);font-style:italic">No data</div></div></div>';
+      '<div class="persona-line" style="color:var(--fg-faint);font-style:italic">No data</div></div></div>';
   }
 
   var domain = upper["Domain"] || entry.domain;
@@ -360,6 +437,9 @@ function renderCard(entry, comp) {
   // Session date — only show if different day from upper timestamp
   var showSessionDate = isStale && closeTs && upperTs && !sameDay(closeTs, upperTs);
 
+  // Jeremy's card: expand by default (no session summary for human)
+  var defaultOpen = entry.isHuman;
+
   var detailId = "detail-" + entry.domain.toLowerCase();
 
   var html = '<div class="agent-card" data-status="' + esc(status) + '">';
@@ -379,7 +459,7 @@ function renderCard(entry, comp) {
   if (persona) html += '<div class="persona-line">' + esc(persona) + '</div>';
 
   // Config pips
-  html += renderPips(upper, close, entry.isHuman);
+  html += renderPips(comp, entry.isHuman);
 
   // Flags
   html += renderFlags(upper);
@@ -399,16 +479,17 @@ function renderCard(entry, comp) {
     html += '<div class="session-field"><div class="session-field-label">Summary</div>' +
       '<div class="session-field-value">' + esc(summary) + '</div></div>';
   } else if (!close) {
-    html += '<div class="session-field"><div class="session-field-value" style="color:var(--faint);font-style:italic">No close-checkin yet</div></div>';
+    html += '<div class="session-field"><div class="session-field-value" style="color:var(--fg-faint);font-style:italic">No close-checkin yet</div></div>';
   }
 
   if (hasDetail) {
-    html += '<div class="session-detail" id="' + detailId + '">';
+    html += '<div class="session-detail' + (defaultOpen ? ' open' : '') + '" id="' + detailId + '">';
     if (focus) html += '<div class="session-field"><div class="session-field-label">Focus</div><div class="session-field-value">' + esc(focus) + '</div></div>';
     if (blockers) html += '<div class="session-field"><div class="session-field-label">Blockers</div><div class="session-field-value">' + esc(blockers) + '</div></div>';
     if (next) html += '<div class="session-field"><div class="session-field-label">Next</div><div class="session-field-value">' + esc(next) + '</div></div>';
     html += '</div>';
-    html += '<div class="session-expand" onclick="toggleDetail(\'' + detailId + '\', this)">&#9656; more</div>';
+    html += '<div class="session-expand" onclick="toggleRowDetails(this)">' +
+      (defaultOpen ? '&#9662; less' : '&#9656; more') + '</div>';
   }
 
   html += '</div>'; // card-session
@@ -416,16 +497,38 @@ function renderCard(entry, comp) {
   return html;
 }
 
-function toggleDetail(id, el) {
-  var panel = document.getElementById(id);
-  if (!panel) return;
-  if (panel.classList.contains('open')) {
-    panel.classList.remove('open');
-    el.innerHTML = '&#9656; more';
-  } else {
-    panel.classList.add('open');
-    el.innerHTML = '&#9662; less';
-  }
+// ── Row-wide expand/collapse ──────────────────────────────
+function toggleRowDetails(el) {
+  var card = el.closest('.agent-card');
+  if (!card) return;
+  var cardTop = card.getBoundingClientRect().top;
+
+  // Find all cards in the same visual row (same top offset, within 2px tolerance)
+  var allCards = document.querySelectorAll('.agent-card');
+  var rowCards = [];
+  allCards.forEach(function(c) {
+    if (Math.abs(c.getBoundingClientRect().top - cardTop) < 2) {
+      rowCards.push(c);
+    }
+  });
+
+  // Determine target state from the clicked card's detail panel
+  var clickedPanel = card.querySelector('.session-detail');
+  var opening = clickedPanel && !clickedPanel.classList.contains('open');
+
+  // Apply to all cards in the row
+  rowCards.forEach(function(c) {
+    var panel = c.querySelector('.session-detail');
+    var toggle = c.querySelector('.session-expand');
+    if (!panel || !toggle) return;
+    if (opening) {
+      panel.classList.add('open');
+      toggle.innerHTML = '&#9662; less';
+    } else {
+      panel.classList.remove('open');
+      toggle.innerHTML = '&#9656; more';
+    }
+  });
 }
 
 // ── Summary bar ───────────────────────────────────────────
@@ -435,11 +538,17 @@ function renderSummary(cards) {
     var s = c.displayStatus;
     counts[s] = (counts[s] || 0) + 1;
   });
-  var colorMap = { active: "var(--ok)", idle: "var(--muted)", flagged: "var(--warn)", blocked: "var(--err)" };
+  var colorMap = {
+    active: "var(--ok)",
+    open: "var(--open)",
+    idle: "var(--fg-subtle)",
+    flagged: "var(--warn)",
+    blocked: "var(--err)"
+  };
   var html = "";
   Object.keys(counts).sort().forEach(function(s) {
     html += '<div class="summary-chip"><div class="chip-dot" style="background:' +
-      (colorMap[s] || "var(--muted)") + '"></div>' + counts[s] + '&nbsp;' + s + '</div>';
+      (colorMap[s] || "var(--fg-subtle)") + '"></div>' + counts[s] + '&nbsp;' + s + '</div>';
   });
   document.getElementById("summaryBar").innerHTML = html;
 }
