@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Memory · Layer Map · Claudemonzter</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="../design-system/colors_and_type.css"/>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+
+<style>
+  body { padding: 0; margin: 0; overflow-x: hidden; }
+
+  /* fixed background layers — subtle grid + optional scanlines */
+  .bg-grid-layer {
+    position: fixed; inset: 0; pointer-events: none; z-index: 1;
+    background-image:
+      linear-gradient(var(--grid-color) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+    background-size: var(--grid-size) var(--grid-size);
+    opacity: 0.55;
+  }
+  .bg-scan-layer {
+    position: fixed; inset: 0; pointer-events: none; z-index: 1;
+    background-image: repeating-linear-gradient(0deg, transparent 0 2px, var(--scan-color) 2px 3px);
+    mix-blend-mode: screen; opacity: 0.35;
+  }
+
+  /* matrix interactions */
+  .memory-row { transition: filter 200ms var(--ease-out); }
+  .memory-row:hover { filter: brightness(1.08); }
+  .memory-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+  /* detail fade */
+  @keyframes memory-fade-in {
+    from { opacity: 0; transform: translateY(-2px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* selection */
+  ::selection { background: var(--accent); color: var(--bg); }
+
+  /* link reset for memory page */
+  a { color: inherit; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="memory-data.js"></script>
+<script type="text/babel" src="memory-matrix.jsx"></script>
+<script type="text/babel" src="memory-app.jsx"></script>
+</body>
+</html>
