@@ -29,10 +29,10 @@ window.ME = {
   name:     'Jeremy Montz',
   title:    'senior product manager · operator · learning AI in public',
   blurb:    'I run product. Lately I run experiments. Claudemonzter is my first lab — an operator-plus-agents practice where I plug a small graph of projects into a much larger graph of models, and document what happens.',
-  location: 'Brooklyn, NY',
+  location: 'Portland, OR, USA',
   github:   'github.com/JeremyMontz',           // also the username for the live activity feed
   ghUser:   'JeremyMontz',                       // ← GitHub username, used by the live activity feed
-  linkedin: 'linkedin.com/in/jeremymontz',
+  linkedin: 'linkedin.com/in/jeremydmontz',
   est:      'EST. 03/2026',
 };
 
@@ -41,19 +41,19 @@ window.ME = {
 // these are placeholders I wrote on your behalf.
 window.SPEC = [
   ['ROLE',      'SENIOR PRODUCT MANAGER'],
-  ['STAGE',     'B2B SaaS · 0→1 + 1→N'],
-  ['DEPTH',     '12 YEARS'],
-  ['STACK',     'PM · OPS · LIGHT BUILD'],
-  ['FOCUS',     'AI-NATIVE PRODUCT'],
+  ['STAGE',     'EXPERIMENTATION'],
+  ['DEPTH',     '20+ YEARS'],
+  ['STACK',     'COWORK → GOOGLE → GITHUB → PAGES'],
+  ['FOCUS',     'AI-NATIVE PRODUCT MANAGER'],
   ['AVAILABLE', 'Q3 2026 →'],
 ];
 
 // ─── NOW · what I'm working on right now ──────────────────────────────────
 // Update weekly. 1-4 bullets max — this is a status message, not a story.
 window.NOW = [
-  'Relaunching claudemonzter online — homepage, then a proper graph view.',
-  'Wrapping up "First Month" (long-form, half lab notebook half confession).',
-  'Negotiating with my own pantry inventory agent. It keeps winning.',
+  'Relaunching claudemonzter online',
+  'Wrapping up "First Month and a Day" (half lab notebook, half confession)',
+  'Operationalizing the house renovation tracker',
 ];
 
 // ─── PORTFOLIO · selected work ────────────────────────────────────────────
@@ -79,13 +79,13 @@ window.PORTFOLIO = [
     status: 'LIVE',
     tone: 'ok',
     tag: 'INTERACTIVE',
-    href: 'agents/house/house.html',
+    href: 'agents/house/house-timeline.html',
     date: '03/2026 →',
   },
   {
     id: 'first-month',
     no: '02',
-    title: 'First Month',
+    title: 'First Month and a Day',
     blurb: 'A reckoning with the first thirty days of running Claudemonzter — what worked, what slept, what bit.',
     status: 'WIP',
     tone: 'warn',
