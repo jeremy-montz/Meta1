@@ -6,7 +6,7 @@
 // Replace after deploying gas-persona-matrix.js as a web app:
 //   Extensions > Apps Script > Deploy > Web app
 //   Execute as: Me | Who has access: Anyone
-var HEART_GAS_URL = '__DEPLOY_URL__';
+var HEART_GAS_URL = 'https://script.google.com/macros/s/AKfycbyRo2he2WpfR8i1WfeleyHVIbhW4d9GdBDUAqT4nJX_B-iJHK95ba7mFJgqOj7mB9bM/exec';
 
 // ── Static reference data ────────────────────────────────────────────────
 
