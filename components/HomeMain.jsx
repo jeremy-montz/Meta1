@@ -43,11 +43,11 @@ const HomeMain = () => {
         </div>
       </section>
 
-      <Divider label="// 02 · LIVE FROM THE LAB" tone="candle" />
+      {/* ─── LIVE FROM THE LAB — hidden until #162 ships ──────── */}
+      {/* <Divider label="// 02 · LIVE FROM THE LAB" tone="candle" /> */}
+      {/* <LiveActivity /> */}
 
-      <LiveActivity />
-
-      <Divider label="// 03 · UNDER THE LAMP" tone="candle" />
+      <Divider label="// 02 · UNDER THE LAMP" tone="candle" />
 
       {/* ─── NOW + PORTFOLIO TEASER ───────────────────────────────── */}
       <section style={{
@@ -59,7 +59,7 @@ const HomeMain = () => {
         <PortfolioTeaser />
       </section>
 
-      <Divider label="// 04 · FIELD NOTES" tone="muted" />
+      <Divider label="// 03 · FIELD NOTES" tone="muted" />
 
       {/* ─── WRITING ──────────────────────────────────────────────── */}
       <section id="articles" style={{ padding: '48px 40px' }}>
@@ -77,11 +77,6 @@ const HomeMain = () => {
         <WritingList />
       </section>
 
-      <Divider label="// 05 · THE OPERATOR" tone="muted" />
-
-      {/* ─── ABOUT ────────────────────────────────────────────────── */}
-      <AboutBlock />
-
       <Footer />
     </div>
   );
@@ -90,7 +85,7 @@ const HomeMain = () => {
 // ── HERO ───────────────────────────────────────────────────────────────────
 const Hero = () => (
   <div style={{ position: 'relative', padding: '64px 40px 40px' }}>
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: 48, alignItems: 'center' }}>
+    <div>
       <div>
         <Eyebrow color="var(--candle)">// 00 · ENTRY POINT · DRAFT 04</Eyebrow>
 
@@ -149,20 +144,6 @@ const Hero = () => (
         </div>
       </div>
 
-      {/* Mascot column — bolt-Z brand glyph. Natural violet, soft halo */}
-      <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
-        <div style={{ position: 'relative' }}>
-          <Mascot size={220} />
-          <span className="scribble" style={{
-            position: 'absolute', bottom: -18, right: -12,
-            color: 'var(--candle)', fontSize: 20,
-            transform: 'rotate(-4deg)',
-            width: 180, textAlign: 'right',
-          }}>
-            business up front.<br/>party in the back.
-          </span>
-        </div>
-      </div>
     </div>
   </div>
 );
