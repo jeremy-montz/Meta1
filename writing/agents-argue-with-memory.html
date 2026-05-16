@@ -76,32 +76,6 @@
     color: var(--accent); border-bottom: 1px solid color-mix(in oklch, var(--accent) 40%, transparent);
   }
 
-  /* Top nav — static replica of the React one so this page is pure HTML. */
-  .topnav {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 22px 40px; border-bottom: 1px solid var(--line); gap: 32px;
-  }
-  .topnav nav { display: flex; gap: 26px; flex: 1; justify-content: center; }
-  .topnav nav a {
-    font-family: var(--font-mono); font-size: 11px;
-    letter-spacing: 0.18em; text-transform: uppercase;
-    color: var(--fg-muted);
-    border-bottom: 1px solid transparent; padding-bottom: 4px;
-  }
-  .topnav nav a.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-  .footer {
-    margin-top: 80px;
-    display: flex; justify-content: space-between; align-items: flex-end;
-    padding: 30px 40px 40px;
-    border-top: 1px solid var(--line);
-    font-family: var(--font-mono); font-size: 11px;
-    letter-spacing: 0.16em; text-transform: uppercase;
-    color: var(--fg-faint);
-  }
-  .footer a { color: var(--fg-muted); margin-right: 16px; }
-  .footer a:hover { color: var(--accent); }
-
   .meta-row {
     display: flex; gap: 16px; align-items: center;
     font-family: var(--font-mono); font-size: 12px;
@@ -111,27 +85,18 @@
   .meta-row .sep { color: var(--line-loud); }
   .meta-row .accent { color: var(--candle); }
 </style>
+
+<!-- React + Babel -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
 <div class="page">
 
-  <!-- ─── TOP NAV (kept consistent with the rest of the site) ────────── -->
-  <header class="topnav">
-    <a href="../index.html" style="font-family: var(--font-display); font-weight: 900; font-size: 22px; letter-spacing: -0.035em;">
-      <span style="color: var(--fg);">Claude</span><span style="color: var(--accent);">monzter</span>
-    </a>
-    <nav>
-      <a href="../index.html">HOME</a>
-      <a href="../portfolio.html">PORTFOLIO</a>
-      <a href="../dashboard.html">GRAPH</a>
-      <a href="../writing.html" class="active">WRITING</a>
-      <a href="../index.html#about">ABOUT</a>
-    </nav>
-    <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--fg-subtle);">
-      LAB 001 · LIVE
-    </span>
-  </header>
+  <!-- ─── SITE CHROME (React) ─────────────────────────────────── -->
+  <div id="topnav-mount"></div>
 
   <!-- ─── ARTICLE HEADER ──────────────────────────────────────────────── -->
   <section style="padding: 64px 40px 32px;">
@@ -212,17 +177,20 @@
     </p>
   </article>
 
-  <!-- ─── FOOTER ──────────────────────────────────────────────────────── -->
-  <footer class="footer">
-    <span>EST. 03 / 2026 · LAB 001 · v2.5</span>
-    <div>
-      <a href="https://github.com/JeremyMontz">↗ GITHUB</a>
-      <a href="https://linkedin.com/in/jeremymontz">↗ LINKEDIN</a>
-      <a href="../writing.html">← WRITING INDEX</a>
-    </div>
-  </footer>
+  <!-- ─── FOOTER (React) ──────────────────────────────────────────────── -->
+  <div id="footer-mount" style="margin-top: 80px;"></div>
 
 </div>
+
+<!-- Site chrome scripts -->
+<script src="../data.js"></script>
+<script type="text/babel" src="../components/Wordmark.jsx"></script>
+<script type="text/babel" src="../components/Primitives.jsx"></script>
+<script type="text/babel" src="../components/HomeShell.jsx"></script>
+<script type="text/babel">
+  ReactDOM.createRoot(document.getElementById('topnav-mount')).render(<TopNav active="WRITING" />);
+  ReactDOM.createRoot(document.getElementById('footer-mount')).render(<Footer />);
+</script>
 
 </body>
 </html>
