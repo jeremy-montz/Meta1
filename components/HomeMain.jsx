@@ -7,11 +7,15 @@
 const HomeMain = () => {
   const [hovered, setHovered] = React.useState(null);
 
+  // Live Sheet data — starts with static AGENTS, upgrades to live on fetch.
+  // fetchStatus: 'loading' | 'live' | 'offline'
+  const { agents: liveAgents, fetchStatus, refetch } = useSheetData();
+
   // Resolve hovered node → an AgentCard data shape (so the inspector pane
   // re-renders consistently). Agent node ids are prefixed with 'a-' in the
   // graph to disambiguate from same-named projects, so strip that here.
   const inspectorAgent = hovered?.kind === 'agent'
-    ? AGENTS.find(a => 'a-' + a.id === hovered.id)
+    ? liveAgents.find(a => 'a-' + a.id === hovered.id)
     : null;
 
   return (
@@ -31,15 +35,15 @@ const HomeMain = () => {
               Hover any node to inspect — agents surface their live session card. Click to enter that project's page.
             </p>
           </div>
-          <GraphLegend />
+          <GraphLegend agents={liveAgents} fetchStatus={fetchStatus} />
         </div>
 
         <div style={{
           display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 400px',
           gap: 20, alignItems: 'stretch',
         }}>
-          <AgentGraph hovered={hovered} setHovered={setHovered} />
-          <Inspector hovered={hovered} agent={inspectorAgent} />
+          <AgentGraph hovered={hovered} setHovered={setHovered} agents={liveAgents} fetchStatus={fetchStatus} />
+          <Inspector hovered={hovered} agent={inspectorAgent} agents={liveAgents} fetchStatus={fetchStatus} />
         </div>
       </section>
 
@@ -149,9 +153,17 @@ const Hero = () => (
 );
 
 // ── GRAPH LEGEND ──────────────────────────────────────────────────────────
-const GraphLegend = () => {
-  const activeCt = AGENTS.filter(a => a.state === 'active').length;
-  const flaggedCt = AGENTS.filter(a => a.state === 'flagged').length;
+const GraphLegend = ({ agents, fetchStatus }) => {
+  const ag = agents || AGENTS;
+  const activeCt = ag.filter(a => a.state === 'active').length;
+  const flaggedCt = ag.filter(a => a.state === 'flagged').length;
+
+  // Fetch status indicator
+  const statusColor = fetchStatus === 'live' ? 'var(--ok)' :
+                      fetchStatus === 'loading' ? 'var(--info)' : 'var(--warn)';
+  const statusLabel = fetchStatus === 'live' ? 'LIVE' :
+                      fetchStatus === 'loading' ? 'FETCHING...' : 'STATIC';
+
   return (
     <div style={{ display: 'flex', gap: 10 }}>
       <span style={{
@@ -165,16 +177,34 @@ const GraphLegend = () => {
       }}>
         <StatusDot tone="ok" glow /> {activeCt} ACTIVE
       </span>
+      {flaggedCt > 0 && (
+        <span style={{
+          display: 'inline-flex', alignItems: 'center', gap: 8,
+          padding: '6px 12px',
+          border: '1px solid color-mix(in oklch, var(--warn) 40%, transparent)',
+          borderRadius: 2,
+          fontFamily: 'var(--font-mono)', fontSize: 11,
+          letterSpacing: '0.14em', textTransform: 'uppercase',
+          color: 'var(--warn)',
+        }}>
+          <StatusDot tone="warn" /> {flaggedCt} FLAGGED
+        </span>
+      )}
       <span style={{
         display: 'inline-flex', alignItems: 'center', gap: 8,
         padding: '6px 12px',
-        border: '1px solid color-mix(in oklch, var(--warn) 40%, transparent)',
+        border: `1px solid color-mix(in oklch, ${statusColor} 40%, transparent)`,
         borderRadius: 2,
         fontFamily: 'var(--font-mono)', fontSize: 11,
         letterSpacing: '0.14em', textTransform: 'uppercase',
-        color: 'var(--warn)',
+        color: statusColor,
       }}>
-        <StatusDot tone="warn" /> {flaggedCt} FLAGGED
+        <span style={{
+          width: 7, height: 7, borderRadius: '50%',
+          background: statusColor,
+          ...(fetchStatus === 'loading' ? { animation: 'pulse-dot 1.2s var(--ease-out) infinite', color: statusColor } : {}),
+        }} />
+        {statusLabel}
       </span>
     </div>
   );
@@ -332,13 +362,12 @@ const AboutBlock = () => (
       <Eyebrow color="var(--candle)">// HARD STATS</Eyebrow>
       <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
         {[
-          ['EST.',      '03 / 2026'],
-          ['LAB',       '001 · LIVE'],
-          ['PROJECTS',  '4 ACTIVE'],
-          ['AGENTS',    '7 ACTIVE · 1 FLAGGED'],
-          ['DOMAINS',   '8 TRACKED'],
-          ['VERSION',   'v2.5'],
-          ['LOCATION',  'BROOKLYN, NY'],
+          ['EST.',      ME.est.replace('EST. ', '')],
+          ['LAB',       '001 · ' + SITE.status],
+          ['PROJECTS',  PROJECTS.length + ' ACTIVE'],
+          ['AGENTS',    AGENTS.length + ' TRACKED'],
+          ['VERSION',   SITE.version],
+          ['LOCATION',  ME.location.toUpperCase()],
         ].map(([k, v]) => (
           <div key={k} style={{
             display: 'flex', justifyContent: 'space-between',

@@ -36,7 +36,10 @@ const POSITIONS = {
 
 const AGENT_NODE_ID = (a) => 'a-' + a.id;
 
-const AgentGraph = ({ hovered, setHovered }) => {
+const AgentGraph = ({ hovered, setHovered, agents: agentsProp, fetchStatus }) => {
+  // Use live agents if provided, fall back to static global
+  const agents = agentsProp || AGENTS;
+
   // Compute connectivity. When hovering an agent, only its agent→project→hub
   // path is lit. When hovering a project, all its agents + the hub. When
   // hovering the hub, everything.
@@ -45,25 +48,25 @@ const AgentGraph = ({ hovered, setHovered }) => {
     const lit = new Set([hovered.id]);
     if (hovered.kind === 'hub') {
       PROJECTS.forEach(p => lit.add(p.id));
-      AGENTS.forEach(a => lit.add(AGENT_NODE_ID(a)));
+      agents.forEach(a => lit.add(AGENT_NODE_ID(a)));
     } else if (hovered.kind === 'project') {
       lit.add('me');
-      AGENTS.filter(a => a.project === hovered.id).forEach(a => lit.add(AGENT_NODE_ID(a)));
+      agents.filter(a => a.project === hovered.id).forEach(a => lit.add(AGENT_NODE_ID(a)));
     } else if (hovered.kind === 'agent') {
-      const agent = AGENTS.find(a => AGENT_NODE_ID(a) === hovered.id);
+      const agent = agents.find(a => AGENT_NODE_ID(a) === hovered.id);
       if (agent) {
         lit.add(agent.project);
         lit.add('me');
       }
     }
     return lit;
-  }, [hovered]);
+  }, [hovered, agents]);
 
   // Build edges: hub↔project, project↔its agents.
   const edges = [];
   PROJECTS.forEach(p => {
     edges.push({ a: 'me', b: p.id, key: 'me-' + p.id });
-    AGENTS.filter(a => a.project === p.id).forEach(ag => {
+    agents.filter(a => a.project === p.id).forEach(ag => {
       edges.push({ a: p.id, b: AGENT_NODE_ID(ag), key: p.id + '-' + ag.id });
     });
   });
@@ -88,7 +91,7 @@ const AgentGraph = ({ hovered, setHovered }) => {
         letterSpacing: '0.22em', textTransform: 'uppercase',
         color: 'var(--fg-faint)', pointerEvents: 'none', zIndex: 1,
       }}>
-        // GRAPH · CLAUDEMONZTER · v2.5
+        {'// GRAPH · CLAUDEMONZTER · ' + (SITE ? SITE.version : 'v3.3')}
       </div>
       <div style={{
         position: 'absolute', top: 14, right: 16,
@@ -124,7 +127,7 @@ const AgentGraph = ({ hovered, setHovered }) => {
         ))}
 
         {/* AGENT NODES */}
-        {AGENTS.map(a => (
+        {agents.map(a => (
           <AgentNode key={a.id} agent={a}
                      hovered={hovered} setHovered={setHovered}
                      faded={nodeFaded(AGENT_NODE_ID(a))} />
@@ -218,7 +221,8 @@ const AgentNode = ({ agent, hovered, setHovered, faded }) => {
   const pos = POSITIONS[id];
   const active = hovered?.id === id;
   const flagged = agent.state === 'flagged';
-  const ringColor = flagged ? 'var(--err)' : 'var(--ok)';
+  const idle = agent.state === 'idle';
+  const ringColor = flagged ? 'var(--err)' : idle ? 'var(--fg-subtle)' : 'var(--ok)';
 
   // Labels always sit below the node — the cluster layout above gives
   // every outer agent enough vertical room.
@@ -236,7 +240,7 @@ const AgentNode = ({ agent, hovered, setHovered, faded }) => {
         <circle cx={pos.x} cy={pos.y} r={5} fill="var(--err)"
                 className="pulse-dot" style={{ color: 'var(--err)' }} />
       )}
-      {!flagged && active && (
+      {!flagged && !idle && active && (
         <circle cx={pos.x} cy={pos.y} r={4} fill="var(--ok)" />
       )}
       <text x={pos.x}
@@ -253,7 +257,8 @@ const AgentNode = ({ agent, hovered, setHovered, faded }) => {
 };
 
 // ── INSPECTOR PANE ─────────────────────────────────────────────────────────
-const Inspector = ({ hovered, agent }) => {
+const Inspector = ({ hovered, agent, agents: agentsProp, fetchStatus }) => {
+  const agents = agentsProp || AGENTS;
   // STATE A: empty / instructions
   if (!hovered) {
     return (
@@ -315,11 +320,11 @@ const Inspector = ({ hovered, agent }) => {
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {[
-            ['EST.',     '03 / 2026'],
-            ['VERSION',  'v2.5'],
-            ['LAB',      '001 · LIVE'],
-            ['PROJECTS', '4 ACTIVE'],
-            ['AGENTS',   '7 ACTIVE · 1 FLAGGED'],
+            ['EST.',     ME.est.replace('EST. ', '')],
+            ['VERSION',  SITE.version],
+            ['LAB',      '001 · ' + SITE.status],
+            ['PROJECTS', PROJECTS.length + ' ACTIVE'],
+            ['AGENTS',   agents.length + ' TRACKED'],
           ].map(([k, v]) => (
             <div key={k} style={{
               display: 'flex', justifyContent: 'space-between',
@@ -343,7 +348,7 @@ const Inspector = ({ hovered, agent }) => {
   // STATE C: hovered project
   if (hovered.kind === 'project') {
     const project = PROJECTS.find(p => p.id === hovered.id);
-    const projectAgents = AGENTS.filter(a => a.project === project.id);
+    const projectAgents = agents.filter(a => a.project === project.id);
     const toneColor = {
       accent: 'var(--accent)', info: 'var(--info)', ok: 'var(--ok)', warn: 'var(--warn)',
     }[project.tone];
@@ -377,8 +382,9 @@ const Inspector = ({ hovered, agent }) => {
                   {a.role}
                 </div>
               </div>
-              <Badge tone={a.state === 'flagged' ? 'err' : 'ok'} sym={a.state === 'flagged' ? '!' : '●'}>
-                {a.state === 'flagged' ? 'FLAGGED' : 'ACTIVE'}
+              <Badge tone={a.state === 'flagged' ? 'err' : a.state === 'idle' ? 'neutral' : 'ok'}
+                     sym={a.state === 'flagged' ? '!' : '●'}>
+                {(a.state || 'active').toUpperCase()}
               </Badge>
             </div>
           ))}
