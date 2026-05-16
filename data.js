@@ -74,44 +74,67 @@ window.NOW = [
 //   no      — display number, e.g. '01'
 //   title   — display title
 //   blurb   — 1-sentence description
-//   status  — short label, e.g. 'WIP', 'LIVE', 'TBD'
+//   status  — short label, e.g. 'WIP', 'LIVE', 'COMING SOON'
 //   tone    — 'warn' for WIP, 'na' for placeholder, 'ok' for shipped
 //   tag     — short uppercase tag
 //   href    — link target
 //   date    — display date string
+//   details — optional array of [key, value] pairs (portfolio page expanded view)
+//   excerpt — optional pull quote (portfolio page only)
 window.PORTFOLIO = [
   {
-    id: 'house-tracker',
-    no: '01',
-    title: 'House Tracker',
-    blurb: 'A renovation tracker on top of the Pura-Vida project. Timeline, budget, contractor notes — all in one operator-readable view.',
-    status: 'LIVE',
-    tone: 'ok',
-    tag: 'INTERACTIVE',
-    href: 'agents/house/house-timeline.html',
-    date: '03/2026 →',
-  },
-  {
     id: 'first-month',
-    no: '02',
-    title: 'First Month and a Day',
+    no: '01',
+    title: 'A Month and a Day',
     blurb: 'A reckoning with the first thirty days of running Claudemonzter — what worked, what slept, what bit.',
     status: 'WIP',
     tone: 'warn',
     tag: 'WRITING + INTERACTIVE',
     href: 'first-month-v2.html',
     date: '04/2026 →',
+    details: [
+      ['ROLE',    'OPERATOR · WRITER · BUILDER'],
+      ['STACK',   'HTML · CLAUDE CODE · MY OWN HANDS'],
+      ['STARTED', '04 / 2026'],
+      ['STATUS',  'WIP · DRAFT 04'],
+    ],
+    excerpt: '"Day one I named eight agents and immediately forgot what three of them did. Day five I stopped naming agents and started writing job descriptions for them. The job descriptions are the agent."',
   },
   {
-    id: 'project-03',
+    id: 'house-tracker',
+    no: '02',
+    title: 'House Renovation Tracker',
+    blurb: 'A renovation tracker on top of the Pura-Vida project. Timeline, budget, contractor notes — all in one operator-readable view.',
+    status: 'LIVE',
+    tone: 'ok',
+    tag: 'INTERACTIVE',
+    href: 'agents/house/house-timeline.html',
+    date: '03/2026 →',
+    details: [
+      ['ROLE',    'OPERATOR · PROJECT MANAGER'],
+      ['STACK',   'REACT · GOOGLE SHEETS · GAS'],
+      ['STARTED', '03 / 2026'],
+      ['STATUS',  'LIVE'],
+    ],
+    excerpt: null,
+  },
+  {
+    id: 'month-two',
     no: '03',
-    title: 'Project 03',
-    blurb: 'A third slot left open on purpose. Shape depends on what 02 teaches.',
-    status: 'TBD',
+    title: 'Month Two: (re)Building and Extending',
+    blurb: 'The second chapter. What happens when the scaffolding is up and the real building begins.',
+    status: 'COMING SOON',
     tone: 'na',
     tag: 'PLANNED',
     href: '#',
-    date: '— · —',
+    date: 'Q3 2026 →',
+    details: [
+      ['ROLE',    '—'],
+      ['STACK',   '—'],
+      ['STARTED', 'Q3 2026 (PLANNED)'],
+      ['STATUS',  'COMING SOON'],
+    ],
+    excerpt: null,
   },
 ];
 

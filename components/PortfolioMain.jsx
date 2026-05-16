@@ -52,7 +52,7 @@ const PortfolioHero = () => (
             <Button variant="secondary">LINKEDIN →</Button>
           </a>
           <span style={{ marginLeft: 8, fontFamily: 'var(--font-mono)', fontSize: 12, letterSpacing: '0.14em', color: 'var(--fg-subtle)' }}>
-            BROOKLYN, NY · OPEN TO PRINCIPAL / STAFF PM
+            {ME.location.toUpperCase()} · OPEN TO PRINCIPAL / STAFF PM
           </span>
         </div>
       </div>
@@ -90,7 +90,7 @@ const PortfolioHero = () => (
         fontFamily: 'var(--font-hyde)', fontSize: 22,
         color: 'var(--candle)', letterSpacing: '0.02em',
       }}>
-        Hark — &nbsp;<span style={{ color: 'var(--fg-subtle)', fontFamily: 'var(--font-sans)', fontSize: 13, letterSpacing: '0.16em', textTransform: 'uppercase' }}>FOUR PROJECTS BELOW · EVEN THE EMPTY PLINTHS ARE INTENTIONAL.</span>
+        Hark — &nbsp;<span style={{ color: 'var(--fg-subtle)', fontFamily: 'var(--font-sans)', fontSize: 13, letterSpacing: '0.16em', textTransform: 'uppercase' }}>{PORTFOLIO.length} PROJECTS BELOW · EVEN THE EMPTY PLINTHS ARE INTENTIONAL.</span>
       </span>
       <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--fg-faint)' }}>
         ↓ SCROLL
@@ -103,58 +103,10 @@ const PortfolioHero = () => (
 // Project-shaped slots, expanded view. Real entry shows full detail; planned
 // slots are kept as restrained placeholders.
 const PortfolioMatrix = () => {
-  // Hand-curated portfolio (real + planned). Differs from PORTFOLIO mini list
-  // on the homepage to give the recruiter more meat per row.
-  const projects = [
-    {
-      no: '01',
-      title: 'First Month',
-      tag: 'WRITING + INTERACTIVE',
-      tone: 'live',
-      status: 'WIP',
-      blurb: 'A reckoning with the first thirty days of running Claudemonzter — what worked, what slept, what bit.',
-      details: [
-        ['ROLE',     'OPERATOR · WRITER · BUILDER'],
-        ['STACK',    'HTML · CLAUDE CODE · MY OWN HANDS'],
-        ['STARTED',  '04 / 2026'],
-        ['STATUS',   'WIP · DRAFT 04'],
-      ],
-      excerpt: '"Day one I named eight agents and immediately forgot what three of them did. Day five I stopped naming agents and started writing job descriptions for them. The job descriptions are the agent."',
-      href: 'first-month-v2.html',
-    },
-    {
-      no: '02',
-      title: 'Project 02',
-      tag: 'PLANNED',
-      tone: 'planned',
-      status: 'RESERVED',
-      blurb: 'The second experiment. Likely about how agents argue with their own memory — and how to design around the argument.',
-      details: [
-        ['ROLE',    '—'],
-        ['STACK',   '—'],
-        ['STARTED', 'Q3 2026 (PLANNED)'],
-        ['STATUS',  'SLOT RESERVED'],
-      ],
-      excerpt: null,
-      href: '#',
-    },
-    {
-      no: '03',
-      title: 'Project 03',
-      tag: 'PLANNED',
-      tone: 'planned',
-      status: 'RESERVED',
-      blurb: 'The third experiment. Shape depends on what 02 teaches. Restraint is a feature.',
-      details: [
-        ['ROLE',    '—'],
-        ['STACK',   '—'],
-        ['STARTED', 'Q4 2026 (PLANNED)'],
-        ['STATUS',  'SLOT RESERVED'],
-      ],
-      excerpt: null,
-      href: '#',
-    },
-  ];
+  // Portfolio data now lives in data.js (PORTFOLIO array). The homepage teaser
+  // and this expanded view both read the same source; this page uses the
+  // optional `details` and `excerpt` fields that the teaser ignores.
+  const liveCt = PORTFOLIO.filter(p => p.tone !== 'na').length;
 
   return (
     <section style={{ padding: '24px 40px 56px' }}>
@@ -163,23 +115,23 @@ const PortfolioMatrix = () => {
           <Eyebrow color="var(--candle)">// 01 · THE WORK</Eyebrow>
           <h2 style={{ marginTop: 8 }}>Portfolio projects.</h2>
           <p style={{ marginTop: 8, maxWidth: 580 }}>
-            One live, two reserved. Each entry links to a full write-up or a working artifact.
+            {liveCt} active, {PORTFOLIO.length - liveCt} on deck. Each entry links to a full write-up or a working artifact.
           </p>
         </div>
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--fg-faint)' }}>
-          01 / 03 LIVE
+          {String(liveCt).padStart(2, '0')} / {String(PORTFOLIO.length).padStart(2, '0')} ACTIVE
         </span>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column' }}>
-        {projects.map((p, i) => <ProjectRow key={p.no} p={p} first={i === 0} last={i === projects.length - 1} />)}
+        {PORTFOLIO.map((p, i) => <ProjectRow key={p.no} p={p} first={i === 0} last={i === PORTFOLIO.length - 1} />)}
       </div>
     </section>
   );
 };
 
 const ProjectRow = ({ p, first, last }) => {
-  const live = p.tone === 'live';
+  const live = p.tone !== 'na';
   return (
     <a href={p.href} style={{
       display: 'grid', gridTemplateColumns: '80px 1fr 320px',
@@ -198,7 +150,7 @@ const ProjectRow = ({ p, first, last }) => {
           color: live ? 'var(--candle)' : 'var(--fg-faint)', lineHeight: 1,
         }}>{p.no}</div>
         <div style={{ marginTop: 8 }}>
-          <Badge tone={live ? 'warn' : 'neutral'} sym={live ? '▲' : '—'}>{p.status}</Badge>
+          <Badge tone={live ? (p.tone === 'warn' ? 'warn' : 'ok') : 'neutral'} sym={live ? '▲' : '—'}>{p.status}</Badge>
         </div>
       </div>
 
@@ -224,30 +176,32 @@ const ProjectRow = ({ p, first, last }) => {
         )}
       </div>
 
-      <div>
-        <Tick>// SPECS</Tick>
-        <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column' }}>
-          {p.details.map(([k, v]) => (
-            <div key={k} style={{
-              display: 'flex', justifyContent: 'space-between',
-              padding: '8px 0', borderBottom: '1px solid var(--line-soft)',
-              fontFamily: 'var(--font-mono)', fontSize: 10.5, letterSpacing: '0.14em',
-            }}>
-              <span style={{ color: 'var(--fg-subtle)' }}>{k}</span>
-              <span style={{ color: live ? 'var(--fg)' : 'var(--fg-faint)' }}>{v}</span>
-            </div>
-          ))}
+      {p.details && (
+        <div>
+          <Tick>// SPECS</Tick>
+          <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column' }}>
+            {p.details.map(([k, v]) => (
+              <div key={k} style={{
+                display: 'flex', justifyContent: 'space-between',
+                padding: '8px 0', borderBottom: '1px solid var(--line-soft)',
+                fontFamily: 'var(--font-mono)', fontSize: 10.5, letterSpacing: '0.14em',
+              }}>
+                <span style={{ color: 'var(--fg-subtle)' }}>{k}</span>
+                <span style={{ color: live ? 'var(--fg)' : 'var(--fg-faint)' }}>{v}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{
+            marginTop: 18, display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase',
+          }}>
+            <span style={{ color: live ? 'var(--accent)' : 'var(--fg-faint)' }}>
+              {live ? '▸ READ' : 'COMING SOON'}
+            </span>
+            <span style={{ color: 'var(--fg-faint)' }}>{live ? '↗' : ''}</span>
+          </div>
         </div>
-        <div style={{
-          marginTop: 18, display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase',
-        }}>
-          <span style={{ color: live ? 'var(--accent)' : 'var(--fg-faint)' }}>
-            {live ? '▸ READ' : 'AWAITING ASSIGNMENT'}
-          </span>
-          <span style={{ color: 'var(--fg-faint)' }}>{live ? '↗' : ''}</span>
-        </div>
-      </div>
+      )}
     </a>
   );
 };
@@ -332,8 +286,7 @@ const LabSnapshot = () => (
 // ── ABOUT + CONTACT ──────────────────────────────────────────────────────
 const PortfolioAbout = () => (
   <section id="about" style={{ padding: '48px 40px 56px', borderTop: '1px solid var(--line)' }}>
-    <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr 320px', gap: 48, alignItems: 'flex-start' }}>
-      <Mascot size={170} />
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 48, alignItems: 'flex-start' }}>
       <div>
         <Eyebrow color="var(--candle)">// 03 · ABOUT</Eyebrow>
         <h2 style={{ marginTop: 10, marginBottom: 18 }}>The operator.</h2>
@@ -361,7 +314,7 @@ const PortfolioAbout = () => (
             fontFamily: 'var(--font-mono)', fontSize: 12, letterSpacing: '0.14em',
           }}>
             <span><span style={{ color: 'var(--accent)' }}>↗ </span>LINKEDIN</span>
-            <span style={{ color: 'var(--fg-subtle)' }}>/in/jeremymontz</span>
+            <span style={{ color: 'var(--fg-subtle)' }}>/{ME.linkedin.split('/').pop()}</span>
           </a>
           <a href="index.html" style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
