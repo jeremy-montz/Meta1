@@ -13,6 +13,7 @@
  *   PROJECTS  — the four lab projects (graph + lab snapshot)
  *   AGENTS    — the eight agents (graph nodes, inspector cards)
  *   LEVELS    — the L1-L5 chip set on agent cards
+ *   SITE      — canonical version, status (shown in nav + footer)
  *
  * Quick edits:
  *   - Update NOW       → change weekly to reflect current focus.
@@ -24,6 +25,14 @@
  *   none. This is loaded as plain JS via <script src="data.js"></script>
  *   BEFORE the JSX components. The components read these as globals.
  * ========================================================================== */
+
+// ─── SITE · canonical metadata shown in nav, footer, hard stats ──────────
+// version  — displayed in TopNav pulse-dot badge and footer
+// status   — 'LIVE', 'BETA', etc.
+window.SITE = {
+  version: 'v3.3',
+  status:  'LIVE',
+};
 
 window.ME = {
   name:     'Jeremy Montz',

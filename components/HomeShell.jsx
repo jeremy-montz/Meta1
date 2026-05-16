@@ -85,6 +85,10 @@ const ContactRow = ({ align = 'left' }) => (
     letterSpacing: '0.14em', textTransform: 'uppercase',
     color: 'var(--fg-muted)',
   }}>
+    <a href="agents/jeremy/jeremy.html" style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
+      <span style={{ color: 'var(--accent)' }}>↗</span> ABOUT
+    </a>
+    <span style={{ color: 'var(--line-loud)' }}>·</span>
     <a href={`https://${ME.github}`} style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
       <span style={{ color: 'var(--accent)' }}>↗</span> GITHUB
     </a>
@@ -111,7 +115,7 @@ const Footer = () => (
         letterSpacing: '0.22em', textTransform: 'uppercase',
         color: 'var(--fg-faint)',
       }}>
-        EST. 03/2026 · BORN 26·MAR·2026 · V2.5
+        EST. 03/2026 · {(window.SITE?.version || 'v3.3').toUpperCase()}
       </div>
     </div>
     <ContactRow />
@@ -151,7 +155,6 @@ const TopNav = ({ active }) => (
         ['PORTFOLIO', 'portfolio.html'],
         ['GRAPH',     'dashboard.html'],
         ['WRITING',   'writing.html'],
-        ['ABOUT',     '#about'],
       ].map(([label, href]) => (
         <a key={label} href={href} style={{
           color: label === active ? 'var(--accent)' : 'var(--fg-muted)',
@@ -167,7 +170,7 @@ const TopNav = ({ active }) => (
       color: 'var(--fg-subtle)',
     }}>
       <span className="pulse-dot" style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--ok)', color: 'var(--ok)' }} />
-      LAB 001 · LIVE
+      {(window.SITE?.version || 'v3.3').toUpperCase()} · {(window.SITE?.status || 'LIVE').toUpperCase()}
     </div>
   </div>
 );
