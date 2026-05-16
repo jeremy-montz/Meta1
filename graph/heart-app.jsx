@@ -605,41 +605,6 @@ const App = () => {
       {hyde && <div className="bg-vignette-layer"/>}
 
       <div style={{ position: 'relative', zIndex: 2, maxWidth: 1480, margin: '0 auto', padding: '20px 32px 80px' }}>
-        {/* topnav */}
-        <nav style={{
-          display: 'flex', alignItems: 'center', gap: 14,
-          paddingBottom: 12, borderBottom: '1px solid var(--line)',
-        }}>
-          <a href="../index.html" style={{
-            fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 18,
-            letterSpacing: '-0.035em', color: 'var(--fg)', textDecoration: 'none',
-          }}>Claude<span style={{ color: 'var(--accent)' }}>monzter</span></a>
-          <span style={{ color: 'var(--fg-faint)', fontFamily: 'var(--font-mono)', fontSize: 10 }}>·</span>
-          <span style={{
-            fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 600,
-            letterSpacing: '0.18em', color: 'var(--fg-subtle)', textTransform: 'uppercase',
-          }}>body</span>
-          <span style={{ color: 'var(--fg-faint)', fontFamily: 'var(--font-mono)', fontSize: 10 }}>·</span>
-          <span style={{
-            fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 600,
-            letterSpacing: '0.18em', color: 'var(--accent)', textTransform: 'uppercase',
-          }}>heart</span>
-
-          <div style={{ marginLeft: 'auto', display: 'flex', gap: 14, alignItems: 'center' }}>
-            {['memory','brain','digestion'].map(o => (
-              <span key={o} style={{
-                fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.18em',
-                color: 'var(--fg-faint)', textTransform: 'uppercase',
-                textDecoration: 'line-through',
-              }}>{o}</span>
-            ))}
-            <span style={{
-              fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.16em',
-              color: 'var(--fg-subtle)', padding: '3px 6px',
-              border: '1px solid var(--line-loud)', borderRadius: 1, textTransform: 'uppercase',
-            }}>organs · wip</span>
-          </div>
-        </nav>
 
         <HeartHeader hyde={hyde} crazy={crazy}
                      dirtyCount={dirtyCount} onCommit={commit} onDiscard={discard}
