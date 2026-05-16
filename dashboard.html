@@ -640,7 +640,8 @@ function loadData() {
     var now = new Date();
     document.getElementById("lastRefresh").textContent =
       "Last refresh: " + now.toLocaleTimeString("en-US", { hour:"numeric", minute:"2-digit", second:"2-digit" });
-    document.getElementById("agentCount").textContent = cards.length + " domains tracked";
+    var countEl = document.getElementById("agentCount");
+    if (countEl) countEl.textContent = cards.length + " domains tracked";
 
   }).catch(function(err) {
     document.getElementById("dashOutput").innerHTML =
