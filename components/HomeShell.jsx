@@ -77,7 +77,7 @@ const SectionHeader = ({ no, eyebrow, title, sub }) => (
   </div>
 );
 
-const ContactRow = ({ align = 'left', basePath = '' }) => (
+const ContactRow = ({ align = 'left' }) => (
   <div style={{
     display: 'flex', gap: 20, alignItems: 'center',
     justifyContent: align === 'center' ? 'center' : 'flex-start',
@@ -85,15 +85,15 @@ const ContactRow = ({ align = 'left', basePath = '' }) => (
     letterSpacing: '0.14em', textTransform: 'uppercase',
     color: 'var(--fg-muted)',
   }}>
-    <a href={`${basePath}agents/jeremy/jeremy.html`} style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
+    <a href="agents/jeremy/jeremy.html" style={{ display: 'inline-flex', gap: 8, alignItems: 'center', color: 'inherit', textDecoration: 'none' }}>
       <span style={{ color: 'var(--accent)' }}>↗</span> ABOUT
     </a>
     <span style={{ color: 'var(--line-loud)' }}>·</span>
-    <a href={`https://${ME.github}`} style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
+    <a href={`https://${ME.github}`} style={{ display: 'inline-flex', gap: 8, alignItems: 'center', color: 'inherit', textDecoration: 'none' }}>
       <span style={{ color: 'var(--accent)' }}>↗</span> GITHUB
     </a>
     <span style={{ color: 'var(--line-loud)' }}>·</span>
-    <a href={`https://${ME.linkedin}`} style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
+    <a href={`https://${ME.linkedin}`} style={{ display: 'inline-flex', gap: 8, alignItems: 'center', color: 'inherit', textDecoration: 'none' }}>
       <span style={{ color: 'var(--accent)' }}>↗</span> LINKEDIN
     </a>
     <span style={{ color: 'var(--line-loud)' }}>·</span>
@@ -101,7 +101,7 @@ const ContactRow = ({ align = 'left', basePath = '' }) => (
   </div>
 );
 
-const Footer = ({ basePath = '' }) => (
+const Footer = () => (
   <div style={{
     padding: '30px 40px 40px',
     borderTop: '1px solid var(--line)',
@@ -118,7 +118,7 @@ const Footer = ({ basePath = '' }) => (
         EST. 03/2026 · {(window.SITE?.version || 'v3.3').toUpperCase()}
       </div>
     </div>
-    <ContactRow basePath={basePath} />
+    <ContactRow />
   </div>
 );
 
@@ -136,7 +136,7 @@ const Mascot = ({ size = 96, color }) => (
 );
 
 // TopNav — shared chrome across home + portfolio pages.
-const TopNav = ({ active, basePath = '' }) => (
+const TopNav = ({ active }) => (
   <div style={{
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
     padding: '22px 40px', borderBottom: '1px solid var(--line)',
@@ -156,7 +156,7 @@ const TopNav = ({ active, basePath = '' }) => (
         ['GRAPH',     'dashboard.html'],
         ['WRITING',   'writing.html'],
       ].map(([label, href]) => (
-        <a key={label} href={`${basePath}${href}`} style={{
+        <a key={label} href={href} style={{
           color: label === active ? 'var(--accent)' : 'var(--fg-muted)',
           borderBottom: label === active ? '1px solid var(--accent)' : '1px solid transparent',
           paddingBottom: 4,
@@ -230,29 +230,25 @@ const AgentCard = ({ agent, compact }) => {
         fontStyle: 'italic', fontSize: 13.5, color: 'var(--fg-muted)', lineHeight: 1.4,
       }}>{agent.blurb}</p>
 
-      {/* L1-L5 config layer pips — dashboard style */}
-      <div style={{ marginTop: 14, display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-        {LEVELS.map(l => {
-          const c = l.color || `var(--${l.tone})`;
-          return (
-            <span key={l.id} style={{
-              display: 'inline-flex', alignItems: 'center', gap: 4,
-              fontFamily: 'var(--font-mono)', fontSize: 8, fontWeight: 700,
-              letterSpacing: '0.16em', textTransform: 'uppercase',
-              padding: '3px 7px', borderRadius: 2, cursor: 'default',
-              border: `1px solid color-mix(in oklch, ${c} 40%, transparent)`,
-              background: `color-mix(in oklch, ${c} 8%, transparent)`,
-              color: c,
-            }}>
-              <span style={{
-                width: 5, height: 5, borderRadius: '50%',
-                background: c, flexShrink: 0,
-                display: 'inline-block',
-              }} />
-              {l.id}
-            </span>
-          );
-        })}
+      {/* L1-L5 levels */}
+      <div style={{ marginTop: 14, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        {LEVELS.map(l => (
+          <span key={l.id} style={{
+            display: 'inline-flex', alignItems: 'center', gap: 4,
+            fontFamily: 'var(--font-mono)', fontSize: 9.5,
+            letterSpacing: '0.14em',
+            padding: '3px 6px',
+            background: 'var(--bg-elev-2)', color: 'var(--fg-muted)',
+            border: '1px solid var(--line-loud)', borderRadius: 2,
+          }}>
+            <span style={{
+              width: 5, height: 5, borderRadius: '50%',
+              background: `var(--${l.tone})`,
+              display: 'inline-block',
+            }} />
+            {l.id}
+          </span>
+        ))}
       </div>
 
       {/* Flag row */}
