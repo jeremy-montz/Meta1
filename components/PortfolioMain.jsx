@@ -52,7 +52,7 @@ const PortfolioHero = () => (
             <Button variant="secondary">LINKEDIN →</Button>
           </a>
           <span style={{ marginLeft: 8, fontFamily: 'var(--font-mono)', fontSize: 12, letterSpacing: '0.14em', color: 'var(--fg-subtle)' }}>
-            {ME.location.toUpperCase()} · OPEN TO PRINCIPAL / STAFF PM
+            {ME.location.toUpperCase()} · {ME.tagline}
           </span>
         </div>
       </div>
@@ -65,10 +65,10 @@ const PortfolioHero = () => (
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
           <Tick>// SPEC</Tick>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--ok)', fontSize: 11, letterSpacing: '0.16em' }}>
-            <StatusDot tone="ok" glow /> SHIPPING
+            <StatusDot tone="ok" glow /> {SPEC.badge}
           </span>
         </div>
-        {SPEC.map(([k, v]) => (
+        {SPEC.rows.map(([k, v]) => (
           <div key={k} style={{
             display: 'flex', justifyContent: 'space-between',
             padding: '8px 0', borderBottom: '1px solid var(--line-soft)',
@@ -291,10 +291,10 @@ const PortfolioAbout = () => (
         <Eyebrow color="var(--candle)">// 03 · ABOUT</Eyebrow>
         <h2 style={{ marginTop: 10, marginBottom: 18 }}>The operator.</h2>
         <p style={{ fontSize: 17, lineHeight: 1.55, marginBottom: 14 }}>
-          I'm Jeremy Montz — a senior product manager with twelve years across B2B SaaS, marketplaces, and ops-heavy tools. I shipped my first product the year iPhones got Retina; I've shipped a lot since.
+          I'm Jeremy Montz — senior product manager and product owner. I've spent my career building B2B tools with software engineers: SaaS and on-prem, data enrichment and visualization, eDiscovery. The through-line is systems thinking — how the pieces connect matters more than any single piece.
         </p>
         <p style={{ fontSize: 15, lineHeight: 1.55, color: 'var(--fg-muted)' }}>
-          Lately I'm interested in what changes when a product team includes agents as actual collaborators — not features. Claudemonzter is where I'm finding out. If you're hiring for a senior or principal PM seat on something AI-native, I want to talk.
+          Right now I'm building Claudemonzter — a working multi-agent system where I'm testing my instincts with AI agents as collaborators instead of human engineers. What you see is the result of building something entirely on my own, and finding out the hard way what works and what doesn't. If you're hiring for a senior or principal PM seat on something AI-native, I want to talk.
         </p>
       </div>
       <div style={{ border: '1px solid var(--line)', background: 'var(--bg-elev-1)', padding: 20 }}>
