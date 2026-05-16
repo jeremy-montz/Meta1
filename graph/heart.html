@@ -12,37 +12,7 @@
 <style>
   body { padding: 0; margin: 0; overflow-x: hidden; }
 
-  /* ─── Top Nav (site standard) ─── */
-  .top-nav {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 22px 40px; border-bottom: 1px solid var(--line);
-    gap: 32px; position: relative; z-index: 10;
-  }
-  .top-nav-brand { flex-shrink: 0; font-family: var(--font-display); font-weight: 700; font-size: 20px; color: var(--fg); letter-spacing: -0.02em; text-decoration: none; }
-  .top-nav-brand i { color: var(--accent); font-style: italic; }
-  .top-nav-links {
-    display: flex; gap: 26px; flex: 1; justify-content: center;
-    font-family: var(--font-mono); font-size: 11px;
-    letter-spacing: 0.18em; text-transform: uppercase;
-  }
-  .top-nav-links a { color: var(--fg-muted); text-decoration: none; padding-bottom: 4px; border-bottom: 1px solid transparent; }
-  .top-nav-links a:hover { color: var(--accent); }
-  .top-nav-links a.active { color: var(--accent); border-bottom-color: var(--accent); }
-  .top-nav-status {
-    display: flex; align-items: center; gap: 10px; flex-shrink: 0;
-    font-family: var(--font-mono); font-size: 10px;
-    letter-spacing: 0.22em; text-transform: uppercase;
-    color: var(--fg-subtle);
-  }
-  .top-nav-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--ok); color: var(--ok);
-    animation: pulse-nav-dot 1.8s ease-out infinite;
-  }
-  @keyframes pulse-nav-dot {
-    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 currentColor; }
-    50%      { opacity: 0.45; box-shadow: 0 0 0 6px transparent; }
-  }
+  /* ─── TopNav + Footer rendered by React (see mount points below) ─── */
   /* ─── Graph Sub-nav ─── */
   .graph-subnav {
     display: flex; align-items: center; gap: 24px;
@@ -56,17 +26,6 @@
   .graph-subnav a { color: var(--fg-muted); text-decoration: none; padding-bottom: 2px; border-bottom: 1px solid transparent; }
   .graph-subnav a:hover { color: var(--accent); }
   .graph-subnav a.active { color: var(--accent); border-bottom-color: var(--accent); }
-  /* ─── Site Footer ─── */
-  .site-footer {
-    border-top: 1px solid var(--line);
-    padding: 30px 40px 40px;
-    display: flex; justify-content: space-between; align-items: center;
-    font-family: var(--font-mono); font-size: 10px;
-    letter-spacing: 0.22em; text-transform: uppercase;
-    color: var(--fg-faint); position: relative; z-index: 10;
-  }
-  .site-footer a { color: var(--fg-muted); text-decoration: none; }
-  .site-footer a:hover { color: var(--accent); }
   :root {
     --cm-grid-opacity: 0.6;
     --cm-scan-opacity: 0.4;
@@ -169,19 +128,7 @@
 </head>
 <body>
 
-<nav class="top-nav">
-  <a href="../index.html" class="top-nav-brand">Claudem<i>onzter</i></a>
-  <div class="top-nav-links">
-    <a href="../index.html">Home</a>
-    <a href="../portfolio.html">Portfolio</a>
-    <a href="../dashboard.html" class="active">Graph</a>
-    <a href="../writing.html">Writing</a>
-  </div>
-  <div class="top-nav-status">
-    <span class="top-nav-dot"></span>
-    V3.3 · LIVE
-  </div>
-</nav>
+<div id="topnav-mount"></div>
 <div class="graph-subnav">
   <span class="graph-subnav-label">GRAPH ›</span>
   <a href="../dashboard.html">Dashboard</a>
@@ -191,21 +138,19 @@
 
 <div id="root"></div>
 
-<footer class="site-footer">
-  <div>
-    <span style="font-family: var(--font-display); font-weight: 700; font-size: 14px; letter-spacing: -0.02em; color: var(--fg);">Claudem<i style="color: var(--accent); font-style: italic;">onzter</i></span>
-    <span style="margin-left: 12px;">EST. 03/2026 · V3.3</span>
-  </div>
-  <div style="display: flex; gap: 20px;">
-    <a href="../agents/jeremy/jeremy.html">↗ About</a>
-    <a href="https://github.com/JeremyMontz">↗ GitHub</a>
-    <a href="https://linkedin.com/in/jeremydmontz">↗ LinkedIn</a>
-  </div>
-</footer>
+<div id="footer-mount"></div>
 
+<script src="../data.js"></script>
+<script type="text/babel" src="../components/Wordmark.jsx"></script>
+<script type="text/babel" src="../components/Primitives.jsx"></script>
+<script type="text/babel" src="../components/HomeShell.jsx"></script>
 <script src="heart-data.js"></script>
 <script type="text/babel" src="heart-dials.jsx"></script>
 <script type="text/babel" src="heart-monitor.jsx"></script>
 <script type="text/babel" src="heart-app.jsx"></script>
+<script type="text/babel">
+  ReactDOM.createRoot(document.getElementById('topnav-mount')).render(<TopNav active="GRAPH" basePath="../" />);
+  ReactDOM.createRoot(document.getElementById('footer-mount')).render(<Footer basePath="../" />);
+</script>
 </body>
 </html>

@@ -77,7 +77,7 @@ const SectionHeader = ({ no, eyebrow, title, sub }) => (
   </div>
 );
 
-const ContactRow = ({ align = 'left' }) => (
+const ContactRow = ({ align = 'left', basePath = '' }) => (
   <div style={{
     display: 'flex', gap: 20, alignItems: 'center',
     justifyContent: align === 'center' ? 'center' : 'flex-start',
@@ -85,7 +85,7 @@ const ContactRow = ({ align = 'left' }) => (
     letterSpacing: '0.14em', textTransform: 'uppercase',
     color: 'var(--fg-muted)',
   }}>
-    <a href="agents/jeremy/jeremy.html" style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
+    <a href={`${basePath}agents/jeremy/jeremy.html`} style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
       <span style={{ color: 'var(--accent)' }}>↗</span> ABOUT
     </a>
     <span style={{ color: 'var(--line-loud)' }}>·</span>
@@ -101,7 +101,7 @@ const ContactRow = ({ align = 'left' }) => (
   </div>
 );
 
-const Footer = () => (
+const Footer = ({ basePath = '' }) => (
   <div style={{
     padding: '30px 40px 40px',
     borderTop: '1px solid var(--line)',
@@ -118,7 +118,7 @@ const Footer = () => (
         EST. 03/2026 · {(window.SITE?.version || 'v3.3').toUpperCase()}
       </div>
     </div>
-    <ContactRow />
+    <ContactRow basePath={basePath} />
   </div>
 );
 
@@ -136,7 +136,7 @@ const Mascot = ({ size = 96, color }) => (
 );
 
 // TopNav — shared chrome across home + portfolio pages.
-const TopNav = ({ active }) => (
+const TopNav = ({ active, basePath = '' }) => (
   <div style={{
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
     padding: '22px 40px', borderBottom: '1px solid var(--line)',
@@ -156,7 +156,7 @@ const TopNav = ({ active }) => (
         ['GRAPH',     'dashboard.html'],
         ['WRITING',   'writing.html'],
       ].map(([label, href]) => (
-        <a key={label} href={href} style={{
+        <a key={label} href={`${basePath}${href}`} style={{
           color: label === active ? 'var(--accent)' : 'var(--fg-muted)',
           borderBottom: label === active ? '1px solid var(--accent)' : '1px solid transparent',
           paddingBottom: 4,

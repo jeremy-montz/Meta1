@@ -38,37 +38,7 @@ body::after {
   background-size: var(--grid-size) var(--grid-size); pointer-events: none; opacity: 0.35; z-index: 0;
 }
 
-/* ── TopNav — vanilla replica of site chrome ──────────────── */
-.top-nav {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 22px 40px; border-bottom: 1px solid var(--line);
-  gap: 32px; position: relative; z-index: 1;
-}
-.top-nav-brand { flex-shrink: 0; font-family: var(--font-display); font-weight: 700; font-size: 20px; color: var(--fg); letter-spacing: -0.02em; text-decoration: none; }
-.top-nav-brand i { color: var(--accent); font-style: italic; }
-.top-nav-links {
-  display: flex; gap: 26px; flex: 1; justify-content: center;
-  font-family: var(--font-mono); font-size: 11px;
-  letter-spacing: 0.18em; text-transform: uppercase;
-}
-.top-nav-links a { color: var(--fg-muted); text-decoration: none; padding-bottom: 4px; border-bottom: 1px solid transparent; }
-.top-nav-links a:hover { color: var(--accent); }
-.top-nav-links a.active { color: var(--accent); border-bottom-color: var(--accent); }
-.top-nav-status {
-  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
-  font-family: var(--font-mono); font-size: 10px;
-  letter-spacing: 0.22em; text-transform: uppercase;
-  color: var(--fg-subtle);
-}
-.top-nav-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--ok); color: var(--ok);
-  animation: pulse-dot 1.8s var(--ease-out) infinite;
-}
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 currentColor; }
-  50%      { opacity: 0.45; box-shadow: 0 0 0 6px transparent; }
-}
+/* ── TopNav + Footer rendered by React (see mount points below) ── */
 
 /* ── Page content wrapper ─────────────────────────────────── */
 .page-content { padding: 1.5rem 2rem 0; }
@@ -188,23 +158,14 @@ h1 span { color: var(--accent); font-style: italic; font-variation-settings: "op
 .graph-subnav a:hover { color: var(--accent); }
 .graph-subnav a.active { color: var(--accent); border-bottom-color: var(--accent); }
 </style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
-<!-- ── Site nav chrome ──────────────────────────────────────── -->
-<nav class="top-nav">
-  <a href="index.html" class="top-nav-brand">Claudem<i>onzter</i></a>
-  <div class="top-nav-links">
-    <a href="index.html">Home</a>
-    <a href="portfolio.html">Portfolio</a>
-    <a href="dashboard.html" class="active">Graph</a>
-    <a href="writing.html">Writing</a>
-  </div>
-  <div class="top-nav-status">
-    <span class="top-nav-dot"></span>
-    V3.3 · LIVE
-  </div>
-</nav>
+<!-- ── Site chrome (React) ─────────────────────────────────── -->
+<div id="topnav-mount"></div>
 <div class="graph-subnav">
   <span class="graph-subnav-label">GRAPH ›</span>
   <a href="dashboard.html" class="active">Dashboard</a>
@@ -233,17 +194,7 @@ h1 span { color: var(--accent); font-style: italic; font-variation-settings: "op
 
 </div><!-- .page-content -->
 
-<footer class="site-footer">
-  <div>
-    <span style="font-family: var(--font-display); font-weight: 700; font-size: 14px; letter-spacing: -0.02em; color: var(--fg);">Claudem<i style="color: var(--accent); font-style: italic;">onzter</i></span>
-    <span style="margin-left: 12px;">EST. 03/2026 · V3.3</span>
-  </div>
-  <div style="display: flex; gap: 20px;">
-    <a href="agents/jeremy/jeremy.html">↗ About</a>
-    <a href="https://github.com/JeremyMontz">↗ GitHub</a>
-    <a href="https://linkedin.com/in/jeremydmontz">↗ LinkedIn</a>
-  </div>
-</footer>
+<div id="footer-mount"></div>
 
 <script>
 // ── Configuration ─────────────────────────────────────────
@@ -651,6 +602,16 @@ function loadData() {
 }
 
 loadData();
+</script>
+
+<!-- ── React site chrome ───────────────────────────────────── -->
+<script src="data.js"></script>
+<script type="text/babel" src="components/Wordmark.jsx"></script>
+<script type="text/babel" src="components/Primitives.jsx"></script>
+<script type="text/babel" src="components/HomeShell.jsx"></script>
+<script type="text/babel">
+  ReactDOM.createRoot(document.getElementById('topnav-mount')).render(<TopNav active="GRAPH" />);
+  ReactDOM.createRoot(document.getElementById('footer-mount')).render(<Footer />);
 </script>
 
 </body>
