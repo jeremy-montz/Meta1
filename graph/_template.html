@@ -1,0 +1,98 @@
+<!--
+  ╔════════════════════════════════════════════════════════════════════════╗
+  ║  BODY / ORGAN PAGE TEMPLATE                                            ║
+  ║                                                                        ║
+  ║  To create a new graph/body page:                                      ║
+  ║    1. Copy this file to graph/<organ-name>.html                        ║
+  ║    2. Create graph/<organ-name>-app.jsx for the page's React app       ║
+  ║    3. Optionally create graph/<organ-name>-data.js for static data     ║
+  ║    4. Update the graph-subnav links in this file AND in sibling pages  ║
+  ║    5. Replace all [REPLACE: ...] markers                               ║
+  ║                                                                        ║
+  ║  The site chrome (TopNav + graph-subnav + Footer) is shared.           ║
+  ║  Your page's React app renders into #root — build it however you      ║
+  ║  want. The app should NOT include its own nav or site footer.          ║
+  ╚════════════════════════════════════════════════════════════════════════╝
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>[REPLACE: Organ Name] · [REPLACE: Subtitle] · Claudemonzter</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="../design-system/colors_and_type.css"/>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+
+<style>
+  html, body { background: var(--bg); color: var(--fg); margin: 0; min-height: 100vh; }
+  body { padding: 0; margin: 0; overflow-x: hidden; font-family: var(--font-sans); }
+  a { color: inherit; text-decoration: none; }
+
+  /* Graph sub-nav — keep consistent with dashboard.html, heart.html, memory.html */
+  .graph-subnav {
+    display: flex; align-items: center; gap: 24px;
+    padding: 12px 40px;
+    font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    border-bottom: 1px solid var(--line);
+    position: relative; z-index: 1;
+  }
+  .graph-subnav-label { color: var(--fg-faint); }
+  .graph-subnav a { color: var(--fg-muted); text-decoration: none; padding-bottom: 2px; border-bottom: 1px solid transparent; }
+  .graph-subnav a:hover { color: var(--accent); }
+  .graph-subnav a.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* Optional background layers — remove if your page doesn't need them */
+  .bg-grid-layer {
+    position: fixed; inset: 0; pointer-events: none; z-index: 1;
+    background-image:
+      linear-gradient(var(--grid-color) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+    background-size: var(--grid-size) var(--grid-size);
+    opacity: 0.55;
+  }
+
+  /* Selection */
+  ::selection { background: var(--accent); color: var(--bg); }
+
+  /* [REPLACE: Add page-specific CSS here] */
+</style>
+</head>
+<body>
+
+<!-- ─── SITE CHROME ───────────────────────────────────────────── -->
+<div id="topnav-mount"></div>
+<div class="graph-subnav">
+  <span class="graph-subnav-label">GRAPH ›</span>
+  <a href="../dashboard.html">Dashboard</a>
+  <a href="heart.html">Heart</a>
+  <a href="memory.html">Memory</a>
+  <!-- [REPLACE: Add your page link here with class="active"] -->
+  <a href="[REPLACE].html" class="active">[REPLACE: Name]</a>
+</div>
+
+<!-- ─── PAGE CONTENT ──────────────────────────────────────────── -->
+<div id="root"></div>
+
+<!-- ─── SITE FOOTER ───────────────────────────────────────────── -->
+<div id="footer-mount"></div>
+
+<!-- Shared site chrome -->
+<script src="../data.js"></script>
+<script type="text/babel" src="../components/Wordmark.jsx"></script>
+<script type="text/babel" src="../components/Primitives.jsx"></script>
+<script type="text/babel" src="../components/HomeShell.jsx"></script>
+
+<!-- Page-specific scripts — [REPLACE: update these paths] -->
+<script src="[REPLACE]-data.js"></script>
+<script type="text/babel" src="[REPLACE]-app.jsx"></script>
+
+<!-- Mount site chrome -->
+<script type="text/babel">
+  ReactDOM.createRoot(document.getElementById('topnav-mount')).render(<TopNav active="GRAPH" />);
+  ReactDOM.createRoot(document.getElementById('footer-mount')).render(<Footer />);
+</script>
+</body>
+</html>
