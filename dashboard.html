@@ -55,7 +55,7 @@ body::after {
 .top-nav-links a:hover { color: var(--accent); }
 .top-nav-links a.active { color: var(--accent); border-bottom-color: var(--accent); }
 .top-nav-status {
-  display: flex; align-items: center; gap: 10; flex-shrink: 0;
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
   font-family: var(--font-mono); font-size: 10px;
   letter-spacing: 0.22em; text-transform: uppercase;
   color: var(--fg-subtle);
@@ -163,6 +163,30 @@ h1 span { color: var(--accent); font-style: italic; font-variation-settings: "op
 
 /* ── Footer ───────────────────────────────────────────────── */
 .footer { margin-top: 2rem; padding: 0 2rem; display: flex; justify-content: space-between; font-size: var(--fs-xs); color: var(--fg-subtle); letter-spacing: var(--ls-wide); position: relative; z-index: 1; }
+.site-footer {
+  border-top: 1px solid var(--line);
+  padding: 30px 40px 40px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--fg-faint); position: relative; z-index: 1;
+}
+.site-footer a { color: var(--fg-muted); text-decoration: none; }
+.site-footer a:hover { color: var(--accent); }
+
+/* ── Graph Sub-nav ────────────────────────────────────────── */
+.graph-subnav {
+  display: flex; align-items: center; gap: 24px;
+  padding: 12px 40px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  position: relative; z-index: 1;
+}
+.graph-subnav-label { color: var(--fg-faint); }
+.graph-subnav a { color: var(--fg-muted); text-decoration: none; padding-bottom: 2px; border-bottom: 1px solid transparent; }
+.graph-subnav a:hover { color: var(--accent); }
+.graph-subnav a.active { color: var(--accent); border-bottom-color: var(--accent); }
 </style>
 </head>
 <body>
@@ -178,9 +202,15 @@ h1 span { color: var(--accent); font-style: italic; font-variation-settings: "op
   </div>
   <div class="top-nav-status">
     <span class="top-nav-dot"></span>
-    LAB 001 · LIVE
+    V3.3 · LIVE
   </div>
 </nav>
+<div class="graph-subnav">
+  <span class="graph-subnav-label">GRAPH ›</span>
+  <a href="dashboard.html" class="active">Dashboard</a>
+  <a href="graph/heart.html">Heart</a>
+  <a href="graph/memory.html">Memory</a>
+</div>
 
 <div class="page-content">
 
@@ -201,12 +231,19 @@ h1 span { color: var(--accent); font-style: italic; font-variation-settings: "op
   <div class="state-msg"><div class="big">Loading...</div><div>Fetching agent data</div></div>
 </div>
 
-<div class="footer">
-  <span>agent-dashboard v2.1</span>
-  <span id="agentCount">—</span>
-</div>
-
 </div><!-- .page-content -->
+
+<footer class="site-footer">
+  <div>
+    <span style="font-family: var(--font-display); font-weight: 700; font-size: 14px; letter-spacing: -0.02em; color: var(--fg);">Claudem<i style="color: var(--accent); font-style: italic;">onzter</i></span>
+    <span style="margin-left: 12px;">EST. 03/2026 · V3.3</span>
+  </div>
+  <div style="display: flex; gap: 20px;">
+    <a href="agents/jeremy/jeremy.html">↗ About</a>
+    <a href="https://github.com/JeremyMontz">↗ GitHub</a>
+    <a href="https://linkedin.com/in/jeremydmontz">↗ LinkedIn</a>
+  </div>
+</footer>
 
 <script>
 // ── Configuration ─────────────────────────────────────────
