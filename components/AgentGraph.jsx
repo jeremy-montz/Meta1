@@ -36,6 +36,25 @@ const POSITIONS = {
 
 const AGENT_NODE_ID = (a) => 'a-' + a.id;
 
+// Graph-specific color mapping by project family.
+// These override data.js project tones for graph rendering only.
+const GRAPH_COLORS = {
+  'me':         'var(--accent)',   // purple — the lab
+  'self':       'var(--accent)',   // purple — operator
+  'a-jeremy':   'var(--accent)',   // purple — human node
+  'meta1':      'var(--ok)',       // green — meta1 project
+  'a-meta1':    'var(--ok)',       // green
+  'a-bond':     'var(--ok)',       // green
+  'pura-vida':  'var(--info)',     // teal — pura-vida project
+  'a-house':    'var(--info)',     // teal
+  'a-freedom':  'var(--info)',     // teal
+  'a-evolve':   'var(--info)',     // teal
+  'a-assessor': 'var(--info)',     // teal
+  'phil':       'var(--err)',      // red — phil project
+  'a-phil':     'var(--err)',      // red
+};
+const graphColor = (id) => GRAPH_COLORS[id] || 'var(--accent)';
+
 const AgentGraph = ({ hovered, setHovered, agents: agentsProp, fetchStatus }) => {
   // Use live agents if provided, fall back to static global
   const agents = agentsProp || AGENTS;
@@ -110,7 +129,7 @@ const AgentGraph = ({ hovered, setHovered, agents: agentsProp, fetchStatus }) =>
           return (
             <line key={e.key}
                   x1={A.x} y1={A.y} x2={B.x} y2={B.y}
-                  stroke={edgeLit(e) ? 'var(--accent)' : 'var(--line-loud)'}
+                  stroke={edgeLit(e) ? 'var(--candle)' : 'var(--line-loud)'}
                   strokeWidth={edgeLit(e) ? 1.5 : 1}
                   opacity={edgeFaded(e) ? 0.25 : 0.85} />
           );
@@ -181,13 +200,7 @@ const HubNode = ({ hovered, setHovered, faded }) => {
 const ProjectNode = ({ project, hovered, setHovered, faded }) => {
   const pos = POSITIONS[project.id];
   const active = hovered?.id === project.id;
-  // Per-project tone → ring color
-  const toneColor = {
-    accent: 'var(--accent)',
-    info:   'var(--info)',
-    ok:     'var(--ok)',
-    warn:   'var(--warn)',
-  }[project.tone] || 'var(--accent)';
+  const toneColor = graphColor(project.id);
 
   return (
     <g
@@ -221,8 +234,7 @@ const AgentNode = ({ agent, hovered, setHovered, faded }) => {
   const pos = POSITIONS[id];
   const active = hovered?.id === id;
   const flagged = agent.state === 'flagged';
-  const idle = agent.state === 'idle';
-  const ringColor = flagged ? 'var(--err)' : idle ? 'var(--fg-subtle)' : 'var(--ok)';
+  const ringColor = flagged ? 'var(--err)' : graphColor(id);
 
   // Labels always sit below the node — the cluster layout above gives
   // every outer agent enough vertical room.
@@ -240,8 +252,8 @@ const AgentNode = ({ agent, hovered, setHovered, faded }) => {
         <circle cx={pos.x} cy={pos.y} r={5} fill="var(--err)"
                 className="pulse-dot" style={{ color: 'var(--err)' }} />
       )}
-      {!flagged && !idle && active && (
-        <circle cx={pos.x} cy={pos.y} r={4} fill="var(--ok)" />
+      {!flagged && active && (
+        <circle cx={pos.x} cy={pos.y} r={4} fill={graphColor(id)} />
       )}
       <text x={pos.x}
             y={pos.y + 32}
@@ -267,7 +279,7 @@ const Inspector = ({ hovered, agent, agents: agentsProp, fetchStatus }) => {
         padding: 24, display: 'flex', flexDirection: 'column', gap: 18,
         height: '100%', boxSizing: 'border-box', overflow: 'auto',
       }}>
-        <Eyebrow color="var(--candle)">// INSPECTOR · IDLE</Eyebrow>
+        <Eyebrow color="var(--candle)">// INSPECTOR</Eyebrow>
         <h3 style={{ marginTop: 4 }}>
           Hover a node.
         </h3>
@@ -278,20 +290,21 @@ const Inspector = ({ hovered, agent, agents: agentsProp, fetchStatus }) => {
         </p>
 
         <div style={{ marginTop: 10, borderTop: '1px dashed var(--line-loud)', paddingTop: 18, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <Eyebrow color="var(--candle)">// LEGEND</Eyebrow>
+          <Eyebrow color="var(--candle)">// CONFIG LAYERS</Eyebrow>
           {[
-            { c: 'var(--accent)', label: 'CLAUDEMONZTER · the lab' },
-            { c: 'var(--info)',   label: 'PROJECT · namespace' },
-            { c: 'var(--ok)',     label: 'AGENT · active' },
-            { c: 'var(--err)',    label: 'AGENT · flagged' },
+            { c: 'var(--accent)', label: 'L1 · IDENTITY', blurb: 'Who am I. Personality, rules, tone.' },
+            { c: 'var(--info)',   label: 'L2 · CONTEXT', blurb: 'Calibration data. Not instructions.' },
+            { c: 'var(--ok)',     label: 'L3 · PROJECT', blurb: 'Operating manual for a codebase.' },
+            { c: 'var(--candle)', label: 'L4 · AGENT·ROLE', blurb: 'Conditional config per role.' },
+            { c: 'var(--err)',    label: 'L5 · SESSION', blurb: 'Active goals, blockers, state.' },
           ].map(row => (
             <div key={row.label} style={{
-              display: 'flex', alignItems: 'center', gap: 10,
-              fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.14em',
+              display: 'flex', alignItems: 'flex-start', gap: 10,
+              fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.12em',
               color: 'var(--fg-muted)',
             }}>
-              <span style={{ width: 10, height: 10, borderRadius: '50%', border: `1.5px solid ${row.c}`, display: 'inline-block' }} />
-              {row.label}
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: row.c, display: 'inline-block', marginTop: 3, flexShrink: 0 }} />
+              <span><span style={{ color: row.c }}>{row.label}</span> — {row.blurb}</span>
             </div>
           ))}
         </div>
@@ -406,14 +419,6 @@ const Inspector = ({ hovered, agent, agents: agentsProp, fetchStatus }) => {
   return (
     <div style={{ height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
       <AgentCard agent={agent} />
-      <div style={{ marginTop: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--fg-faint)' }}>
-          AGENT ID · {agent.id}
-        </span>
-        <a href={`agents/${agent.id}/${agent.id}.html`} style={{ textDecoration: 'none' }}>
-          <Button variant="secondary">OPEN AGENT →</Button>
-        </a>
-      </div>
     </div>
   );
 };

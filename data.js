@@ -227,9 +227,9 @@ window.AGENTS = [
 // You probably don't need to touch this unless the dashboard's level system
 // changes. The colors flow from the design-system tokens.
 window.LEVELS = [
-  { id: 'L1', tone: 'info' },
-  { id: 'L2', tone: 'info' },
-  { id: 'L3', tone: 'ok'   },
-  { id: 'L4', tone: 'warn' },
-  { id: 'L5', tone: 'err'  },
+  { id: 'L1', tone: 'accent', color: 'var(--accent)' },
+  { id: 'L2', tone: 'info',   color: 'var(--info)' },
+  { id: 'L3', tone: 'ok',     color: 'var(--ok)' },
+  { id: 'L4', tone: 'candle', color: 'var(--candle)' },
+  { id: 'L5', tone: 'err',    color: 'var(--err)' },
 ];

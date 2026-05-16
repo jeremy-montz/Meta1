@@ -230,25 +230,29 @@ const AgentCard = ({ agent, compact }) => {
         fontStyle: 'italic', fontSize: 13.5, color: 'var(--fg-muted)', lineHeight: 1.4,
       }}>{agent.blurb}</p>
 
-      {/* L1-L5 levels */}
-      <div style={{ marginTop: 14, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-        {LEVELS.map(l => (
-          <span key={l.id} style={{
-            display: 'inline-flex', alignItems: 'center', gap: 4,
-            fontFamily: 'var(--font-mono)', fontSize: 9.5,
-            letterSpacing: '0.14em',
-            padding: '3px 6px',
-            background: 'var(--bg-elev-2)', color: 'var(--fg-muted)',
-            border: '1px solid var(--line-loud)', borderRadius: 2,
-          }}>
-            <span style={{
-              width: 5, height: 5, borderRadius: '50%',
-              background: `var(--${l.tone})`,
-              display: 'inline-block',
-            }} />
-            {l.id}
-          </span>
-        ))}
+      {/* L1-L5 config layer pips — dashboard style */}
+      <div style={{ marginTop: 14, display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+        {LEVELS.map(l => {
+          const c = l.color || `var(--${l.tone})`;
+          return (
+            <span key={l.id} style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              fontFamily: 'var(--font-mono)', fontSize: 8, fontWeight: 700,
+              letterSpacing: '0.16em', textTransform: 'uppercase',
+              padding: '3px 7px', borderRadius: 2, cursor: 'default',
+              border: `1px solid color-mix(in oklch, ${c} 40%, transparent)`,
+              background: `color-mix(in oklch, ${c} 8%, transparent)`,
+              color: c,
+            }}>
+              <span style={{
+                width: 5, height: 5, borderRadius: '50%',
+                background: c, flexShrink: 0,
+                display: 'inline-block',
+              }} />
+              {l.id}
+            </span>
+          );
+        })}
       </div>
 
       {/* Flag row */}
