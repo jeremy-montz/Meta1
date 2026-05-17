@@ -193,6 +193,9 @@ var AGENT_ID   = "meta1";
 var AGENT_TAB  = "Meta1Checkin";
 var MAX_SESSIONS = 5;
 
+// Entry object — same shape the dashboard uses in DOMAIN_TABS
+var AGENT_ENTRY = { domain: "Meta1", tab: AGENT_TAB, isHuman: false };
+
 // ── Recent sessions (from close-checkins) ────────────────────
 function renderSessions(rows) {
   var closes = rows.filter(function(r) { return r["Type"] === "close" && r["Session Summary"]; });
@@ -235,7 +238,7 @@ fetch(csvUrl(AGENT_TAB) + "&cachebust=" + Date.now())
   .then(function(text) {
     var rows = parseCSV(text);
     var comp = compositeRows(rows);
-    document.getElementById("liveCard").innerHTML = renderCard(comp, { expandSession: true });
+    document.getElementById("liveCard").innerHTML = renderCard(AGENT_ENTRY, comp);
     document.getElementById("sessions-mount").innerHTML = renderSessions(rows);
   })
   .catch(function() {
