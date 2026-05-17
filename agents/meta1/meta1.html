@@ -220,7 +220,7 @@ function renderSessions(rows) {
 function renderArtifacts() {
   var artifacts = (window.AGENT_ARTIFACTS || {})[AGENT_ID] || [];
   if (artifacts.length === 0) {
-    document.getElementById('artifacts-mount').innerHTML = '<div style="color: var(--fg-faint); font-style: italic;">No artifacts yet.</div>';
+    document.getElementById('artifacts-mount').innerHTML = '<span style="font-family: var(--font-hand); color: var(--candle); font-size: 18px; display: inline-block; transform: rotate(-2deg);">(no artifacts yet · check back later)</span>';
     return;
   }
   var html = '';
