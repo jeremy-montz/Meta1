@@ -48,13 +48,6 @@ const PersonaCard = ({ agent, rev, lastSync, hyde = true }) => {
     }}>
       <PersonaCardHeader rev={rev} lastSync={lastSync} agent={agent} hyde={hyde}/>
 
-      {/* Signature */}
-      <p style={{
-        fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 13,
-        color: 'var(--fg-muted)', lineHeight: 1.45, marginTop: 12,
-        fontVariationSettings: '"opsz" 36', textWrap: 'pretty',
-      }}>{agent.signature}</p>
-
       {/* dial rows */}
       <div style={{ marginTop: 12, borderTop: '1px solid var(--line-soft)' }}>
         {dials.map((d, i) => {
@@ -110,51 +103,30 @@ const PersonaCard = ({ agent, rev, lastSync, hyde = true }) => {
           fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 600,
           letterSpacing: '0.18em', color: 'var(--accent)', textTransform: 'uppercase',
           textDecoration: 'none',
-        }}>body / heart ↗</a>
+        }}>heart ↗</a>
       </div>
     </div>
   );
 };
 
-// Header — eyebrow + name + sync info
+// Header — eyebrow + live sync
 const PersonaCardHeader = ({ rev, lastSync, agent, hyde }) => (
-  <>
+  <div style={{
+    display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12,
+  }}>
     <div style={{
-      display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12,
-    }}>
-      <div>
-        <div style={{
-          fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 500,
-          letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent)',
-        }}>// PERSONA</div>
-        <div style={{
-          fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 600,
-          letterSpacing: '-0.01em', color: 'var(--fg)', marginTop: 3,
-          fontVariationSettings: '"opsz" 48',
-        }}>9 dials, sealed.</div>
-      </div>
-      {hyde && (
-        <span style={{
-          fontFamily: 'var(--font-hyde)', fontSize: 22, color: 'var(--party)',
-          letterSpacing: '0.04em', lineHeight: 1, marginTop: 4,
-          textShadow: '0 0 8px color-mix(in oklch, var(--party) 50%, transparent)',
-        }}>alive.</span>
-      )}
-    </div>
+      fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 500,
+      letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent)',
+    }}>// {agent ? agent.id.toUpperCase() : ''} PERSONA</div>
     <div style={{
-      display: 'flex', gap: 10, marginTop: 6,
-      fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.14em',
-      color: 'var(--fg-subtle)', textTransform: 'uppercase', flexWrap: 'wrap',
+      fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.14em',
+      color: 'var(--fg-faint)', textTransform: 'uppercase',
+      display: 'flex', alignItems: 'center', gap: 5,
     }}>
-      <span>REV {rev}</span>
-      <span style={{ color: 'var(--fg-faint)' }}>·</span>
-      <span>SYNC {lastSync}</span>
-      {agent && <>
-        <span style={{ color: 'var(--fg-faint)' }}>·</span>
-        <span>{agent.bracket}</span>
-      </>}
+      <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--ok)', display: 'inline-block' }}/>
+      <span>LIVE</span>
     </div>
-  </>
+  </div>
 );
 
 // Collapsible boundaries
