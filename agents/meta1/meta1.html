@@ -418,8 +418,8 @@ renderArtifacts();
 <!-- Persona card (React) -->
 <script type="text/babel">
   // Mount site chrome
-  ReactDOM.createRoot(document.getElementById('topnav-mount')).render(<TopNav active="GRAPH" />);
-  ReactDOM.createRoot(document.getElementById('footer-mount')).render(<Footer />);
+  ReactDOM.createRoot(document.getElementById('topnav-mount')).render(<TopNav base="../../" active="GRAPH" />);
+  ReactDOM.createRoot(document.getElementById('footer-mount')).render(<Footer base="../../" />);
 
   // Fetch persona data then render PersonaCard
   (async () => {
