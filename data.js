@@ -233,3 +233,28 @@ window.LEVELS = [
   { id: 'L4', tone: 'candle', color: 'var(--candle)' },
   { id: 'L5', tone: 'err',    color: 'var(--err)' },
 ];
+
+// ─── AGENT_ARTIFACTS · per-agent linked pages/tools ───────────────────────
+// Rendered on agent profile pages. Each agent's array lists things it built
+// or manages. Keep it honest — only real, live pages. Add rows as new
+// artifacts ship.
+//
+// fields:
+//   title  — display name
+//   sub    — mono subtitle (uppercase context line)
+//   href   — relative URL from the agent page (agents/{id}/{id}.html)
+window.AGENT_ARTIFACTS = {
+  meta1: [
+    { title: 'Memory',             sub: 'LAYER MAP · 5 LAYERS · 3 PLATFORMS',   href: '../../graph/memory.html' },
+    { title: 'Agent Dashboard',    sub: 'LIVE STATUS · ALL AGENTS',             href: '../../dashboard.html' },
+  ],
+  house: [
+    { title: 'Renovation Tracker', sub: 'TIMELINE · BUDGET · ENTRY',            href: 'house-timeline.html' },
+  ],
+  bond:     [],
+  freedom:  [],
+  evolve:   [],
+  assessor: [],
+  phil:     [],
+  jeremy:   [],
+};
