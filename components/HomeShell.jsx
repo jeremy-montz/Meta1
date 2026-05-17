@@ -1,4 +1,13 @@
 // HomeShell.jsx — shared atoms and the AgentCard primitive.
+// ── Auto-detect site root ──────────────────────────────────────────────
+// Every page loads data.js with the correct relative path. We extract
+// that path prefix so all components resolve links without per-page config.
+const _SITE_BASE = (() => {
+  const tag = document.querySelector('script[src$="data.js"]');
+  if (tag) return tag.getAttribute('src').replace('data.js', '');
+  return '';
+})();
+
 // Content data (ME, PORTFOLIO, AGENTS, etc.) lives in data.js — edit that
 // file to update site content. This file only defines UI building blocks.
 
@@ -77,7 +86,7 @@ const SectionHeader = ({ no, eyebrow, title, sub }) => (
   </div>
 );
 
-const ContactRow = ({ align = 'left', base = '' }) => (
+const ContactRow = ({ align = 'left' }) => (
   <div style={{
     display: 'flex', gap: 20, alignItems: 'center',
     justifyContent: align === 'center' ? 'center' : 'flex-start',
@@ -85,7 +94,7 @@ const ContactRow = ({ align = 'left', base = '' }) => (
     letterSpacing: '0.14em', textTransform: 'uppercase',
     color: 'var(--fg-muted)',
   }}>
-    <a href={base + "agents/jeremy/jeremy.html"} style={{ display: 'inline-flex', gap: 8, alignItems: 'center', color: 'inherit', textDecoration: 'none' }}>
+    <a href={_SITE_BASE + "agents/jeremy/jeremy.html"} style={{ display: 'inline-flex', gap: 8, alignItems: 'center', color: 'inherit', textDecoration: 'none' }}>
       <span style={{ color: 'var(--accent)' }}>↗</span> ABOUT
     </a>
     <span style={{ color: 'var(--line-loud)' }}>·</span>
@@ -101,7 +110,7 @@ const ContactRow = ({ align = 'left', base = '' }) => (
   </div>
 );
 
-const Footer = ({ base = '' }) => (
+const Footer = () => (
   <div style={{
     padding: '30px 40px 40px',
     borderTop: '1px solid var(--line)',
@@ -118,15 +127,15 @@ const Footer = ({ base = '' }) => (
         EST. 03/2026 · {(window.SITE?.version || 'v3.3').toUpperCase()}
       </div>
     </div>
-    <ContactRow base={base} />
+    <ContactRow />
   </div>
 );
 
 // Mascot inline — line drawing from the design system. We reference the file
 // from /design-system/. Used as <Mascot size={...} />.
-const Mascot = ({ size = 96, color, base = "" }) => (
+const Mascot = ({ size = 96, color }) => (
   <img
-    src={base + "design-system/assets/mascot.svg"}
+    src={_SITE_BASE + "design-system/assets/mascot.svg"}
     alt=""
     style={{
       width: size, height: 'auto', display: 'block',
@@ -136,7 +145,7 @@ const Mascot = ({ size = 96, color, base = "" }) => (
 );
 
 // TopNav — shared chrome across home + portfolio pages.
-const TopNav = ({ active, base = "" }) => (
+const TopNav = ({ active }) => (
   <div style={{
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
     padding: '22px 40px', borderBottom: '1px solid var(--line)',
@@ -156,7 +165,7 @@ const TopNav = ({ active, base = "" }) => (
         ['GRAPH',     'dashboard.html'],
         ['WRITING',   'writing.html'],
       ].map(([label, href]) => (
-        <a key={label} href={base + href} style={{
+        <a key={label} href={_SITE_BASE + href} style={{
           color: label === active ? 'var(--accent)' : 'var(--fg-muted)',
           borderBottom: label === active ? '1px solid var(--accent)' : '1px solid transparent',
           paddingBottom: 4,
